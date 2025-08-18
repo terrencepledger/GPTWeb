@@ -69,13 +69,22 @@ export default function Header() {
           <Link href="/" className="hover:underline">
             Home
           </Link>
-          <div className="relative">
+          <div
+            className="relative"
+            onMouseEnter={() => setAboutOpen(true)}
+            onMouseLeave={() => setAboutOpen(false)}
+            onFocus={() => setAboutOpen(true)}
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                setAboutOpen(false);
+              }
+            }}
+          >
             <button
               type="button"
               className="hover:underline"
               aria-haspopup="menu"
               aria-expanded={aboutOpen}
-              onClick={() => setAboutOpen((o) => !o)}
             >
               About
             </button>
