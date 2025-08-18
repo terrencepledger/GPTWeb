@@ -122,18 +122,12 @@ export default async function Footer() {
           </div>
           <div>
             <h4 className="mb-3 font-semibold text-white">Newsletter</h4>
-            <form className="flex flex-col gap-2 sm:flex-row">
+            <form className="flex flex-col sm:flex-row">
               <input
                 type="email"
                 placeholder="Email address"
                 className="flex-1 rounded px-2 py-1 text-gray-900"
               />
-              <button
-                type="submit"
-                className="rounded bg-indigo-600 px-3 py-1 text-white hover:bg-indigo-700"
-              >
-                Subscribe
-              </button>
             </form>
           </div>
         </div>
