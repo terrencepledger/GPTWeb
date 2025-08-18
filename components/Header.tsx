@@ -110,12 +110,6 @@ export default function Header() {
               {item.label}
             </Link>
           ))}
-          <Link
-            href="/visit"
-            className="rounded bg-indigo-600 px-3 py-2 font-semibold text-white hover:bg-indigo-700"
-          >
-            Plan a Visit
-          </Link>
         </nav>
         <button
           className="md:hidden"
@@ -199,12 +193,6 @@ export default function Header() {
               {item.label}
             </Link>
           ))}
-          <Link
-            href="/visit"
-            className="rounded bg-indigo-600 px-3 py-2 font-semibold text-white hover:bg-indigo-700"
-          >
-            Plan a Visit
-          </Link>
         </nav>
       </div>
     </header>
