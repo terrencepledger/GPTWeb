@@ -1,0 +1,19 @@
+@layer components {
+  .btn-primary {
+    @apply rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors;
+    @apply hover:bg-blue-700;
+  }
+
+  .btn-ghost {
+    @apply rounded-md border border-transparent px-4 py-2 font-medium text-gray-700 transition-colors;
+    @apply hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white;
+  }
+
+  .card {
+    @apply relative overflow-hidden rounded-lg bg-white shadow-md dark:bg-gray-800 dark:text-white;
+  }
+
+  .card .hero-overlay {
+    @apply pointer-events-none absolute inset-0 bg-black/30 dark:bg-black/60;
+  }
+}
