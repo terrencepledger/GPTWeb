@@ -84,11 +84,13 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-10 border-b border-gray-200 bg-white">
-      <div className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
+      <div className="relative mx-auto flex h-16 max-w-5xl items-center px-4">
         <Link href="/" className="font-bold text-gray-900">
           Example Church
         </Link>
-        <nav className="hidden items-center gap-4 text-sm font-medium md:flex">
+        <nav
+          className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-4 text-sm font-medium md:flex"
+        >
           <Link href="/" className="hover:underline">
             Home
           </Link>
@@ -171,7 +173,7 @@ export default function Header() {
           ))}
         </nav>
         <button
-          className="md:hidden"
+          className="ml-auto md:hidden"
           aria-label="Open menu"
           onClick={() => setMenuOpen(true)}
         >
