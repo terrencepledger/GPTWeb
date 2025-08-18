@@ -8,16 +8,37 @@ export default function Header() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
+  const [mobileContactOpen, setMobileContactOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const aboutTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const contactTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const nav = [
     { href: "/ministries", label: "Ministries" },
     { href: "/events", label: "Events" },
     { href: "/livestreams", label: "Livestreams" },
     { href: "/giving", label: "Giving" },
-    { href: "/contact", label: "Contact" },
   ];
+
+  const handleAboutEnter = () => {
+    if (aboutTimeoutRef.current) clearTimeout(aboutTimeoutRef.current);
+    setAboutOpen(true);
+  };
+
+  const handleAboutLeave = () => {
+    aboutTimeoutRef.current = setTimeout(() => setAboutOpen(false), 200);
+  };
+
+  const handleContactEnter = () => {
+    if (contactTimeoutRef.current) clearTimeout(contactTimeoutRef.current);
+    setContactOpen(true);
+  };
+
+  const handleContactLeave = () => {
+    contactTimeoutRef.current = setTimeout(() => setContactOpen(false), 200);
+  };
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -56,7 +77,9 @@ export default function Header() {
   useEffect(() => {
     setMenuOpen(false);
     setAboutOpen(false);
+    setContactOpen(false);
     setMobileAboutOpen(false);
+    setMobileContactOpen(false);
   }, [pathname]);
 
   return (
@@ -71,8 +94,8 @@ export default function Header() {
           </Link>
           <div
             className="relative"
-            onMouseEnter={() => setAboutOpen(true)}
-            onMouseLeave={() => setAboutOpen(false)}
+            onMouseEnter={handleAboutEnter}
+            onMouseLeave={handleAboutLeave}
             onFocus={() => setAboutOpen(true)}
             onBlur={(e) => {
               if (!e.currentTarget.contains(e.relatedTarget as Node)) {
@@ -101,6 +124,42 @@ export default function Header() {
                   className="block px-2 py-1 hover:underline"
                 >
                   Mission Statement
+                </Link>
+              </div>
+            )}
+          </div>
+          <div
+            className="relative"
+            onMouseEnter={handleContactEnter}
+            onMouseLeave={handleContactLeave}
+            onFocus={() => setContactOpen(true)}
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                setContactOpen(false);
+              }
+            }}
+          >
+            <button
+              type="button"
+              className="hover:underline"
+              aria-haspopup="menu"
+              aria-expanded={contactOpen}
+            >
+              Contact
+            </button>
+            {contactOpen && (
+              <div className="absolute left-0 top-full mt-2 w-48 rounded border bg-white p-2 shadow">
+                <Link
+                  href="/contact"
+                  className="block px-2 py-1 hover:underline"
+                >
+                  Contact Form
+                </Link>
+                <Link
+                  href="/contact/prayer-requests"
+                  className="block px-2 py-1 hover:underline"
+                >
+                  Prayer Requests
                 </Link>
               </div>
             )}
@@ -180,6 +239,30 @@ export default function Header() {
                   className="hover:underline"
                 >
                   Mission Statement
+                </Link>
+              </div>
+            )}
+          </div>
+          <div>
+            <button
+              type="button"
+              className="hover:underline"
+              aria-haspopup="menu"
+              aria-expanded={mobileContactOpen}
+              onClick={() => setMobileContactOpen((o) => !o)}
+            >
+              Contact
+            </button>
+            {mobileContactOpen && (
+              <div className="ml-4 mt-2 flex flex-col gap-2">
+                <Link href="/contact" className="hover:underline">
+                  Contact Form
+                </Link>
+                <Link
+                  href="/contact/prayer-requests"
+                  className="hover:underline"
+                >
+                  Prayer Requests
                 </Link>
               </div>
             )}
