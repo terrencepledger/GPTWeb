@@ -1,4 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
+import type { CSSProperties } from "react";
 
 export type Sermon = {
   title: string;
@@ -10,9 +12,31 @@ export type Sermon = {
   href?: string;
 };
 
-export function SermonCard({ sermon }: { sermon: Sermon }) {
+export function SermonCard({
+  sermon,
+  backgroundImage,
+  backgroundColor,
+  cornerImage,
+}: {
+  sermon: Sermon;
+  backgroundImage?: string;
+  backgroundColor?: string;
+  cornerImage?: string;
+}) {
+  const style: CSSProperties = {};
+  if (backgroundImage) {
+    style.backgroundImage = `url(${backgroundImage})`;
+    style.backgroundSize = "cover";
+    style.backgroundPosition = "center";
+  }
+  if (backgroundColor) {
+    style.backgroundColor = backgroundColor;
+  }
   return (
-    <div className="card flex h-full flex-col">
+    <div
+      className="card relative flex h-full flex-col overflow-hidden rounded-lg"
+      style={style}
+    >
       <div className="flex flex-1 flex-col p-4">
         <h3 className="text-lg font-semibold">{sermon.title}</h3>
         <p className="mt-1 text-sm text-gray-600">
@@ -51,6 +75,15 @@ export function SermonCard({ sermon }: { sermon: Sermon }) {
           </div>
         )}
       </div>
+      {cornerImage && (
+        <Image
+          src={cornerImage}
+          alt=""
+          width={64}
+          height={64}
+          className="absolute bottom-4 right-4 h-16 w-16 object-cover"
+        />
+      )}
     </div>
   );
 }

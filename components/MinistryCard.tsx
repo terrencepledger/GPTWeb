@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { CSSProperties } from "react";
 
 export type Ministry = {
   name: string;
@@ -8,9 +9,31 @@ export type Ministry = {
   href?: string;
 };
 
-export function MinistryCard({ ministry }: { ministry: Ministry }) {
+export function MinistryCard({
+  ministry,
+  backgroundImage,
+  backgroundColor,
+  cornerImage,
+}: {
+  ministry: Ministry;
+  backgroundImage?: string;
+  backgroundColor?: string;
+  cornerImage?: string;
+}) {
+  const style: CSSProperties = {};
+  if (backgroundImage) {
+    style.backgroundImage = `url(${backgroundImage})`;
+    style.backgroundSize = "cover";
+    style.backgroundPosition = "center";
+  }
+  if (backgroundColor) {
+    style.backgroundColor = backgroundColor;
+  }
   return (
-    <div className="card flex h-full flex-col">
+    <div
+      className="card relative flex h-full flex-col overflow-hidden rounded-lg"
+      style={style}
+    >
       {ministry.image && (
         <Image
           src={ministry.image}
@@ -34,6 +57,15 @@ export function MinistryCard({ ministry }: { ministry: Ministry }) {
           </Link>
         )}
       </div>
+      {cornerImage && (
+        <Image
+          src={cornerImage}
+          alt=""
+          width={64}
+          height={64}
+          className="absolute bottom-4 right-4 h-16 w-16 object-cover"
+        />
+      )}
     </div>
   );
 }
