@@ -5,31 +5,30 @@ export interface Event {
   _id: string;
   title: string;
   date: string;
-  slug: {current: string};
+  description: string;
 }
 
 export const eventsUpcoming = (limit: number) =>
   sanity.fetch<Event[]>(
-    groq`*[_type == "event" && date >= now()] | order(date asc)[0...$limit]{_id, title, date, slug}`,
+    groq`*[_type == "event" && date >= now()] | order(date asc)[0...$limit]{_id, title, date, description}`,
     {limit}
   );
 
 export interface Sermon {
   _id: string;
   title: string;
-  date: string;
-  slug: {current: string};
-  videoUrl?: string;
+  speaker: string;
+  passage?: string;
 }
 
 export const sermonLatest = () =>
-  sanity.fetch<Sermon>(
-    groq`*[_type == "sermon"] | order(date desc)[0]{_id, title, date, slug, videoUrl}`
+  sanity.fetch<Sermon | null>(
+    groq`*[_type == "sermon"] | order(_createdAt desc)[0]{_id, title, speaker, "passage": scripture}`
   );
 
 export const sermonsPage = (offset: number, limit: number) =>
   sanity.fetch<Sermon[]>(
-    groq`*[_type == "sermon"] | order(date desc)[$offset...$end]{_id, title, date, slug, videoUrl}`,
+    groq`*[_type == "sermon"] | order(_createdAt desc)[$offset...$end]{_id, title, speaker, "passage": scripture}`,
     {offset, end: offset + limit}
   );
 
@@ -37,23 +36,24 @@ export interface Staff {
   _id: string;
   name: string;
   role: string;
-  image?: any;
+  image?: string;
 }
 
 export const staffAll = () =>
   sanity.fetch<Staff[]>(
-    groq`*[_type == "staff"] | order(name asc){_id, name, role, image}`
+    groq`*[_type == "staff"] | order(name asc){_id, name, role, "image": image.asset->url}`
   );
 
 export interface Announcement {
   _id: string;
+  title: string;
   message: string;
-  active: boolean;
+  publishedAt: string;
 }
 
-export const announcementActive = () =>
+export const announcementLatest = () =>
   sanity.fetch<Announcement | null>(
-    groq`*[_type == "announcement" && active == true][0]{_id, message, active}`
+    groq`*[_type == "announcement"] | order(publishedAt desc)[0]{_id, title, "message": body, publishedAt}`
   );
 
 export interface SiteSettings {
