@@ -1,10 +1,9 @@
-import Image from "next/image";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 
 export type Sermon = {
   title: string;
-  date: string;
+  date?: string;
   speaker?: string;
   passage?: string;
   description?: string;
