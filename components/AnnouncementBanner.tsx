@@ -15,7 +15,7 @@ export default function AnnouncementBanner({
     if (typeof window === "undefined") return;
     const stored = localStorage.getItem("announcement-dismissed");
     if (stored === "true") {
-      setDismissed(true);
+      // setDismissed(true);
     }
   }, []);
 
@@ -31,12 +31,23 @@ export default function AnnouncementBanner({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-md bg-indigo-600 px-4 py-3 pr-10 text-center text-sm text-white">
-      <p className="inline-block whitespace-nowrap animate-marquee">{message}</p>
+    <div className="relative overflow-hidden rounded-md bg-indigo-600 px-4 py-3 pr-4 text-center text-sm text-white">
+      <div className="mr-4 overflow-hidden">
+        <div className="inline-flex animate-marquee whitespace-nowrap [--marquee-gap:6rem]">
+          <span className="pr-[var(--marquee-gap)]">{message}</span>
+          <span className="pr-[var(--marquee-gap)]">{message}</span>
+        </div>
+      </div>
+
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute right-8 top-0 h-full w-10 bg-gradient-to-l from-indigo-600 to-indigo-600/0"
+      />
+
       <button
         type="button"
         aria-label="Dismiss announcement"
-        className="absolute right-2 top-1/2 -translate-y-1/2 text-xl leading-none"
+        className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer text-xl leading-none z-10"
         onClick={handleDismiss}
       >
         ×
