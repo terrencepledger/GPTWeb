@@ -31,8 +31,8 @@ export default function AnnouncementBanner({
   }
 
   return (
-    <div className="relative bg-indigo-600 px-4 py-2 text-center text-sm text-white">
-      <span>{message}</span>
+    <div className="relative rounded-md bg-indigo-600 px-4 py-3 pr-10 text-center text-sm text-white">
+      <p className="overflow-x-auto whitespace-nowrap">{message}</p>
       <button
         type="button"
         aria-label="Dismiss announcement"
