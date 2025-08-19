@@ -19,3 +19,27 @@
     @apply pointer-events-none absolute inset-0 bg-black/30 dark:bg-black/60;
   }
 }
+
+@layer utilities {
+  /* Marquee starts on-screen and loops seamlessly with duplicated content */
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-marquee {
+    animation: marquee 20s linear infinite;
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-marquee {
+      animation-duration: 0.01ms;
+      animation-iteration-count: 1;
+    }
+  }
+}
