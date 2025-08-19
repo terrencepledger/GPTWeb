@@ -13,12 +13,10 @@ export function MinistryCard({
   ministry,
   backgroundImage,
   backgroundColor,
-  cornerImage,
 }: {
   ministry: Ministry;
   backgroundImage?: string;
   backgroundColor?: string;
-  cornerImage?: string;
 }) {
   const style: CSSProperties = {};
   if (backgroundImage) {
@@ -57,15 +55,6 @@ export function MinistryCard({
           </Link>
         )}
       </div>
-      {cornerImage && (
-        <Image
-          src={cornerImage}
-          alt=""
-          width={64}
-          height={64}
-          className="absolute bottom-4 right-4 h-16 w-16 object-cover"
-        />
-      )}
     </div>
   );
 }

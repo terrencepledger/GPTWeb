@@ -16,12 +16,10 @@ export function SermonCard({
   sermon,
   backgroundImage,
   backgroundColor,
-  cornerImage,
 }: {
   sermon: Sermon;
   backgroundImage?: string;
   backgroundColor?: string;
-  cornerImage?: string;
 }) {
   const style: CSSProperties = {};
   if (backgroundImage) {
@@ -75,15 +73,6 @@ export function SermonCard({
           </div>
         )}
       </div>
-      {cornerImage && (
-        <Image
-          src={cornerImage}
-          alt=""
-          width={64}
-          height={64}
-          className="absolute bottom-4 right-4 h-16 w-16 object-cover"
-        />
-      )}
     </div>
   );
 }

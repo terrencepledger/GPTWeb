@@ -15,12 +15,10 @@ export function EventCard({
   event,
   backgroundImage,
   backgroundColor,
-  cornerImage,
 }: {
   event: Event;
   backgroundImage?: string;
   backgroundColor?: string;
-  cornerImage?: string;
 }) {
   const style: CSSProperties = {};
   if (backgroundImage) {
@@ -65,15 +63,6 @@ export function EventCard({
           </Link>
         )}
       </div>
-      {cornerImage && (
-        <Image
-          src={cornerImage}
-          alt=""
-          width={64}
-          height={64}
-          className="absolute bottom-4 right-4 h-16 w-16 object-cover"
-        />
-      )}
     </div>
   );
 }
