@@ -2,7 +2,7 @@
 // in the auto-generated import within .sanity/runtime/app.js on Windows.
 // It does not affect runtime behavior; it only informs the editor/TS language service
 // that this module specifier exists and has a default export of any type.
-declare module "..\\..\\sanity.config.js" {
+declare module "../../sanity.config.js" {
   const config: any
   export default config
 }
