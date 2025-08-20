@@ -31,4 +31,11 @@ export default defineConfig({
         }),
         visionTool(),
     ],
+    // Hide the Vision tool for non-admin users (e.g., editors)
+    // currentUser is available in the context when using a function form of `tools`
+    tools: (prev, context) => {
+        const roles = context.currentUser?.roles?.map(r => r.name) || [];
+        const isAdmin = roles.includes('administrator') || roles.includes('developer');
+        return isAdmin ? prev : prev.filter(tool => tool.name !== 'vision');
+    },
 })
