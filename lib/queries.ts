@@ -1,4 +1,4 @@
-import {groq} from 'next-sanity';
+import groq from 'groq';
 import {sanity} from './sanity';
 
 export interface Event {
