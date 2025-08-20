@@ -29,9 +29,13 @@ export default async function Page() {
     { label: "Giving", href: "/giving" },
   ];
 
+  const headline = settings?.title ?? "Welcome";
+  const subline = settings?.description ?? "";
+  const address = settings?.address ?? "";
+
   return (
     <div className="space-y-12">
-      <Hero headline={settings.title} subline={settings.description} />
+      <Hero headline={headline} subline={subline} />
       <QuickActions actions={actions} />
       {announcement && <AnnouncementBanner message={announcement.message} />}
       <section>
@@ -50,7 +54,7 @@ export default async function Page() {
           ))}
         </div>
       </section>
-      <MapBlock address={settings.address} />
+      <MapBlock address={address} />
     </div>
   );
 }
