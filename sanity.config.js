@@ -10,6 +10,7 @@ import sermon from './sanity/schemas/sermon'
 import service from './sanity/schemas/service'
 import siteSettings from './sanity/schemas/siteSettings'
 import staff from './sanity/schemas/staff'
+import ministry from './sanity/schemas/ministry'
 
 // Desk structure
 import {structure} from './sanity/deskStructure'
@@ -19,9 +20,9 @@ export default defineConfig({
     name: 'default',
     title: 'GPTWeb Studio',
     projectId: import.meta.env.SANITY_STUDIO_PROJECT_ID,
-    dataset: import.meta.env.SANITY_STUDIO_DATASET || 'production',
+    dataset: import.meta.env.SANITY_STUDIO_DATASET,
     schema: {
-        types: [announcement, event, sermon, service, siteSettings, staff],
+        types: [announcement, event, sermon, service, siteSettings, staff, ministry],
     },
     plugins: [
         structureTool({
