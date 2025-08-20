@@ -1,13 +1,13 @@
 import { defineField, defineType } from 'sanity';
 
 export default defineType({
-  name: 'siteSettings',
-  title: 'Site Settings',
+  name: 'ministry',
+  title: 'Ministry',
   type: 'document',
   fields: [
     defineField({
-      name: 'title',
-      title: 'Title',
+      name: 'name',
+      title: 'Name',
       type: 'string',
       validation: (Rule) => Rule.required(),
     }),
@@ -18,15 +18,10 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'address',
-      title: 'Address',
-      type: 'string',
-    }),
-    defineField({
-      name: 'serviceTimes',
-      title: 'Service Times',
-      type: 'string',
-      description: 'e.g., Sundays 9am & 11am; Wednesdays 7pm',
+      name: 'image',
+      title: 'Image',
+      type: 'image',
+      options: { hotspot: true },
     }),
   ],
 });
