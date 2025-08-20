@@ -1,0 +1,12 @@
+{
+  "name": "GPTWeb Studio",
+  "short_name": "GPTWeb",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0ea5e9",
+  "icons": [
+    {"src": "/static/favicon.svg", "sizes": "64x64", "type": "image/svg+xml"},
+    {"src": "/static/apple-touch-icon.png", "sizes": "180x180", "type": "image/png"}
+  ]
+}

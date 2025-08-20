@@ -1,4 +1,4 @@
-import {groq} from 'next-sanity';
+import groq from 'groq';
 import {sanity} from './sanity';
 
 export interface Event {
@@ -60,10 +60,25 @@ export interface SiteSettings {
   _id: string;
   title: string;
   description?: string;
+  address?: string;
+  serviceTimes?: string;
 }
 
 export const siteSettings = () =>
-  sanity.fetch<SiteSettings>(
-    groq`*[_type == "siteSettings"][0]{_id, title, description}`
+  sanity.fetch<SiteSettings | null>(
+    groq`*[_type == "siteSettings"][0]{_id, title, description, address, serviceTimes}`
+  );
+
+export interface Ministry {
+  _id: string;
+  name: string;
+  description: string;
+  image?: string;
+}
+
+export const ministriesHighlights = (limit: number) =>
+  sanity.fetch<Ministry[]>(
+    groq`*[_type == "ministry"] | order(_createdAt desc)[0...$limit]{_id, name, description, "image": image.asset->url}`,
+    {limit}
   );
 
