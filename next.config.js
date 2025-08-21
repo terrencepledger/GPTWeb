@@ -13,6 +13,11 @@ const nextConfig = {
         hostname: "maps.googleapis.com",
         pathname: "/maps/api/**",
       },
+      {
+        protocol: "https",
+        hostname: "cdn.sanity.io",
+        pathname: "/images/**",
+      },
     ],
   },
 };
