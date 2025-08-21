@@ -82,3 +82,8 @@ export const ministriesHighlights = (limit: number) =>
     {limit}
   );
 
+export const ministriesAll = () =>
+  sanity.fetch<Ministry[]>(
+    groq`*[_type == "ministry"] | order(name asc){_id, name, description, "image": image.asset->url}`
+  );
+
