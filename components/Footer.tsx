@@ -107,7 +107,7 @@ export default async function Footer() {
               <input
                 type="email"
                 placeholder="Email address"
-                className="flex-1 rounded px-2 py-1 text-gray-900"
+                className="flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-gray-900 placeholder-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
               />
             </form>
           </div>
