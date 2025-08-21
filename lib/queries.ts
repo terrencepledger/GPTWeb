@@ -6,12 +6,26 @@ export interface Event {
   title: string;
   date: string;
   description: string;
+  location?: string;
+  image?: string;
+  slug?: string;
 }
 
 export const eventsUpcoming = (limit: number) =>
   sanity.fetch<Event[]>(
-    groq`*[_type == "event" && date >= now()] | order(date asc)[0...$limit]{_id, title, date, description}`,
+    groq`*[_type == "event" && date >= now()] | order(date asc)[0...$limit]{_id, title, date, description, location, "image": image.asset->url, "slug": slug.current}`,
     {limit}
+  );
+
+export const eventsAll = () =>
+  sanity.fetch<Event[]>(
+    groq`*[_type == "event"] | order(date asc){_id, title, date, description, location, "image": image.asset->url, "slug": slug.current}`
+  );
+
+export const eventBySlug = (slug: string) =>
+  sanity.fetch<Event | null>(
+    groq`*[_type == "event" && slug.current == $slug][0]{_id, title, date, description, location, "image": image.asset->url, "slug": slug.current}`,
+    { slug }
   );
 
 export interface Sermon {
