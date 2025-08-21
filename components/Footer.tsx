@@ -1,29 +1,10 @@
 import Link from "next/link";
-
-export type SiteSettings = {
-  address: string;
-  serviceTimes: string;
-};
-
-async function getSiteSettings(): Promise<SiteSettings> {
-  const url = process.env.NEXT_PUBLIC_CMS_URL
-    ? `${process.env.NEXT_PUBLIC_CMS_URL}/api/site-settings`
-    : null;
-  if (!url) {
-    return {
-      address: "123 Main St, Hometown, ST 12345",
-      serviceTimes: "Sundays 10:00 AM",
-    };
-  }
-  const res = await fetch(url, { next: { revalidate: 60 } });
-  if (!res.ok) {
-    throw new Error("Failed to fetch SiteSettings");
-  }
-  return res.json();
-}
+import { siteSettings as fetchSiteSettings } from "../lib/queries";
 
 export default async function Footer() {
-  const { address, serviceTimes } = await getSiteSettings();
+  const settings = await fetchSiteSettings();
+  const address = settings?.address ?? "864 Splitlog Ave., Kansas City, KS 66101";
+  const serviceTimes = settings?.serviceTimes ?? "Sundays 10:30 AM and Wednesdays 7:00 PM";
   const year = new Date().getFullYear();
 
   return (
@@ -126,7 +107,7 @@ export default async function Footer() {
               <input
                 type="email"
                 placeholder="Email address"
-                className="flex-1 rounded px-2 py-1 text-gray-900"
+                className="flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-gray-900 placeholder-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
               />
             </form>
           </div>

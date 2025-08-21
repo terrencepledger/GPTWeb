@@ -11,11 +11,13 @@ export interface Event {
   slug?: string;
 }
 
-export const eventsUpcoming = (limit: number) =>
-  sanity.fetch<Event[]>(
-    groq`*[_type == "event" && date >= now()] | order(date asc)[0...$limit]{_id, title, date, description, location, "image": image.asset->url, "slug": slug.current}`,
-    {limit}
+export const eventsUpcoming = (limit: number) => {
+  const now = new Date().toISOString();
+  return sanity.fetch<Event[]>(
+    groq`*[_type == "event" && date >= $now] | order(date asc)[0...$limit]{_id, title, date, description, location, "image": image.asset->url, "slug": slug.current}`,
+    { limit, now }
   );
+}
 
 export const eventsAll = () =>
   sanity.fetch<Event[]>(
@@ -94,5 +96,10 @@ export const ministriesHighlights = (limit: number) =>
   sanity.fetch<Ministry[]>(
     groq`*[_type == "ministry"] | order(_createdAt desc)[0...$limit]{_id, name, description, "image": image.asset->url}`,
     {limit}
+  );
+
+export const ministriesAll = () =>
+  sanity.fetch<Ministry[]>(
+    groq`*[_type == "ministry"] | order(name asc){_id, name, description, "image": image.asset->url}`
   );
 
