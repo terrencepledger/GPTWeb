@@ -43,13 +43,13 @@ export function MinistryCard({
       )}
       <div className="flex flex-1 flex-col p-4">
         <h3 className="text-lg font-semibold">{ministry.name}</h3>
-        <p className="mt-2 flex-1 text-sm text-gray-700">
+        <p className="mt-2 flex-1 text-sm text-gray-700 dark:text-gray-300">
           {ministry.description}
         </p>
         {ministry.href && (
           <Link
             href={ministry.href}
-            className="mt-4 text-sm font-medium text-blue-600 hover:underline"
+            className="mt-4 text-sm font-medium text-blue-600 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
           >
             Learn more
           </Link>

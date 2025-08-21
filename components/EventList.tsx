@@ -2,7 +2,7 @@ import { Event, EventCard } from "./EventCard";
 
 export function EventList({ events }: { events: Event[] }) {
   if (events.length === 0) {
-    return <p className="text-sm text-gray-600">No events found.</p>;
+    return <p className="text-sm text-gray-600 dark:text-gray-400">No events found.</p>;
   }
 
   return (
