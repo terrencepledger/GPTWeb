@@ -1,29 +1,10 @@
 import Link from "next/link";
-
-export type SiteSettings = {
-  address: string;
-  serviceTimes: string;
-};
-
-async function getSiteSettings(): Promise<SiteSettings> {
-  const url = process.env.NEXT_PUBLIC_CMS_URL
-    ? `${process.env.NEXT_PUBLIC_CMS_URL}/api/site-settings`
-    : null;
-  if (!url) {
-    return {
-      address: "123 Main St, Hometown, ST 12345",
-      serviceTimes: "Sundays 10:00 AM",
-    };
-  }
-  const res = await fetch(url, { next: { revalidate: 60 } });
-  if (!res.ok) {
-    throw new Error("Failed to fetch SiteSettings");
-  }
-  return res.json();
-}
+import { siteSettings as fetchSiteSettings } from "../lib/queries";
 
 export default async function Footer() {
-  const { address, serviceTimes } = await getSiteSettings();
+  const settings = await fetchSiteSettings();
+  const address = settings?.address ?? "864 Splitlog Ave., Kansas City, KS 66101";
+  const serviceTimes = settings?.serviceTimes ?? "Sundays 10:30 AM and Wednesdays 7:00 PM";
   const year = new Date().getFullYear();
 
   return (
