@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 
 export type Event = {
+  _id: string;
   title: string;
   date: string;
   location?: string;
