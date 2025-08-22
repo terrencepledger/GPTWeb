@@ -17,3 +17,15 @@ a {
 img {
   @apply dark:brightness-90 dark:contrast-125;
 }
+
+/* Prevent layout shift when content height changes and scrollbar appears/disappears */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* Fallback for browsers that don't support scrollbar-gutter */
+@supports not (scrollbar-gutter: stable) {
+  html {
+    overflow-y: scroll;
+  }
+}
