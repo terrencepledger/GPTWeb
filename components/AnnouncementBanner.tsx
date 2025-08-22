@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 
+// Styled with the brand color palette defined in tailwind.config.js.
+
 type AnnouncementBannerProps = {
   message: string;
 };
@@ -31,7 +33,7 @@ export default function AnnouncementBanner({
   }
 
   return (
-    <div className="relative overflow-hidden rounded-md bg-indigo-600 px-4 py-3 pr-4 text-center text-sm text-white">
+    <div className="relative overflow-hidden rounded-md bg-brand-purple px-4 py-3 pr-4 text-center text-sm text-white">
       <div className="mr-4 overflow-hidden">
         <div className="inline-flex animate-marquee whitespace-nowrap [--marquee-gap:6rem]">
           <span className="pr-[var(--marquee-gap)]">{message}</span>
@@ -41,7 +43,7 @@ export default function AnnouncementBanner({
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute right-8 top-0 h-full w-10 bg-gradient-to-l from-indigo-600 to-indigo-600/0"
+        className="pointer-events-none absolute right-8 top-0 h-full w-10 bg-gradient-to-l from-brand-purple to-brand-purple/0"
       />
 
       <button

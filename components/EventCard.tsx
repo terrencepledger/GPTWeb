@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 
+// Links use the brand palette defined in tailwind.config.js.
+
 export type Event = {
   title: string;
   date: string;
@@ -57,7 +59,7 @@ export function EventCard({
         {event.href && (
           <Link
             href={event.href}
-            className="mt-4 text-sm font-medium text-blue-600 hover:underline"
+            className="mt-4 text-sm font-medium text-brand-purple hover:underline hover:text-brand-purpleLt active:text-brand-purpleLt"
           >
             Learn more
           </Link>

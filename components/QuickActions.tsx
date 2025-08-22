@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+// Quick action buttons use the brand color palette defined in tailwind.config.js.
 export type QuickAction = {
   label: string;
   href: string;
@@ -12,7 +13,7 @@ export default function QuickActions({ actions }: { actions: QuickAction[] }) {
         <Link
           key={action.href}
           href={action.href}
-          className="rounded bg-indigo-600 px-4 py-2 text-center font-medium text-white hover:bg-indigo-700"
+          className="rounded bg-brand-purple px-4 py-2 text-center font-medium text-white hover:bg-brand-purpleLt active:bg-brand-purpleLt"
         >
           {action.label}
         </Link>

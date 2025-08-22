@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
 
+// Action links use brand colors from tailwind.config.js.
+
 export type Sermon = {
   title: string;
   date?: string;
@@ -55,7 +57,7 @@ export function SermonCard({
             {sermon.audioUrl && (
               <a
                 href={sermon.audioUrl}
-                className="text-sm font-medium text-blue-600 hover:underline"
+                className="text-sm font-medium text-brand-purple hover:underline hover:text-brand-purpleLt active:text-brand-purpleLt"
               >
                 Listen
               </a>
@@ -64,7 +66,7 @@ export function SermonCard({
             {sermon.href && (
               <Link
                 href={sermon.href}
-                className="text-sm font-medium text-blue-600 hover:underline"
+                className="text-sm font-medium text-brand-purple hover:underline hover:text-brand-purpleLt active:text-brand-purpleLt"
               >
                 Details
               </Link>

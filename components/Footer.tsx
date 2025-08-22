@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+// Footer links reference the brand palette defined in tailwind.config.js.
+
 export type SiteSettings = {
   address: string;
   serviceTimes: string;
@@ -41,27 +43,27 @@ export default async function Footer() {
             <h4 className="mb-3 font-semibold text-white">Quick Links</h4>
             <ul className="space-y-1">
               <li>
-                <Link className="text-indigo-200 hover:underline" href="/visit">
+                <Link className="text-brand-purpleLt hover:underline hover:text-brand-purple active:text-brand-purple" href="/visit">
                   Visit
                 </Link>
               </li>
               <li>
-                <Link className="text-indigo-200 hover:underline" href="/events">
+                <Link className="text-brand-purpleLt hover:underline hover:text-brand-purple active:text-brand-purple" href="/events">
                   Events
                 </Link>
               </li>
               <li>
-                <Link className="text-indigo-200 hover:underline" href="/livestreams">
+                <Link className="text-brand-purpleLt hover:underline hover:text-brand-purple active:text-brand-purple" href="/livestreams">
                   Livestreams
                 </Link>
               </li>
               <li>
-                <Link className="text-indigo-200 hover:underline" href="/ministries">
+                <Link className="text-brand-purpleLt hover:underline hover:text-brand-purple active:text-brand-purple" href="/ministries">
                   Ministries
                 </Link>
               </li>
               <li>
-                <Link className="text-indigo-200 hover:underline" href="/giving">
+                <Link className="text-brand-purpleLt hover:underline hover:text-brand-purple active:text-brand-purple" href="/giving">
                   Giving
                 </Link>
               </li>

@@ -1,6 +1,8 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
 
+// Email link uses brand colors defined in tailwind.config.js.
+
 export type Staff = {
   name: string;
   role: string;
@@ -46,7 +48,7 @@ export function StaffCard({
         {staff.email && (
           <a
             href={`mailto:${staff.email}`}
-            className="mt-2 block text-sm font-medium text-blue-600 hover:underline"
+            className="mt-2 block text-sm font-medium text-brand-purple hover:underline hover:text-brand-purpleLt active:text-brand-purpleLt"
           >
             {staff.email}
           </a>
