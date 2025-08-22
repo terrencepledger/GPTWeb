@@ -2,8 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 
-// Link colors follow the brand palette in tailwind.config.js.
-
 export type Ministry = {
   name: string;
   description: string;
@@ -45,7 +43,7 @@ export function MinistryCard({
       )}
       <div className="flex flex-1 flex-col p-4">
         <h3 className="text-lg font-semibold">{ministry.name}</h3>
-        <p className="mt-2 flex-1 text-sm text-gray-700">
+        <p className="mt-2 flex-1 text-sm text-gray-700 dark:text-gray-300">
           {ministry.description}
         </p>
         {ministry.href && (

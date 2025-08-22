@@ -1,31 +1,11 @@
 import Link from "next/link";
-
-// Footer links reference the brand palette defined in tailwind.config.js.
-
-export type SiteSettings = {
-  address: string;
-  serviceTimes: string;
-};
-
-async function getSiteSettings(): Promise<SiteSettings> {
-  const url = process.env.NEXT_PUBLIC_CMS_URL
-    ? `${process.env.NEXT_PUBLIC_CMS_URL}/api/site-settings`
-    : null;
-  if (!url) {
-    return {
-      address: "123 Main St, Hometown, ST 12345",
-      serviceTimes: "Sundays 10:00 AM",
-    };
-  }
-  const res = await fetch(url, { next: { revalidate: 60 } });
-  if (!res.ok) {
-    throw new Error("Failed to fetch SiteSettings");
-  }
-  return res.json();
-}
+import { siteSettings } from "@/lib/queries";
 
 export default async function Footer() {
-  const { address, serviceTimes } = await getSiteSettings();
+  const settings = await siteSettings();
+  const title = settings?.title ?? "Example Church";
+  const address = settings?.address ?? "123 Main St, Hometown, ST 12345";
+  const serviceTimes = settings?.serviceTimes ?? "Sundays 10:00 AM";
   const year = new Date().getFullYear();
 
   return (
@@ -33,11 +13,29 @@ export default async function Footer() {
       <div className="mx-auto max-w-5xl px-4 py-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div>
-            <h4 className="mb-3 font-semibold text-white">Example Church</h4>
-            <p>{address}</p>
-            <p className="mt-2">
-              <strong>Service Times:</strong> {serviceTimes}
+            <h4 className="mb-3 font-semibold text-white">{title}</h4>
+            <p>
+              <a
+                href={`https://www.google.com/maps?q=${encodeURIComponent(address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-200 hover:underline"
+              >
+                {address}
+              </a>
             </p>
+            <div className="mt-2">
+              <strong>Service Times:</strong>
+              <div className="mt-1 space-y-1">
+                {serviceTimes
+                  .split(/[,;\n|]+/)
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+                  .map((line, idx) => (
+                    <div key={idx}>{line}</div>
+                  ))}
+              </div>
+            </div>
           </div>
           <div>
             <h4 className="mb-3 font-semibold text-white">Quick Links</h4>
@@ -128,13 +126,13 @@ export default async function Footer() {
               <input
                 type="email"
                 placeholder="Email address"
-                className="flex-1 rounded px-2 py-1 text-gray-900"
+                className="flex-1 rounded border border-gray-300 bg-white px-2 py-1 text-gray-900 placeholder-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-400 dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
               />
             </form>
           </div>
         </div>
         <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-gray-700 pt-4 text-sm text-gray-400 md:flex-row">
-          <div>© {year} Example Church</div>
+          <div>© {year} {title}</div>
           <div className="flex gap-3">
             <Link className="hover:underline" href="/privacy">
               Privacy

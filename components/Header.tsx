@@ -4,13 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export default function Header() {
+export default function Header({ initialTitle }: { initialTitle?: string }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
   const [mobileContactOpen, setMobileContactOpen] = useState(false);
+  const [siteTitle] = useState(initialTitle ?? "Example Church");
   const menuRef = useRef<HTMLDivElement>(null);
   const aboutTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const contactTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -20,7 +21,7 @@ export default function Header() {
     { href: "/events", label: "Events" },
     { href: "/livestreams", label: "Livestreams" },
     { href: "/giving", label: "Giving" },
-  ];
+  ]
 
   const handleAboutEnter = () => {
     if (aboutTimeoutRef.current) clearTimeout(aboutTimeoutRef.current);
@@ -83,13 +84,13 @@ export default function Header() {
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-10 border-b border-gray-200 bg-white">
+    <header className="sticky top-0 z-10 border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950">
       <div className="relative mx-auto flex h-16 max-w-5xl items-center px-4">
-        <Link href="/" className="font-bold text-gray-900">
-          Example Church
+        <Link href="/" className="font-bold text-gray-900 dark:text-white">
+          {siteTitle}
         </Link>
         <nav
-          className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-4 text-sm font-medium md:flex"
+          className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-4 text-sm font-medium text-gray-700 dark:text-gray-300 md:flex"
         >
           <Link href="/" className="hover:underline">
             Home
@@ -114,7 +115,7 @@ export default function Header() {
               About
             </button>
             {aboutOpen && (
-              <div className="absolute left-0 top-full mt-2 w-48 rounded border bg-white p-2 shadow">
+              <div className="absolute left-0 top-full mt-2 w-48 rounded border bg-white p-2 shadow dark:border-gray-700 dark:bg-gray-900">
                 <Link
                   href="/about/staff"
                   className="block px-2 py-1 hover:underline"
@@ -150,7 +151,7 @@ export default function Header() {
               Contact
             </button>
             {contactOpen && (
-              <div className="absolute left-0 top-full mt-2 w-48 rounded border bg-white p-2 shadow">
+              <div className="absolute left-0 top-full mt-2 w-48 rounded border bg-white p-2 shadow dark:border-gray-700 dark:bg-gray-900">
                 <Link
                   href="/contact"
                   className="block px-2 py-1 hover:underline"
@@ -197,7 +198,7 @@ export default function Header() {
       />
       <div
         ref={menuRef}
-        className={`fixed right-0 top-0 h-full w-64 transform bg-white p-6 shadow transition-transform md:hidden ${
+        className={`fixed right-0 top-0 h-full w-64 transform bg-white p-6 shadow transition-transform md:hidden dark:bg-gray-900 ${
           menuOpen ? "translate-x-0" : "translate-x-full"
         }`}
         tabIndex={-1}
@@ -217,7 +218,7 @@ export default function Header() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-        <nav className="flex flex-col gap-4 text-base font-medium">
+        <nav className="flex flex-col gap-4 text-base font-medium text-gray-700 dark:text-gray-300">
           <Link href="/" className="hover:underline">
             Home
           </Link>
