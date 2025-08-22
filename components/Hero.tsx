@@ -27,7 +27,7 @@ export default function Hero({
           alt=""
           fill
           priority
-          className="absolute inset-0 -z-10 h-full w-full object-cover"
+          className="absolute inset-0 -z-10 h-full w-full object-cover opacity-30"
         />
       )}
       {backgroundGradient && (
@@ -41,7 +41,7 @@ export default function Hero({
         {cta && (
           <Link
             href={cta.href}
-            className="mt-8 inline-block rounded bg-white px-6 py-2 font-medium text-gray-900"
+            className="mt-8 inline-block rounded-md border border-[var(--brand-primary)] bg-[var(--brand-primary)] px-6 py-2 font-medium text-[var(--brand-primary-contrast)] shadow-sm hover:bg-[color:color-mix(in_oklab,var(--brand-primary)_85%,white_15%)]"
           >
             {cta.label}
           </Link>
