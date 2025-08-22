@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 export default function Header() {
@@ -11,6 +12,8 @@ export default function Header() {
   const [contactOpen, setContactOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
   const [mobileContactOpen, setMobileContactOpen] = useState(false);
+  const [siteTitle, setSiteTitle] = useState("Example Church");
+  const [logo, setLogo] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const aboutTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const contactTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -21,6 +24,21 @@ export default function Header() {
     { href: "/livestreams", label: "Livestreams" },
     { href: "/giving", label: "Giving" },
   ];
+
+  useEffect(() => {
+    const url = process.env.NEXT_PUBLIC_CMS_URL
+      ? `${process.env.NEXT_PUBLIC_CMS_URL}/api/site-settings`
+      : null;
+    if (!url) return;
+    fetch(url)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data) return;
+        if (data.title) setSiteTitle(data.title);
+        if (data.logo) setLogo(data.logo);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleAboutEnter = () => {
     if (aboutTimeoutRef.current) clearTimeout(aboutTimeoutRef.current);
@@ -86,7 +104,11 @@ export default function Header() {
     <header className="sticky top-0 z-10 border-b border-gray-200 bg-white">
       <div className="relative mx-auto flex h-16 max-w-5xl items-center px-4">
         <Link href="/" className="font-bold text-gray-900">
-          Example Church
+          {logo ? (
+            <Image src={logo} alt={siteTitle} width={120} height={40} />
+          ) : (
+            siteTitle
+          )}
         </Link>
         <nav
           className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-4 text-sm font-medium md:flex"

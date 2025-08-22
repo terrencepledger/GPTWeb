@@ -1,29 +1,13 @@
 import Link from "next/link";
-
-export type SiteSettings = {
-  address: string;
-  serviceTimes: string;
-};
-
-async function getSiteSettings(): Promise<SiteSettings> {
-  const url = process.env.NEXT_PUBLIC_CMS_URL
-    ? `${process.env.NEXT_PUBLIC_CMS_URL}/api/site-settings`
-    : null;
-  if (!url) {
-    return {
-      address: "123 Main St, Hometown, ST 12345",
-      serviceTimes: "Sundays 10:00 AM",
-    };
-  }
-  const res = await fetch(url, { next: { revalidate: 60 } });
-  if (!res.ok) {
-    throw new Error("Failed to fetch SiteSettings");
-  }
-  return res.json();
-}
+import Image from "next/image";
+import { siteSettings } from "../lib/queries";
 
 export default async function Footer() {
-  const { address, serviceTimes } = await getSiteSettings();
+  const settings = await siteSettings();
+  const title = settings?.title ?? "Example Church";
+  const logo = settings?.logo;
+  const address = settings?.address ?? "123 Main St, Hometown, ST 12345";
+  const serviceTimes = settings?.serviceTimes ?? "Sundays 10:00 AM";
   const year = new Date().getFullYear();
 
   return (
@@ -31,7 +15,17 @@ export default async function Footer() {
       <div className="mx-auto max-w-5xl px-4 py-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div>
-            <h4 className="mb-3 font-semibold text-white">Example Church</h4>
+            {logo ? (
+              <Image
+                src={logo}
+                alt={title}
+                width={120}
+                height={40}
+                className="mb-3"
+              />
+            ) : (
+              <h4 className="mb-3 font-semibold text-white">{title}</h4>
+            )}
             <p>{address}</p>
             <p className="mt-2">
               <strong>Service Times:</strong> {serviceTimes}
@@ -132,7 +126,7 @@ export default async function Footer() {
           </div>
         </div>
         <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-gray-700 pt-4 text-sm text-gray-400 md:flex-row">
-          <div>© {year} Example Church</div>
+          <div>© {year} {title}</div>
           <div className="flex gap-3">
             <Link className="hover:underline" href="/privacy">
               Privacy
