@@ -7,6 +7,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Project brand palette. Prefer these colors in components over Tailwind defaults.
         brand: {
           purple: "#5C30A6",
           purpleLt: "#B19CD9",

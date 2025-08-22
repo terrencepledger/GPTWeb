@@ -5,9 +5,9 @@ export type EventsShow = "upcoming" | "past" | "all";
 export default function EventsSegmentedTabs({ current }: { current: EventsShow }) {
   const itemBase =
     "flex-1 text-center select-none rounded-md px-3 py-2 text-sm transition-colors outline-2 outline-offset-2";
-  const active = " bg-blue-600 text-white outline-blue-600";
+  const active = " bg-[var(--brand-primary)] text-[var(--brand-primary-contrast)] outline-[var(--brand-accent)]";
   const inactive =
-    " bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700 outline-transparent";
+    " border border-[var(--brand-border)] bg-transparent text-[var(--brand-accent)] hover:bg-transparent outline-transparent";
 
   return (
     <div role="tablist" aria-label="Events views" className="w-full">
