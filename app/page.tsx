@@ -11,7 +11,7 @@ import {
   sermonLatest,
   siteSettings,
   ministriesHighlights,
-} from "../lib/queries";
+} from "@/lib/queries";
 
 export default async function Page() {
   const [announcement, events, sermon, settings, ministries] = await Promise.all([
@@ -35,7 +35,7 @@ export default async function Page() {
 
   return (
     <div className="space-y-12">
-      <Hero headline={headline} subline={subline} />
+      <Hero headline={headline} subline={subline} backgroundImage={settings?.logo} />
       <QuickActions actions={actions} />
       {announcement && <AnnouncementBanner message={announcement.message} />}
       <section>

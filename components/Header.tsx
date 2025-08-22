@@ -4,13 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export default function Header() {
+export default function Header({ initialTitle }: { initialTitle?: string }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
   const [mobileContactOpen, setMobileContactOpen] = useState(false);
+  const [siteTitle] = useState(initialTitle ?? "Example Church");
   const menuRef = useRef<HTMLDivElement>(null);
   const aboutTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const contactTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -20,7 +21,7 @@ export default function Header() {
     { href: "/events", label: "Events" },
     { href: "/livestreams", label: "Livestreams" },
     { href: "/giving", label: "Giving" },
-  ];
+  ]
 
   const handleAboutEnter = () => {
     if (aboutTimeoutRef.current) clearTimeout(aboutTimeoutRef.current);
@@ -85,8 +86,8 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-10 border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950">
       <div className="relative mx-auto flex h-16 max-w-5xl items-center px-4">
-        <Link href="/" className="font-bold text-gray-900 dark:text-gray-100">
-          Example Church
+        <Link href="/" className="font-bold text-gray-900 dark:text-white">
+          {siteTitle}
         </Link>
         <nav
           className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-4 text-sm font-medium text-gray-700 dark:text-gray-300 md:flex"

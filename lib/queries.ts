@@ -71,11 +71,12 @@ export interface SiteSettings {
   description?: string;
   address?: string;
   serviceTimes?: string;
+  logo?: string;
 }
 
 export const siteSettings = () =>
   sanity.fetch<SiteSettings | null>(
-    groq`*[_type == "siteSettings"][0]{_id, title, description, address, serviceTimes}`
+    groq`*[_type == "siteSettings"] | order(_updatedAt desc)[0]{_id, title, description, address, serviceTimes, "logo": logo.asset->url}`
   );
 
 export interface Ministry {

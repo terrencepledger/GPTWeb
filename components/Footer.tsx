@@ -1,10 +1,11 @@
 import Link from "next/link";
-import { siteSettings as fetchSiteSettings } from "../lib/queries";
+import { siteSettings } from "@/lib/queries";
 
 export default async function Footer() {
-  const settings = await fetchSiteSettings();
-  const address = settings?.address ?? "864 Splitlog Ave., Kansas City, KS 66101";
-  const serviceTimes = settings?.serviceTimes ?? "Sundays 10:30 AM and Wednesdays 7:00 PM";
+  const settings = await siteSettings();
+  const title = settings?.title ?? "Example Church";
+  const address = settings?.address ?? "123 Main St, Hometown, ST 12345";
+  const serviceTimes = settings?.serviceTimes ?? "Sundays 10:00 AM";
   const year = new Date().getFullYear();
 
   return (
@@ -12,11 +13,29 @@ export default async function Footer() {
       <div className="mx-auto max-w-5xl px-4 py-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div>
-            <h4 className="mb-3 font-semibold text-white">Example Church</h4>
-            <p>{address}</p>
-            <p className="mt-2">
-              <strong>Service Times:</strong> {serviceTimes}
+            <h4 className="mb-3 font-semibold text-white">{title}</h4>
+            <p>
+              <a
+                href={`https://www.google.com/maps?q=${encodeURIComponent(address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-200 hover:underline"
+              >
+                {address}
+              </a>
             </p>
+            <div className="mt-2">
+              <strong>Service Times:</strong>
+              <div className="mt-1 space-y-1">
+                {serviceTimes
+                  .split(/[,;\n|]+/)
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+                  .map((line, idx) => (
+                    <div key={idx}>{line}</div>
+                  ))}
+              </div>
+            </div>
           </div>
           <div>
             <h4 className="mb-3 font-semibold text-white">Quick Links</h4>
@@ -113,7 +132,7 @@ export default async function Footer() {
           </div>
         </div>
         <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-gray-700 pt-4 text-sm text-gray-400 md:flex-row">
-          <div>© {year} Example Church</div>
+          <div>© {year} {title}</div>
           <div className="flex gap-3">
             <Link className="hover:underline" href="/privacy">
               Privacy
