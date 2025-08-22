@@ -9,11 +9,10 @@ body {
 }
 
 a {
-  /* Inherit text color by default so links inside navs/footers match surrounding text.
-     Components that need colored links should add explicit text-* utilities locally. */
   @apply hover:underline;
 }
 
 img {
   @apply dark:brightness-90 dark:contrast-125;
 }
+
