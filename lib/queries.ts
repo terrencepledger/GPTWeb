@@ -6,11 +6,13 @@ export interface Event {
   title: string;
   date: string;
   description: string;
+  backgroundColor?: string;
+  backgroundImage?: string;
 }
 
 export const eventsUpcoming = (limit: number) =>
   sanity.fetch<Event[]>(
-    groq`*[_type == "event" && date >= now()] | order(date asc)[0...$limit]{_id, title, date, description}`,
+    groq`*[_type == "event" && date >= now()] | order(date asc)[0...$limit]{_id, title, date, description, backgroundColor, "backgroundImage": backgroundImage.asset->url}`,
     {limit}
   );
 
@@ -49,11 +51,13 @@ export interface Announcement {
   title: string;
   message: string;
   publishedAt: string;
+  backgroundColor?: string;
+  backgroundImage?: string;
 }
 
 export const announcementLatest = () =>
   sanity.fetch<Announcement | null>(
-    groq`*[_type == "announcement"] | order(publishedAt desc)[0]{_id, title, "message": body, publishedAt}`
+    groq`*[_type == "announcement"] | order(publishedAt desc)[0]{_id, title, "message": body, publishedAt, backgroundColor, "backgroundImage": backgroundImage.asset->url}`
   );
 
 export interface SiteSettings {

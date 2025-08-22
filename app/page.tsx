@@ -37,7 +37,13 @@ export default async function Page() {
     <div className="space-y-12">
       <Hero headline={headline} subline={subline} />
       <QuickActions actions={actions} />
-      {announcement && <AnnouncementBanner message={announcement.message} />}
+      {announcement && (
+        <AnnouncementBanner
+          message={announcement.message}
+          backgroundColor={announcement.backgroundColor}
+          backgroundImage={announcement.backgroundImage}
+        />
+      )}
       <section>
         <h2 className="mb-4 text-xl font-semibold">Upcoming Events</h2>
         <EventList events={events} />

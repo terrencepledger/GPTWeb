@@ -1,13 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 
 type AnnouncementBannerProps = {
   message: string;
+  backgroundColor?: string;
+  backgroundImage?: string;
 };
 
 export default function AnnouncementBanner({
   message,
+  backgroundColor,
+  backgroundImage,
 }: AnnouncementBannerProps) {
   const [dismissed, setDismissed] = useState(false);
 
@@ -30,8 +35,25 @@ export default function AnnouncementBanner({
     return null;
   }
 
+  const style: CSSProperties = {};
+  if (backgroundImage) {
+    style.backgroundImage = `url(${backgroundImage})`;
+    style.backgroundSize = "cover";
+    style.backgroundPosition = "center";
+  }
+  if (backgroundColor) {
+    style.backgroundColor = backgroundColor;
+  }
+
+  const gradientStyle: CSSProperties = {
+    background: `linear-gradient(to left, ${backgroundColor ?? "#4f46e5"}, transparent)`,
+  };
+
   return (
-    <div className="relative overflow-hidden rounded-md bg-indigo-600 px-4 py-3 pr-4 text-center text-sm text-white">
+    <div
+      className="relative overflow-hidden rounded-md px-4 py-3 pr-4 text-center text-sm text-white"
+      style={style}
+    >
       <div className="mr-4 overflow-hidden">
         <div className="inline-flex animate-marquee whitespace-nowrap [--marquee-gap:6rem]">
           <span className="pr-[var(--marquee-gap)]">{message}</span>
@@ -41,7 +63,8 @@ export default function AnnouncementBanner({
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute right-8 top-0 h-full w-10 bg-gradient-to-l from-indigo-600 to-indigo-600/0"
+        className="pointer-events-none absolute right-8 top-0 h-full w-10"
+        style={gradientStyle}
       />
 
       <button

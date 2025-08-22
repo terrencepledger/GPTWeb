@@ -9,25 +9,23 @@ export type Event = {
   description?: string;
   image?: string;
   href?: string;
+  backgroundImage?: string;
+  backgroundColor?: string;
 };
 
 export function EventCard({
   event,
-  backgroundImage,
-  backgroundColor,
 }: {
   event: Event;
-  backgroundImage?: string;
-  backgroundColor?: string;
 }) {
   const style: CSSProperties = {};
-  if (backgroundImage) {
-    style.backgroundImage = `url(${backgroundImage})`;
+  if (event.backgroundImage) {
+    style.backgroundImage = `url(${event.backgroundImage})`;
     style.backgroundSize = "cover";
     style.backgroundPosition = "center";
   }
-  if (backgroundColor) {
-    style.backgroundColor = backgroundColor;
+  if (event.backgroundColor) {
+    style.backgroundColor = event.backgroundColor;
   }
   return (
     <div
