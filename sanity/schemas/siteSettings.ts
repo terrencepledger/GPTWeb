@@ -15,6 +15,7 @@ export default defineType({
       name: 'logo',
       title: 'Logo',
       type: 'image',
+      options: { hotspot: true }
     }),
     defineField({
       name: 'description',

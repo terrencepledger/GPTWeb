@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { siteSettings } from "../lib/queries";
+import { siteSettings } from "@/lib/queries";
 
 export default async function Footer() {
   const settings = await siteSettings();
   const title = settings?.title ?? "Example Church";
-  const logo = settings?.logo;
   const address = settings?.address ?? "123 Main St, Hometown, ST 12345";
   const serviceTimes = settings?.serviceTimes ?? "Sundays 10:00 AM";
   const year = new Date().getFullYear();
@@ -14,21 +13,29 @@ export default async function Footer() {
       <div className="mx-auto max-w-5xl px-4 py-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div>
-            {logo ? (
-              <Image
-                src={logo}
-                alt={title}
-                width={120}
-                height={40}
-                className="mb-3"
-              />
-            ) : (
-              <h4 className="mb-3 font-semibold text-white">{title}</h4>
-            )}
-            <p>{address}</p>
-            <p className="mt-2">
-              <strong>Service Times:</strong> {serviceTimes}
+            <h4 className="mb-3 font-semibold text-white">{title}</h4>
+            <p>
+              <a
+                href={`https://www.google.com/maps?q=${encodeURIComponent(address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-200 hover:underline"
+              >
+                {address}
+              </a>
             </p>
+            <div className="mt-2">
+              <strong>Service Times:</strong>
+              <div className="mt-1 space-y-1">
+                {serviceTimes
+                  .split(/[,;\n|]+/)
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+                  .map((line, idx) => (
+                    <div key={idx}>{line}</div>
+                  ))}
+              </div>
+            </div>
           </div>
           <div>
             <h4 className="mb-3 font-semibold text-white">Quick Links</h4>
