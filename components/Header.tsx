@@ -84,15 +84,15 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-10 border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-950">
+    <header className="sticky top-0 z-10 border-b border-[var(--brand-border)] bg-[var(--brand-surface)]">
       <div className="relative mx-auto flex h-16 max-w-5xl items-center px-4">
-        <Link href="/" className="font-bold text-gray-900 dark:text-white">
+        <Link href="/" className="font-bold text-[var(--brand-surface-contrast)]">
           {siteTitle}
         </Link>
         <nav
-          className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-4 text-sm font-medium text-gray-700 dark:text-gray-300 md:flex"
+          className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-4 text-sm font-medium text-[var(--brand-muted)] md:flex"
         >
-          <Link href="/" className="hover:underline">
+          <Link href="/" className="hover:underline hover:text-[var(--brand-accent)]">
             Home
           </Link>
           <div
@@ -108,14 +108,14 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
           >
             <button
               type="button"
-              className="hover:underline"
+              className="hover:underline hover:text-[var(--brand-accent)]"
               aria-haspopup="menu"
               aria-expanded={aboutOpen}
             >
               About
             </button>
             {aboutOpen && (
-              <div className="absolute left-0 top-full mt-2 w-48 rounded border bg-white p-2 shadow dark:border-gray-700 dark:bg-gray-900">
+              <div className="absolute left-0 top-full mt-2 w-48 rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] p-2 shadow">
                 <Link
                   href="/about/staff"
                   className="block px-2 py-1 hover:underline"
@@ -144,14 +144,14 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
           >
             <button
               type="button"
-              className="hover:underline"
+              className="hover:underline hover:text-[var(--brand-accent)]"
               aria-haspopup="menu"
               aria-expanded={contactOpen}
             >
               Contact
             </button>
             {contactOpen && (
-              <div className="absolute left-0 top-full mt-2 w-48 rounded border bg-white p-2 shadow dark:border-gray-700 dark:bg-gray-900">
+              <div className="absolute left-0 top-full mt-2 w-48 rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] p-2 shadow">
                 <Link
                   href="/contact"
                   className="block px-2 py-1 hover:underline"
@@ -198,7 +198,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
       />
       <div
         ref={menuRef}
-        className={`fixed right-0 top-0 h-full w-64 transform bg-white p-6 shadow transition-transform md:hidden dark:bg-gray-900 ${
+        className={`fixed right-0 top-0 h-full w-64 transform bg-[var(--brand-surface)] p-6 shadow transition-transform md:hidden ${
           menuOpen ? "translate-x-0" : "translate-x-full"
         }`}
         tabIndex={-1}
@@ -218,7 +218,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-        <nav className="flex flex-col gap-4 text-base font-medium text-gray-700 dark:text-gray-300">
+        <nav className="flex flex-col gap-4 text-base font-medium text-[var(--brand-muted)]">
           <Link href="/" className="hover:underline">
             Home
           </Link>

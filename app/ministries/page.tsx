@@ -1,5 +1,5 @@
 import { MinistryCard } from "@/components/MinistryCard";
-import { ministriesAll, type Ministry } from "../../lib/queries";
+import { ministriesAll, type Ministry } from "@/lib/queries";
 
 export const metadata = { title: "Ministries" };
 export const revalidate = 0;
@@ -10,7 +10,7 @@ export default async function Page() {
     <div className="space-y-8">
       <section>
         <h1 className="text-2xl font-semibold">Ministries</h1>
-        <p className="mt-4 text-gray-700 dark:text-gray-300">
+        <p className="mt-4 text-[var(--brand-fg)]/90">
           Explore ways to grow and serve through the ministries of our church.
         </p>
       </section>

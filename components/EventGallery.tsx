@@ -14,8 +14,8 @@ export default function EventGallery({ events }: { events: GalleryEvent[] }) {
     return (
       <div className="w-full">
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="col-span-full w-full rounded-md bg-gray-50 p-8 text-center dark:bg-gray-800/50">
-            <p className="text-sm text-gray-600 dark:text-gray-400">No events found.</p>
+          <div className="col-span-full w-full rounded-md p-8 text-center">
+            <p className="text-sm text-[var(--brand-muted)]">No events found.</p>
           </div>
         </div>
       </div>
@@ -28,7 +28,7 @@ export default function EventGallery({ events }: { events: GalleryEvent[] }) {
         {events.map((ev) => (
           <article
             key={ev._id}
-            className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
+            className="group relative overflow-hidden rounded-lg border border-[var(--brand-border)] transition"
           >
             {ev.image && (
               <Image
@@ -40,13 +40,13 @@ export default function EventGallery({ events }: { events: GalleryEvent[] }) {
               />
             )}
             <div className="p-4">
-              <h3 className="text-base font-semibold">{ev.title}</h3>
-              <p className="mt-1 text-xs text-gray-600 dark:text-gray-400">
+              <h3 className="text-base font-semibold text-[var(--brand-fg)]">{ev.title}</h3>
+              <p className="mt-1 text-xs text-[var(--brand-muted)]">
                 {ev.date}
                 {ev.location ? ` • ${ev.location}` : ""}
               </p>
               {ev.description && (
-                <p className="mt-2 line-clamp-3 text-sm text-gray-700 dark:text-gray-300">
+                <p className="mt-2 line-clamp-3 text-sm text-[var(--brand-fg)]/90">
                   {ev.description}
                 </p>
               )}

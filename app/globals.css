@@ -5,14 +5,69 @@
 }
 
 body {
-  @apply bg-white text-gray-800 antialiased transition-colors dark:bg-gray-900 dark:text-gray-100;
+  /* Base typography colors and background driven by tokens */
+  background-color: var(--brand-bg);
+  color: var(--brand-fg);
+  @apply antialiased transition-colors;
 }
 
 a {
-  @apply hover:underline;
+  @apply underline;
+}
+
+/* Header: do not underline links by default; keep hover underline for affordance */
+header a {
+  @apply no-underline hover:underline;
 }
 
 img {
   @apply dark:brightness-90 dark:contrast-125;
 }
 
+
+
+/* Brand color tokens for light and dark modes */
+:root {
+  /* Light mode defaults */
+  --brand-primary: #5C30A6; /* purple */
+  --brand-primary-contrast: #FFFFFF;
+  --brand-accent: #D6AF36; /* gold */
+
+  /* Set the entire page background to brand purple and ensure strong contrast */
+  --brand-bg: #5C30A6; /* brand purple page background */
+  --brand-fg: #FFFFFF; /* white text for contrast on purple */
+  --brand-muted: var(--brand-accent); /* prefer accent over gray */
+  --brand-border: #8C6A15; /* deep gold border for contrast on purple */
+  --brand-surface: #4A258E; /* deeper purple surface panels */
+  --brand-surface-contrast: #FFFFFF; /* white for headings on surface */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark mode overrides */
+    --brand-primary: #B19CD9; /* lighter purple for dark for contrast */
+    --brand-primary-contrast: #0B0B0B;
+    --brand-accent: #D6AF36;
+
+    --brand-bg: #0B0B0B; /* near-black */
+    --brand-fg: #FFFFFF; /* white for maximum contrast in dark mode */
+    --brand-muted: var(--brand-accent); /* prefer accent over gray */
+    --brand-border: #8C6A15; /* deep gold for dark mode accents */
+    --brand-surface: #0B0B0B; /* same as bg for a flat look */
+    --brand-surface-contrast: #FFFFFF; /* pure white */
+  }
+}
+
+
+/* Fallback for environments mis-parsing :root — define tokens on html as well */
+html {
+  --brand-primary: #5C30A6;
+  --brand-primary-contrast: #FFFFFF;
+  --brand-accent: #D6AF36;
+  --brand-bg: #5C30A6;
+  --brand-fg: #FFFFFF; /* white on purple */
+  --brand-muted: var(--brand-accent); /* accent for low-contrast text */
+  --brand-border: #8C6A15; /* deep gold */
+  --brand-surface: #4A258E; /* deeper purple */
+  --brand-surface-contrast: #FFFFFF; /* white */
+}

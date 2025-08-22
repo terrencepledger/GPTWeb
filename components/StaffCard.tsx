@@ -43,12 +43,12 @@ export function StaffCard({
         />
       )}
       <div className="p-4">
-        <h3 className="text-lg font-semibold">{staff.name}</h3>
-        <p className="mt-1 text-sm text-gray-600">{staff.role}</p>
+        <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">{staff.name}</h3>
+        <p className="mt-1 text-sm text-[var(--brand-muted)]">{staff.role}</p>
         {staff.email && (
           <a
             href={`mailto:${staff.email}`}
-            className="mt-2 block text-sm font-medium text-brand-purple hover:underline hover:text-brand-purpleLt active:text-brand-purpleLt"
+            className="mt-2 block text-sm font-medium text-[var(--brand-accent)] hover:underline hover:text-[var(--brand-primary-contrast)]"
           >
             {staff.email}
           </a>

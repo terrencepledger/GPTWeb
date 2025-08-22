@@ -2,7 +2,7 @@ import { Sermon, SermonCard } from "./SermonCard";
 
 export function SermonList({ sermons }: { sermons: Sermon[] }) {
   if (sermons.length === 0) {
-    return <p className="text-sm text-gray-600 dark:text-gray-400">No sermons found.</p>;
+    return <p className="text-sm text-[var(--brand-muted)]">No sermons found.</p>;
   }
 
   return (

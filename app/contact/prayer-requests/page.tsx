@@ -6,10 +6,10 @@ export default function Page() {
   return (
     <div>
       <h1 className="text-2xl font-semibold">Prayer Requests</h1>
-      <p className="mt-2 text-sm text-gray-600">
+      <p className="mt-2 text-sm text-[var(--brand-muted)]">
         <Link
           href="/contact"
-          className="text-brand-purple hover:underline hover:text-brand-purpleLt active:text-brand-purpleLt"
+          className="text-[var(--brand-accent)] hover:underline hover:text-[var(--brand-primary-contrast)]"
         >
           Back to Contact
         </Link>
