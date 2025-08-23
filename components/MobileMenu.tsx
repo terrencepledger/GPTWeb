@@ -17,7 +17,7 @@ interface MobileMenuProps {
 }
 
 function linkClasses(active: boolean) {
-  return `block ${active ? "text-brand-purple" : "text-gray-900"} hover:text-brand-gold focus:text-brand-gold`;
+  return `block ${active ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]`;
 }
 
 export default function MobileMenu({ open, onClose, nav }: MobileMenuProps) {
@@ -76,7 +76,7 @@ export default function MobileMenu({ open, onClose, nav }: MobileMenuProps) {
                 <Disclosure>
                   {({ open: aboutOpen }) => (
                     <div>
-                      <Disclosure.Button className="w-full text-left hover:text-brand-gold focus:text-brand-gold">
+                      <Disclosure.Button className={`${pathname.startsWith("/about") ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} w-full text-left hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]`}>
                         About
                       </Disclosure.Button>
                       <Transition
@@ -117,7 +117,7 @@ export default function MobileMenu({ open, onClose, nav }: MobileMenuProps) {
                 <Disclosure>
                   {({ open: contactOpen }) => (
                     <div>
-                      <Disclosure.Button className="w-full text-left hover:text-brand-gold focus:text-brand-gold">
+                      <Disclosure.Button className={`${pathname.startsWith("/contact") ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} w-full text-left hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]`}>
                         Contact
                       </Disclosure.Button>
                       <Transition
