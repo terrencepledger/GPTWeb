@@ -103,7 +103,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
       role="status"
       aria-live="polite"
       aria-label="Site announcement"
-      className="relative overflow-hidden rounded-md border border-[var(--brand-accent)] bg-[var(--brand-primary)] px-4 py-3 pr-10 text-center text-sm text-[var(--brand-primary-contrast)]"
+      className="relative overflow-hidden rounded-md border border-[var(--brand-accent)] bg-[var(--brand-primary)] dark:bg-[var(--brand-surface)] px-4 py-3 pr-10 text-center text-sm text-[var(--brand-primary-contrast)] dark:text-[var(--brand-accent)]"
     >
       <div className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-[var(--brand-accent)]" aria-hidden="true">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -146,7 +146,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
         ref={buttonRef}
         type="button"
         aria-label="Dismiss announcement"
-        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 grid h-7 w-7 place-items-center rounded text-lg leading-none text-[var(--brand-primary-contrast)]/80 hover:text-[var(--brand-primary-contrast)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] cursor-pointer select-none"
+        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 grid h-7 w-7 place-items-center rounded text-lg leading-none text-[var(--brand-primary-contrast)]/80 dark:text-[var(--brand-accent)]/80 hover:text-[var(--brand-primary-contrast)] hover:dark:text-[var(--brand-accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] cursor-pointer select-none"
         onClick={handleDismiss}
       >
         ×
