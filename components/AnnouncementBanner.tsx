@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 type AnnouncementBannerProps = {
   message: string;
@@ -11,7 +17,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
   const [dismissed, setDismissed] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
-  const [repeatCount, setRepeatCount] = useState(2);
+  const [duration, setDuration] = useState(20);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -29,8 +35,8 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
       const containerWidth = containerRef.current?.offsetWidth ?? 0;
       const textWidth = textRef.current?.offsetWidth ?? 0;
       if (containerWidth && textWidth) {
-        const count = Math.max(2, Math.ceil(containerWidth / textWidth) + 1);
-        setRepeatCount(count);
+        const ratio = Math.min(textWidth / containerWidth, 1);
+        setDuration(20 * ratio);
       }
     };
     calculate();
@@ -63,12 +69,14 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
       </div>
 
       <div ref={containerRef} className="mx-6 overflow-hidden">
-        <div className="inline-flex animate-marquee whitespace-nowrap [--marquee-gap:6rem]">
-          {Array.from({ length: repeatCount }).map((_, i) => (
-            <span key={i} ref={i === 0 ? textRef : null} className="pr-[var(--marquee-gap)]">
-              {message}
-            </span>
-          ))}
+        <div
+          className="inline-flex animate-marquee whitespace-nowrap [--marquee-gap:6rem]"
+          style={{ "--marquee-duration": `${duration}s` } as CSSProperties}
+        >
+          <span ref={textRef} className="pr-[var(--marquee-gap)]">
+            {message}
+          </span>
+          <span className="pr-[var(--marquee-gap)]">{message}</span>
         </div>
       </div>
 
