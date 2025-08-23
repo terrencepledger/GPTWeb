@@ -49,7 +49,7 @@
   }
 
   .animate-marquee {
-    animation: marquee 20s linear infinite;
+    animation: marquee var(--marquee-duration, 20s) linear infinite;
     will-change: transform;
   }
 
