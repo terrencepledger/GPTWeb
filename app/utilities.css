@@ -61,7 +61,7 @@
 
   .animate-marquee-single {
     display: inline-block;
-    animation: marquee-single 20s linear infinite;
+    animation: marquee-single var(--marquee-duration) linear infinite;
     will-change: transform;
     white-space: nowrap;
   }
@@ -71,10 +71,16 @@
     width: 100%;
   }
   .marquee-track {
-    position: absolute;
-    left: 0;
-    top: 0;
     white-space: nowrap;
+  }
+
+  @keyframes marquee-single {
+    from {
+      transform: translateX(var(--container-width));
+    }
+    to {
+      transform: translateX(calc(var(--content-width) * -1));
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {

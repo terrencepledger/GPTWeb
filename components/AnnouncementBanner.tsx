@@ -88,7 +88,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
 
       <div
         ref={containerRef}
-        className="overflow-hidden"
+        className="w-full overflow-hidden"
       >
         {isOverflowing ? (
           <div
