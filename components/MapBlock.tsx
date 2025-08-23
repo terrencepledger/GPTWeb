@@ -15,7 +15,7 @@ export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
 
   return (
     <div className="my-6 w-full">
-      <div className="w-full overflow-hidden rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] shadow">
+      <div className="w-full overflow-hidden rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] shadow opacity-0 transition-opacity duration-500">
         <div id={mapId} style={{ width: "100%", height: 300 }} />
       </div>
       {hasAddress && (
@@ -40,6 +40,7 @@ export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
     if (!window.google) { setTimeout(init, 150); return; }
     var el = document.getElementById(${JSON.stringify(mapId)});
     if (!el) return;
+    var container = el.parentElement;
     var map = new google.maps.Map(el, {
       center: { lat: 39.5, lng: -98.35 },
       zoom: ${zoom},
@@ -56,10 +57,15 @@ export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
         var loc = results[0].geometry.location;
         map.setCenter(loc);
         map.setZoom(${zoom});
-        new google.maps.Marker({ map: map, position: loc, title: ${JSON.stringify(address)} });
+        var marker = new google.maps.Marker({ map: map, position: loc, title: ${JSON.stringify(address)} });
+        marker.setAnimation(google.maps.Animation.BOUNCE);
+        setTimeout(function(){ marker.setAnimation(null); }, 1400);
       }
     });
     ` : ``}
+    if (container) {
+      requestAnimationFrame(function() { container.classList.remove("opacity-0"); });
+    }
   }
   init();
 })();`,
