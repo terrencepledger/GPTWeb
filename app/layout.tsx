@@ -5,7 +5,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { siteSettings } from "@/lib/queries";
 
-
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await siteSettings();
   const title = settings?.title ?? "Example Church";
@@ -34,7 +33,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <html lang="en">
         <body className="flex min-h-screen flex-col">
         <Header initialTitle={headerTitle} />
-        <main className="mx-auto flex-1 max-w-7xl px-4 py-8">{children}</main>
+        <main className="flex-1 px-4 py-8">{children}</main>
         <Footer />
         </body>
         </html>

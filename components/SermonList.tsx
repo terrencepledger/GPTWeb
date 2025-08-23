@@ -6,7 +6,7 @@ export function SermonList({ sermons }: { sermons: Sermon[] }) {
   }
 
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(16rem,1fr))]">
       {sermons.map((sermon) => (
         <SermonCard key={sermon.title + sermon.date} sermon={sermon} />
       ))}

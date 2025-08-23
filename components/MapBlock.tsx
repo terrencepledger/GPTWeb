@@ -14,8 +14,8 @@ export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
   const addressQuery = hasAddress ? encodeURIComponent(address as string) : "";
 
   return (
-    <div className="my-6">
-      <div className="overflow-hidden rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] shadow">
+    <div className="my-6 w-full">
+      <div className="w-full overflow-hidden rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] shadow">
         <div id={mapId} style={{ width: "100%", height: 300 }} />
       </div>
       {hasAddress && (
