@@ -32,7 +32,8 @@
   }
 
   .card .hero-overlay {
-    @apply pointer-events-none absolute inset-0 bg-black/30 dark:bg-black/60;
+    @apply pointer-events-none absolute inset-0;
+    background-color: var(--brand-overlay-muted);
   }
 }
 
