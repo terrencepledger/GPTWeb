@@ -1,65 +1,71 @@
-import Image from "next/image";
+import Script from "next/script";
 
 type MapBlockProps = {
   address?: string;
+  zoom?: number;
 };
 
-export default function MapBlock({
-  address = "123 Main St, Hometown, ST 12345",
-}: MapBlockProps) {
-  const query = encodeURIComponent(address);
+export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
   const apiKey = process.env.GOOGLE_MAPS_KEY;
-  const hasKey = Boolean(apiKey);
-  const staticMapUrl = hasKey
-    ? `https://maps.googleapis.com/maps/api/staticmap?center=${query}&zoom=15&size=600x300&markers=${query}&key=${apiKey}`
-    : "/map-placeholder.svg";
-  const mapLink = `https://www.google.com/maps/search/?api=1&query=${query}`;
-  const embedUrl = hasKey
-    ? `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${query}&zoom=15`
-    : "";
+  if (!apiKey) return <div style={{ padding: 12 }}>Map unavailable: missing GOOGLE_MAPS_KEY.</div>;
+
+  const mapId = `map-${Math.random().toString(36).slice(2)}`;
+  const hasAddress = typeof address === "string" && address.trim().length > 0;
+  const addressQuery = hasAddress ? encodeURIComponent(address as string) : "";
 
   return (
     <div className="my-6">
-      {hasKey ? (
-        <>
-          <iframe
-            title={`Map showing ${address}`}
-            src={embedUrl}
-            width={600}
-            height={300}
-            style={{ border: 0 }}
-            className="h-auto w-full"
-            loading="lazy"
-            allowFullScreen
-          />
-          <p className="mt-2 text-center">
-            <a
-              href={mapLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline"
-            >
-              View larger map
-            </a>
-          </p>
-        </>
-      ) : (
-        <a
-          href={mapLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="block"
-        >
-          <Image
-            src={staticMapUrl}
-            alt={`Map showing ${address}`}
-            width={600}
-            height={300}
-            className="h-auto w-full"
-            unoptimized={!hasKey}
-          />
-        </a>
+      <div className="overflow-hidden rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] shadow">
+        <div id={mapId} style={{ width: "100%", height: 300 }} />
+      </div>
+      {hasAddress && (
+        <p className="mt-2 text-center">
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${addressQuery}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[var(--brand-accent)] hover:underline"
+          >
+            View larger map
+          </a>
+        </p>
       )}
+      <Script src={`https://maps.googleapis.com/maps/api/js?key=${apiKey}`} strategy="afterInteractive" />
+      <Script
+        id={`init-${mapId}`}
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `(() => {
+  function init() {
+    if (!window.google) { setTimeout(init, 150); return; }
+    var el = document.getElementById(${JSON.stringify(mapId)});
+    if (!el) return;
+    var map = new google.maps.Map(el, {
+      center: { lat: 39.5, lng: -98.35 },
+      zoom: ${zoom},
+      clickableIcons: false,
+      gestureHandling: "greedy",
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false
+    });
+    ${hasAddress ? `
+    var geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ address: ${JSON.stringify(address)} }, function(results, status) {
+      if (status === "OK" && results && results[0]) {
+        var loc = results[0].geometry.location;
+        map.setCenter(loc);
+        map.setZoom(${zoom});
+        new google.maps.Marker({ map: map, position: loc, title: ${JSON.stringify(address)} });
+      }
+    });
+    ` : ``}
+  }
+  init();
+})();`,
+        }}
+      />
+    </div>
   );
 }
 
