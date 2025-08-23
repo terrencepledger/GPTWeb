@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  type CSSProperties,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import {type CSSProperties, useEffect, useMemo, useRef, useState,} from "react";
 
 type AnnouncementBannerProps = {
   message: string;
@@ -22,7 +16,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [contentWidth, setContentWidth] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
-  const gap = 32; // gap in pixels between repeated messages
+  const gap = 50;
 
   useEffect(() => {
       if (typeof window === "undefined") return;
@@ -44,9 +38,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
       setContainerWidth(cW);
       setContentWidth(tW);
 
-      const available = cW;
-
-      if (tW <= available) {
+      if (tW <= cW) {
         setIsOverflowing(false);
         return;
       }
