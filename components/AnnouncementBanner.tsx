@@ -22,6 +22,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
   const [isOverflowing, setIsOverflowing] = useState(false);
   const [contentWidth, setContentWidth] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
+  const gap = 32; // gap in pixels between repeated messages
 
   useEffect(() => {
       if (typeof window === "undefined") return;
@@ -52,7 +53,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
       setIsOverflowing(true);
 
       const speed = 80;
-      const travel = tW + available;
+      const travel = tW + gap;
       setDuration(travel / speed);
     };
     recalc();
@@ -95,12 +96,17 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
             className="marquee-viewport relative w-full"
             style={{
               "--marquee-duration": `${duration}s`,
+              "--marquee-delay": `-${duration * 0.75}s`,
               "--container-width": `${Math.max(0, containerWidth)}px`,
               "--content-width": `${contentWidth}px`,
+              "--marquee-gap": `${gap}px`,
             } as CSSProperties}
          >
-            <div className="animate-marquee-single marquee-track">
+            <div className="marquee-track animate-marquee-single">
               <span ref={textRef} className="whitespace-nowrap">
+                {message}
+              </span>
+              <span aria-hidden="true" className="whitespace-nowrap">
                 {message}
               </span>
             </div>
