@@ -22,7 +22,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
 
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--brand-border)] bg-[var(--brand-surface)]">
-      <div className="flex h-16 items-center px-4">
+      <div className="max-w-site flex h-16 items-center px-4">
         <Link href="/" className="font-bold text-[var(--brand-accent)] hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]">
           {siteTitle}
         </Link>

@@ -38,6 +38,13 @@
 }
 
 @layer utilities {
+  .max-w-site {
+    max-width: var(--layout-max-width);
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   @keyframes marquee {
     0% {
       transform: translateX(0);

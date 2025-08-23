@@ -10,7 +10,7 @@ export default async function Footer() {
 
   return (
     <footer className="mt-12 bg-[var(--brand-bg)] text-[var(--brand-fg)]">
-      <div className="px-4 py-8">
+      <div className="max-w-site px-4 py-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div>
             <h4 className="mb-3 font-semibold text-[var(--brand-surface-contrast)]">{title}</h4>
