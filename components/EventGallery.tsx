@@ -28,7 +28,7 @@ export default function EventGallery({ events }: { events: GalleryEvent[] }) {
         {events.map((ev) => (
           <article
             key={ev._id}
-            className="group relative overflow-hidden rounded-lg border border-[var(--brand-border)] transition"
+            className="group relative overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)] transform transition duration-300 ease-out hover:-translate-y-1 hover:-rotate-1 hover:scale-[1.02] hover:shadow-lg focus-within:-translate-y-1 focus-within:-rotate-1 focus-within:scale-[1.02] focus-within:shadow-lg"
           >
             {ev.image && (
               <Image
