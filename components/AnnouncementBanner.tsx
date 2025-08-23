@@ -18,74 +18,49 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const [rightPadding, setRightPadding] = useState(0);
   const [duration, setDuration] = useState(20);
-  const [itemsPerSet, setItemsPerSet] = useState(2);
-  const [leadingPadding, setLeadingPadding] = useState(0);
   const [isOverflowing, setIsOverflowing] = useState(false);
-  const gapPx = 24;
+  const [contentWidth, setContentWidth] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const stored = localStorage.getItem(storageKey);
-      if (stored === "dismissed") {
-        setDismissed(true);
-      }
-    } catch {}
+      if (typeof window === "undefined") return;
+      try {
+          const stored = localStorage.getItem(storageKey);
+          if (stored === "dismissed") {
+              setDismissed(true);
+          }
+      } catch {}
   }, [storageKey]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     const recalc = () => {
-      const containerWidth = containerRef.current?.offsetWidth ?? 0;
-      const singleWidth = textRef.current?.offsetWidth ?? 0;
-      const rp = rightPadding;
+      const cW = containerRef.current?.offsetWidth ?? 0;
+      const tW = textRef.current?.offsetWidth ?? 0;
+      if (!cW || !tW) return;
 
-      if (!containerWidth || !singleWidth) return;
+      setContainerWidth(cW);
+      setContentWidth(tW);
 
-      const available = Math.max(containerWidth - rp, 0);
-      setLeadingPadding(available);
+      const available = cW;
 
-      // Determine whether the content needs scrolling
-      if (singleWidth <= available) {
+      if (tW <= available) {
         setIsOverflowing(false);
         return;
       }
       setIsOverflowing(true);
 
-      const unit = singleWidth + gapPx;
-      // Ensure one set is wider than visible region so no empty gaps show
-      const minSetWidth = containerWidth + available + unit;
-      const count = Math.max(2, Math.ceil(minSetWidth / unit));
-      setItemsPerSet(count);
-
-      // Constant pixel speed for consistency across message lengths
-      const speed = 80; // px per second
-      const sequenceWidth = available + count * unit; // width of a single set including spacer
-      setDuration(sequenceWidth / speed);
+      const speed = 80;
+      const travel = tW + available;
+      setDuration(travel / speed);
     };
     recalc();
     window.addEventListener("resize", recalc);
     return () => window.removeEventListener("resize", recalc);
-  }, [message, rightPadding]);
+  }, [message]);
 
-  // Dynamically compute right padding so the marquee text keeps a tiny gap before the close button
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const computeRightPadding = () => {
-      const btn = buttonRef.current;
-      if (!btn) return;
-      const styles = getComputedStyle(btn);
-      const right = parseFloat(styles.right || "0") || 0; // absolute right offset
-      const width = btn.offsetWidth || 0; // button visible width
-      const tinyGap = 4; // px: small, subtle gap
-      setRightPadding(right + width + tinyGap);
-    };
-    computeRightPadding();
-    window.addEventListener("resize", computeRightPadding);
-    return () => window.removeEventListener("resize", computeRightPadding);
-  }, []);
+  useEffect(() => {}, []);
 
   const handleDismiss = () => {
     setDismissed(true);
@@ -103,7 +78,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
       role="status"
       aria-live="polite"
       aria-label="Site announcement"
-      className="relative overflow-hidden rounded-md border border-[var(--brand-accent)] bg-[var(--brand-primary)] dark:bg-[var(--brand-surface)] px-4 py-3 pr-10 text-center text-sm text-[var(--brand-primary-contrast)] dark:text-[var(--brand-accent)]"
+      className="relative w-full overflow-hidden rounded-md border border-[var(--brand-accent)] bg-[var(--brand-primary)] dark:bg-[var(--brand-surface)] px-4 pl-8 py-3 pr-10 text-center text-sm text-[var(--brand-primary-contrast)] dark:text-[var(--brand-accent)]"
     >
       <div className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-[var(--brand-accent)]" aria-hidden="true">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -111,27 +86,24 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
         </svg>
       </div>
 
-      <div ref={containerRef} className="ml-6 mr-0 overflow-hidden" style={isOverflowing ? { paddingRight: rightPadding } : undefined}>
+      <div
+        ref={containerRef}
+        className="overflow-hidden"
+      >
         {isOverflowing ? (
           <div
-            className="inline-flex animate-marquee whitespace-nowrap"
-            style={{ "--marquee-duration": `${duration}s`, "--marquee-gap": `${gapPx}px` } as CSSProperties}
-          >
-            {/* Set A: spacer then items */}
-            <span aria-hidden="true" style={{ display: "inline-block", width: leadingPadding }} />
-            {Array.from({ length: itemsPerSet }).map((_, i) => (
-              <span key={`set1-${i}`} ref={i === 0 ? textRef : null} className="pr-[var(--marquee-gap)]">
+            className="marquee-viewport relative w-full"
+            style={{
+              "--marquee-duration": `${duration}s`,
+              "--container-width": `${Math.max(0, containerWidth)}px`,
+              "--content-width": `${contentWidth}px`,
+            } as CSSProperties}
+         >
+            <div className="animate-marquee-single marquee-track">
+              <span ref={textRef} className="whitespace-nowrap">
                 {message}
               </span>
-            ))}
-
-            {/* Set B: identical spacer then items for seamless -50% loop */}
-            <span aria-hidden="true" style={{ display: "inline-block", width: leadingPadding }} />
-            {Array.from({ length: itemsPerSet }).map((_, i) => (
-              <span key={`set2-${i}`} className="pr-[var(--marquee-gap)]">
-                {message}
-              </span>
-            ))}
+            </div>
           </div>
         ) : (
           <div className="flex justify-center">
