@@ -56,7 +56,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
       <button
         type="button"
         aria-label="Dismiss announcement"
-        className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer rounded px-1 text-xl leading-none z-10 text-[var(--brand-primary-contrast)]/80 hover:text-[var(--brand-primary-contrast)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
+        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 grid h-7 w-7 place-items-center rounded text-lg leading-none text-[var(--brand-primary-contrast)]/80 hover:text-[var(--brand-primary-contrast)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] cursor-pointer select-none"
         onClick={handleDismiss}
       >
         ×

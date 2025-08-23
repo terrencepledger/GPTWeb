@@ -1,182 +1,142 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRef, useState } from "react";
+import MobileMenu, { MobileMenuHandle } from "./MobileMenu";
 
 export default function Header({ initialTitle }: { initialTitle?: string }) {
   const pathname = usePathname();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [aboutOpen, setAboutOpen] = useState(false);
-  const [contactOpen, setContactOpen] = useState(false);
-  const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
-  const [mobileContactOpen, setMobileContactOpen] = useState(false);
+  const mobileMenuRef = useRef<MobileMenuHandle>(null);
   const [siteTitle] = useState(initialTitle ?? "Example Church");
-  const menuRef = useRef<HTMLDivElement>(null);
-  const aboutTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const contactTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const nav = [
     { href: "/ministries", label: "Ministries" },
     { href: "/events", label: "Events" },
     { href: "/livestreams", label: "Livestreams" },
     { href: "/giving", label: "Giving" },
-  ]
+  ];
 
-  const handleAboutEnter = () => {
-    if (aboutTimeoutRef.current) clearTimeout(aboutTimeoutRef.current);
-    setAboutOpen(true);
-  };
-
-  const handleAboutLeave = () => {
-    aboutTimeoutRef.current = setTimeout(() => setAboutOpen(false), 200);
-  };
-
-  const handleContactEnter = () => {
-    if (contactTimeoutRef.current) clearTimeout(contactTimeoutRef.current);
-    setContactOpen(true);
-  };
-
-  const handleContactLeave = () => {
-    contactTimeoutRef.current = setTimeout(() => setContactOpen(false), 200);
-  };
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const focusable = menuRef.current?.querySelectorAll<HTMLElement>(
-      "a, button"
-    );
-    const first = focusable?.[0];
-    const last = focusable?.[focusable.length - 1];
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setMenuOpen(false);
-        return;
-      }
-      if (e.key !== "Tab" || !focusable) return;
-      if (e.shiftKey) {
-        if (document.activeElement === first) {
-          e.preventDefault();
-          last?.focus();
-        }
-      } else if (document.activeElement === last) {
-        e.preventDefault();
-        first?.focus();
-      }
-    };
-
-    first?.focus();
-    document.addEventListener("keydown", handleKeyDown);
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
-    };
-  }, [menuOpen]);
-
-  useEffect(() => {
-    setMenuOpen(false);
-    setAboutOpen(false);
-    setContactOpen(false);
-    setMobileAboutOpen(false);
-    setMobileContactOpen(false);
-  }, [pathname]);
+  const linkClasses = (active: boolean) =>
+    `${active ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]`;
 
   return (
-    <header className="sticky top-0 z-10 border-b border-[var(--brand-border)] bg-[var(--brand-surface)]">
-      <div className="relative mx-auto flex h-16 max-w-5xl items-center px-4">
-        <Link href="/" className="font-bold text-[var(--brand-surface-contrast)]">
+    <header className="sticky top-0 z-50 border-b border-[var(--brand-border)] bg-[var(--brand-surface)]">
+      <div className="mx-auto flex h-16 max-w-5xl items-center px-4">
+        <Link href="/" className="font-bold text-[var(--brand-accent)] hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]">
           {siteTitle}
         </Link>
-        <nav
-          className="absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 items-center gap-4 text-sm font-medium text-[var(--brand-muted)] md:flex"
-        >
-          <Link href="/" className="hover:underline hover:text-[var(--brand-accent)]">
+        <nav className="ml-8 hidden flex-1 items-center gap-6 text-sm font-medium md:flex">
+          <Link
+            href="/"
+            className={linkClasses(pathname === "/")}
+            aria-current={pathname === "/" ? "page" : undefined}
+          >
             Home
           </Link>
-          <div
-            className="relative"
-            onMouseEnter={handleAboutEnter}
-            onMouseLeave={handleAboutLeave}
-            onFocus={() => setAboutOpen(true)}
-            onBlur={(e) => {
-              if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                setAboutOpen(false);
-              }
-            }}
-          >
+
+          <div className="relative group">
             <button
-              type="button"
-              className="hover:underline hover:text-[var(--brand-accent)]"
-              aria-haspopup="menu"
-              aria-expanded={aboutOpen}
+              className={`${pathname.startsWith("/about") ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)] inline-flex items-center gap-1 cursor-pointer focus:outline-none`}
+              aria-haspopup="true"
             >
-              About
+              <span>About</span>
+              <svg
+                className={`h-4 w-4 transition-transform duration-150 group-hover:rotate-180 group-focus-within:rotate-180`}
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
+              </svg>
             </button>
-            {aboutOpen && (
-              <div className="absolute left-0 top-full mt-2 w-48 rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] p-2 shadow">
-                <Link
-                  href="/about/staff"
-                  className="block px-2 py-1 hover:underline"
-                >
-                  Staff
-                </Link>
-                <Link
-                  href="/about/mission-statement"
-                  className="block px-2 py-1 hover:underline"
-                >
-                  Mission Statement
-                </Link>
-              </div>
-            )}
+            <div
+              className="absolute left-0 mt-2 w-56 rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] p-2 shadow focus:outline-none z-20
+                         invisible opacity-0 translate-y-1 transition-all duration-150 ease-out
+                         group-hover:visible group-hover:opacity-100 group-hover:translate-y-0
+                         group-focus-within:visible group-focus-within:opacity-100 group-focus-within:translate-y-0"
+              role="menu"
+            >
+              <Link
+                href="/about/staff"
+                className={`block rounded px-2 py-1 cursor-pointer border border-transparent ${linkClasses(pathname === "/about/staff")} hover:border-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]`}
+                aria-current={pathname === "/about/staff" ? "page" : undefined}
+                role="menuitem"
+              >
+                Staff
+              </Link>
+              <div className="my-1 border-t border-[var(--brand-border)]" role="separator" />
+              <Link
+                href="/about/mission-statement"
+                className={`block rounded px-2 py-1 cursor-pointer border border-transparent ${linkClasses(pathname === "/about/mission-statement")} hover:border-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]`}
+                aria-current={pathname === "/about/mission-statement" ? "page" : undefined}
+                role="menuitem"
+              >
+                Mission Statement
+              </Link>
+            </div>
           </div>
-          <div
-            className="relative"
-            onMouseEnter={handleContactEnter}
-            onMouseLeave={handleContactLeave}
-            onFocus={() => setContactOpen(true)}
-            onBlur={(e) => {
-              if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                setContactOpen(false);
-              }
-            }}
-          >
+
+          <div className="relative group">
             <button
-              type="button"
-              className="hover:underline hover:text-[var(--brand-accent)]"
-              aria-haspopup="menu"
-              aria-expanded={contactOpen}
+              className={`${pathname.startsWith("/contact") ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)] inline-flex items-center gap-1 cursor-pointer focus:outline-none`}
+              aria-haspopup="true"
             >
-              Contact
+              <span>Contact</span>
+              <svg
+                className={`h-4 w-4 transition-transform duration-150 group-hover:rotate-180 group-focus-within:rotate-180`}
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
+              </svg>
             </button>
-            {contactOpen && (
-              <div className="absolute left-0 top-full mt-2 w-48 rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] p-2 shadow">
-                <Link
-                  href="/contact"
-                  className="block px-2 py-1 hover:underline"
-                >
-                  Contact Form
-                </Link>
-                <Link
-                  href="/contact/prayer-requests"
-                  className="block px-2 py-1 hover:underline"
-                >
-                  Prayer Requests
-                </Link>
-              </div>
-            )}
+            <div
+              className="absolute left-0 mt-2 w-56 rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] p-2 shadow focus:outline-none z-20
+                         invisible opacity-0 translate-y-1 transition-all duration-150 ease-out
+                         group-hover:visible group-hover:opacity-100 group-hover:translate-y-0
+                         group-focus-within:visible group-focus-within:opacity-100 group-focus-within:translate-y-0"
+              role="menu"
+            >
+              <Link
+                href="/contact"
+                className={`block rounded px-2 py-1 cursor-pointer border border-transparent ${linkClasses(pathname === "/contact")} hover:border-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]`}
+                aria-current={pathname === "/contact" ? "page" : undefined}
+                role="menuitem"
+              >
+                Contact Form
+              </Link>
+              <div className="my-1 border-t border-[var(--brand-border)]" role="separator" />
+              <Link
+                href="/contact/prayer-requests"
+                className={`block rounded px-2 py-1 cursor-pointer border border-transparent ${linkClasses(pathname === "/contact/prayer-requests")} hover:border-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]`}
+                aria-current={pathname === "/contact/prayer-requests" ? "page" : undefined}
+                role="menuitem"
+              >
+                Prayer Requests
+              </Link>
+            </div>
           </div>
+
           {nav.map((item) => (
-            <Link key={item.href} href={item.href} className="hover:underline">
+            <Link
+              key={item.href}
+              href={item.href}
+              className={linkClasses(pathname.startsWith(item.href))}
+              aria-current={pathname.startsWith(item.href) ? "page" : undefined}
+            >
               {item.label}
             </Link>
           ))}
         </nav>
+
         <button
-          className="ml-auto md:hidden"
+          className="ml-auto text-[var(--brand-accent)] hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)] md:hidden"
           aria-label="Open menu"
-          onClick={() => setMenuOpen(true)}
+          onClick={() => mobileMenuRef.current?.open()}
         >
           <svg
             className="h-6 w-6"
@@ -189,98 +149,8 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
           </svg>
         </button>
       </div>
-      <div
-        className={`fixed inset-0 z-50 bg-black/50 transition-opacity md:hidden ${
-          menuOpen ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
-        aria-hidden={!menuOpen}
-        onClick={() => setMenuOpen(false)}
-      />
-      <div
-        ref={menuRef}
-        className={`fixed right-0 top-0 h-full w-64 transform bg-[var(--brand-surface)] p-6 shadow transition-transform md:hidden ${
-          menuOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-        tabIndex={-1}
-      >
-        <button
-          className="mb-6 block"
-          aria-label="Close menu"
-          onClick={() => setMenuOpen(false)}
-        >
-          <svg
-            className="h-6 w-6"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-        <nav className="flex flex-col gap-4 text-base font-medium text-[var(--brand-muted)]">
-          <Link href="/" className="hover:underline">
-            Home
-          </Link>
-          <div>
-            <button
-              type="button"
-              className="hover:underline"
-              aria-haspopup="menu"
-              aria-expanded={mobileAboutOpen}
-              onClick={() => setMobileAboutOpen((o) => !o)}
-            >
-              About
-            </button>
-            {mobileAboutOpen && (
-              <div className="ml-4 mt-2 flex flex-col gap-2">
-                <Link href="/about/staff" className="hover:underline">
-                  Staff
-                </Link>
-                <Link
-                  href="/about/mission-statement"
-                  className="hover:underline"
-                >
-                  Mission Statement
-                </Link>
-              </div>
-            )}
-          </div>
-          <div>
-            <button
-              type="button"
-              className="hover:underline"
-              aria-haspopup="menu"
-              aria-expanded={mobileContactOpen}
-              onClick={() => setMobileContactOpen((o) => !o)}
-            >
-              Contact
-            </button>
-            {mobileContactOpen && (
-              <div className="ml-4 mt-2 flex flex-col gap-2">
-                <Link href="/contact" className="hover:underline">
-                  Contact Form
-                </Link>
-                <Link
-                  href="/contact/prayer-requests"
-                  className="hover:underline"
-                >
-                  Prayer Requests
-                </Link>
-              </div>
-            )}
-          </div>
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="hover:underline"
-            >
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-      </div>
+
+      <MobileMenu ref={mobileMenuRef} nav={nav} />
     </header>
   );
 }

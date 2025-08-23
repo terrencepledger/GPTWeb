@@ -20,6 +20,11 @@ header a {
   @apply no-underline hover:underline;
 }
 
+/* Header selection styling: use brand alt color when text is selected */
+header ::selection {
+  color: var(--brand-alt);
+}
+
 img {
   @apply dark:brightness-90 dark:contrast-125;
 }
@@ -32,6 +37,7 @@ img {
   --brand-primary: #5C30A6; /* purple */
   --brand-primary-contrast: #FFFFFF;
   --brand-accent: #D6AF36; /* gold */
+  --brand-alt: #FFFFFF; /* alt is white in all modes */
 
   /* Set the entire page background to brand purple and ensure strong contrast */
   --brand-bg: #5C30A6; /* brand purple page background */
@@ -48,6 +54,7 @@ img {
     --brand-primary: #B19CD9; /* lighter purple for dark for contrast */
     --brand-primary-contrast: #0B0B0B;
     --brand-accent: #D6AF36;
+    --brand-alt: #FFFFFF; /* alt is white in all modes */
 
     --brand-bg: #0B0B0B; /* near-black */
     --brand-fg: #FFFFFF; /* white for maximum contrast in dark mode */
@@ -64,6 +71,7 @@ html {
   --brand-primary: #5C30A6;
   --brand-primary-contrast: #FFFFFF;
   --brand-accent: #D6AF36;
+  --brand-alt: #FFFFFF; /* alt is white in all modes */
   --brand-bg: #5C30A6;
   --brand-fg: #FFFFFF; /* white on purple */
   --brand-muted: var(--brand-accent); /* accent for low-contrast text */
