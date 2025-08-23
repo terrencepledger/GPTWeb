@@ -1,5 +1,8 @@
 import Image from "next/image";
+import { motion, useReducedMotion } from "framer-motion";
 import type { CSSProperties } from "react";
+
+// Email link uses brand colors defined in tailwind.config.js.
 
 export type Staff = {
   name: string;
@@ -18,6 +21,10 @@ export function StaffCard({
   backgroundColor?: string;
 }) {
   const style: CSSProperties = {};
+  const shouldReduceMotion = useReducedMotion();
+  const initial = shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 };
+  const animate = { opacity: 1, y: 0 };
+  const transition = { duration: shouldReduceMotion ? 0 : 0.3 };
   if (backgroundImage) {
     style.backgroundImage = `url(${backgroundImage})`;
     style.backgroundSize = "cover";
@@ -27,7 +34,11 @@ export function StaffCard({
     style.backgroundColor = backgroundColor;
   }
   return (
-    <div
+    <motion.div
+      initial={initial}
+      animate={animate}
+      whileHover={shouldReduceMotion ? {} : { scale: 1.02 }}
+      transition={transition}
       className="card relative flex h-full flex-col items-center overflow-hidden rounded-lg text-center"
       style={style}
     >
@@ -41,18 +52,18 @@ export function StaffCard({
         />
       )}
       <div className="p-4">
-        <h3 className="text-lg font-semibold">{staff.name}</h3>
-        <p className="mt-1 text-sm text-gray-600">{staff.role}</p>
+        <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">{staff.name}</h3>
+        <p className="mt-1 text-sm text-[var(--brand-muted)]">{staff.role}</p>
         {staff.email && (
           <a
             href={`mailto:${staff.email}`}
-            className="mt-2 block text-sm font-medium text-blue-600 hover:underline"
+            className="mt-2 block text-sm font-medium text-[var(--brand-accent)] hover:underline hover:text-[var(--brand-primary-contrast)]"
           >
             {staff.email}
           </a>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 

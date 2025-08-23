@@ -9,10 +9,12 @@
     "test": "echo \"No tests yet\" && exit 0"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.7",
     "@portabletext/react": "^3.2.1",
     "@sanity/client": "^7.8.2",
     "@sanity/image-url": "^1.1.0",
     "@sanity/vision": "^4.5.0",
+    "framer-motion": "^11.18.2",
     "next": "^14.2.15",
     "next-sanity": "^9.12.3",
     "react": "^18.3.1",

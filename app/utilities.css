@@ -2,17 +2,33 @@
 
 @layer components {
   .btn-primary {
-    @apply rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition-colors;
-    @apply hover:bg-blue-700;
+    /* Use brand tokens */
+    @apply rounded-md px-4 py-2 font-medium transition-colors shadow-sm;
+    background-color: var(--brand-primary);
+    color: var(--brand-primary-contrast);
+    border: 1px solid var(--brand-primary);
+  }
+  .btn-primary:hover {
+    background-color: color-mix(in oklab, var(--brand-primary) 85%, white 15%);
+  }
+  .btn-primary:active {
+    transform: translateY(1px);
   }
 
   .btn-ghost {
-    @apply rounded-md border border-transparent px-4 py-2 font-medium text-gray-700 transition-colors;
-    @apply hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white;
+    @apply rounded-md border border-transparent px-4 py-2 font-medium transition-colors;
+    color: var(--brand-primary);
+    background-color: transparent;
+  }
+  .btn-ghost:hover {
+    background-color: color-mix(in oklab, var(--brand-primary) 10%, var(--brand-surface) 90%);
+    color: var(--brand-primary);
   }
 
   .card {
-    @apply relative overflow-hidden rounded-lg bg-white shadow-md dark:bg-gray-800 dark:text-white;
+    @apply relative overflow-hidden rounded-lg shadow-md;
+    background-color: var(--brand-surface);
+    color: var(--brand-fg);
   }
 
   .card .hero-overlay {

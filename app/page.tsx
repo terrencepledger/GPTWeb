@@ -11,7 +11,7 @@ import {
   sermonLatest,
   siteSettings,
   ministriesHighlights,
-} from "../lib/queries";
+} from "@/lib/queries";
 
 export default async function Page() {
   const [announcement, events, sermon, settings, ministries] = await Promise.all([
@@ -35,19 +35,19 @@ export default async function Page() {
 
   return (
     <div className="space-y-12">
-      <Hero headline={headline} subline={subline} />
+      <Hero headline={headline} subline={subline} backgroundImage={settings?.logo} />
       <QuickActions actions={actions} />
       {announcement && <AnnouncementBanner message={announcement.message} />}
       <section>
-        <h2 className="mb-4 text-xl font-semibold">Upcoming Events</h2>
+        <h2 className="mb-4 text-xl font-semibold text-[var(--brand-accent)]">Upcoming Events</h2>
         <EventList events={events} />
       </section>
       <section>
-        <h2 className="mb-4 text-xl font-semibold">Recent Sermon</h2>
+        <h2 className="mb-4 text-xl font-semibold text-[var(--brand-accent)]">Recent Sermon</h2>
         <SermonList sermons={sermon ? [sermon] : []} />
       </section>
       <section>
-        <h2 className="mb-4 text-xl font-semibold">Ministry Highlights</h2>
+        <h2 className="mb-4 text-xl font-semibold text-[var(--brand-accent)]">Ministry Highlights</h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {ministries.map((min) => (
             <MinistryCard key={min._id} ministry={min} />

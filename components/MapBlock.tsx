@@ -8,7 +8,7 @@ export default function MapBlock({
   address = "123 Main St, Hometown, ST 12345",
 }: MapBlockProps) {
   const query = encodeURIComponent(address);
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY;
+  const apiKey = process.env.GOOGLE_MAPS_KEY;
   const hasKey = Boolean(apiKey);
   const staticMapUrl = hasKey
     ? `https://maps.googleapis.com/maps/api/staticmap?center=${query}&zoom=15&size=600x300&markers=${query}&key=${apiKey}`
@@ -16,7 +16,7 @@ export default function MapBlock({
   const mapLink = `https://www.google.com/maps/search/?api=1&query=${query}`;
 
   return (
-    <div className="my-6">
+    <div className="my-6 overflow-hidden rounded-lg border-4 border-[var(--brand-accent)] bg-[var(--brand-surface)] shadow-sm">
       <a
         href={mapLink}
         target="_blank"

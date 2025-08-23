@@ -4,6 +4,7 @@ import sermon from './schemas/sermon';
 import service from './schemas/service';
 import staff from './schemas/staff';
 import siteSettings from './schemas/siteSettings';
+import ministry from './schemas/ministry';
 
 export const schemaTypes = [
   announcement,
@@ -12,4 +13,5 @@ export const schemaTypes = [
   service,
   staff,
   siteSettings,
+  ministry,
 ];

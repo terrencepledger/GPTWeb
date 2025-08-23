@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { motion, useReducedMotion } from "framer-motion";
 import type { CSSProperties } from "react";
 
 export type Sermon = {
@@ -21,6 +22,10 @@ export function SermonCard({
   backgroundColor?: string;
 }) {
   const style: CSSProperties = {};
+  const shouldReduceMotion = useReducedMotion();
+  const initial = shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 };
+  const animate = { opacity: 1, y: 0 };
+  const transition = { duration: shouldReduceMotion ? 0 : 0.3 };
   if (backgroundImage) {
     style.backgroundImage = `url(${backgroundImage})`;
     style.backgroundSize = "cover";
@@ -30,23 +35,27 @@ export function SermonCard({
     style.backgroundColor = backgroundColor;
   }
   return (
-    <div
-      className="card relative flex h-full flex-col overflow-hidden rounded-lg"
+    <motion.div
+      initial={initial}
+      animate={animate}
+      whileHover={shouldReduceMotion ? {} : { scale: 1.02 }}
+      transition={transition}
+      className="card relative flex h-full flex-col overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)]"
       style={style}
     >
       <div className="flex flex-1 flex-col p-4">
-        <h3 className="text-lg font-semibold">{sermon.title}</h3>
-        <p className="mt-1 text-sm text-gray-600">
+        <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">{sermon.title}</h3>
+        <p className="mt-1 text-sm text-[var(--brand-muted)]">
           {sermon.date}
           {sermon.speaker ? ` • ${sermon.speaker}` : ""}
         </p>
         {sermon.passage && (
-          <p className="mt-1 text-sm italic text-gray-600">
+          <p className="mt-1 text-sm italic text-[var(--brand-muted)]">
             {sermon.passage}
           </p>
         )}
         {sermon.description && (
-          <p className="mt-2 flex-1 text-sm text-gray-700">
+          <p className="mt-2 flex-1 text-sm text-[var(--brand-fg)]/90">
             {sermon.description}
           </p>
         )}
@@ -55,7 +64,7 @@ export function SermonCard({
             {sermon.audioUrl && (
               <a
                 href={sermon.audioUrl}
-                className="text-sm font-medium text-blue-600 hover:underline"
+                className="text-sm font-medium text-[var(--brand-accent)] hover:underline hover:text-[var(--brand-primary-contrast)]"
               >
                 Listen
               </a>
@@ -64,7 +73,7 @@ export function SermonCard({
             {sermon.href && (
               <Link
                 href={sermon.href}
-                className="text-sm font-medium text-blue-600 hover:underline"
+                className="text-sm font-medium text-[var(--brand-accent)] hover:underline hover:text-[var(--brand-primary-contrast)]"
               >
                 Details
               </Link>
@@ -72,7 +81,7 @@ export function SermonCard({
           </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
