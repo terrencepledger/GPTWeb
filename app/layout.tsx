@@ -6,6 +6,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { siteSettings } from "@/lib/queries";
 
+export const revalidate = 0;
+
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await siteSettings();
   const title = settings?.title ?? "Example Church";
