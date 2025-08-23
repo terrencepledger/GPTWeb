@@ -3,8 +3,8 @@ import "./globals.css";
 import "./utilities.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { MotionConfig } from "framer-motion";
 import { siteSettings } from "@/lib/queries";
+import MotionProvider from "@/components/MotionProvider";
 
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -34,11 +34,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en">
       <body className="flex min-h-screen flex-col">
-        <MotionConfig reducedMotion="user">
+        <MotionProvider>
           <Header initialTitle={headerTitle} />
           <main className="mx-auto flex-1 max-w-5xl px-4 py-8">{children}</main>
           <Footer />
-        </MotionConfig>
+        </MotionProvider>
       </body>
     </html>
   );

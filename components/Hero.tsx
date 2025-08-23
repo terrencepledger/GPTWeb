@@ -33,9 +33,9 @@ export default function Hero({
       {backgroundGradient && (
         <div className={`absolute inset-0 -z-10 ${backgroundGradient}`} />
       )}
-      <div className="absolute inset-0 -z-10 bg-black/50" />
+      <div className="absolute inset-0 -z-10 bg-[var(--brand-overlay)]" />
 
-      <div className="mx-auto max-w-5xl px-4 py-24 text-center text-white">
+      <div className="mx-auto max-w-5xl px-4 py-24 text-center text-[var(--brand-fg)]">
         <h1 className="text-4xl font-bold tracking-tight">{headline}</h1>
         {subline && <p className="mt-4 text-lg">{subline}</p>}
         {cta && (

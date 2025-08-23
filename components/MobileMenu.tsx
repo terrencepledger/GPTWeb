@@ -47,7 +47,7 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
+          <div className="fixed inset-0 bg-[var(--brand-overlay)]" aria-hidden="true" />
         </Transition.Child>
 
         <div className="fixed inset-0 flex justify-end">
@@ -60,7 +60,7 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
             leaveFrom="translate-x-0"
             leaveTo="translate-x-full"
           >
-            <Dialog.Panel className="h-full w-64 bg-white p-6 shadow">
+            <Dialog.Panel className="h-full w-64 bg-[var(--brand-alt)] p-6 shadow">
               <button
                 className="mb-6 block"
                 aria-label="Close menu"

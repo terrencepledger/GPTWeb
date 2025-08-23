@@ -6,7 +6,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "echo \"No tests yet\" && exit 0"
+    "test": "node scripts/brand-consistency.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.7",

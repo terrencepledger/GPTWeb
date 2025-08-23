@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import type { CSSProperties } from "react";
