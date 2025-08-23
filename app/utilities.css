@@ -60,10 +60,9 @@
   }
 
   .animate-marquee-single {
-    display: inline-block;
-    animation: marquee-single 20s linear infinite;
+    animation: marquee-single var(--marquee-duration) linear infinite;
+    animation-delay: var(--marquee-delay);
     will-change: transform;
-    white-space: nowrap;
   }
 
   .marquee-viewport {
@@ -71,10 +70,18 @@
     width: 100%;
   }
   .marquee-track {
-    position: absolute;
-    left: 0;
-    top: 0;
+    display: inline-flex;
     white-space: nowrap;
+    gap: var(--marquee-gap);
+  }
+
+  @keyframes marquee-single {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(calc(-1 * (var(--content-width) + var(--marquee-gap))));
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
