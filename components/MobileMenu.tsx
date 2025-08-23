@@ -60,7 +60,7 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
             leaveFrom="translate-x-0"
             leaveTo="translate-x-full"
           >
-            <Dialog.Panel className="h-full w-64 bg-[var(--brand-alt)] p-6 shadow">
+            <Dialog.Panel className="h-full w-64 bg-[var(--brand-surface)] p-6 shadow">
               <button
                 className="mb-6 block"
                 aria-label="Close menu"
