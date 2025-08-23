@@ -35,7 +35,7 @@ export default function Hero({
       )}
       <div className="absolute inset-0 -z-10 bg-[var(--brand-overlay)]" />
 
-      <div className="mx-auto max-w-5xl px-4 py-24 text-center text-[var(--brand-fg)]">
+      <div className="px-4 py-24 text-center text-[var(--brand-fg)]">
         <h1 className="text-4xl font-bold tracking-tight">{headline}</h1>
         {subline && <p className="mt-4 text-lg">{subline}</p>}
         {cta && (

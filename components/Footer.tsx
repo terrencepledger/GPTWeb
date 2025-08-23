@@ -10,7 +10,7 @@ export default async function Footer() {
 
   return (
     <footer className="mt-12 bg-[var(--brand-bg)] text-[var(--brand-fg)]">
-      <div className="mx-auto max-w-5xl px-4 py-8">
+      <div className="max-w-site px-4 py-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div>
             <h4 className="mb-3 font-semibold text-[var(--brand-surface-contrast)]">{title}</h4>
@@ -24,9 +24,10 @@ export default async function Footer() {
                 {address}
               </a>
             </p>
-            <div className="mt-2">
-              <strong>Service Times:</strong>
-              <div className="mt-1 space-y-1">
+            <div className="mt-2 text-[var(--brand-surface-contrast)]">
+                <br/>
+                <strong>Service Times:</strong>
+                <div className="mt-1 space-y-1">
                 {serviceTimes
                   .split(/[,;\n|]+/)
                   .map((s) => s.trim())

@@ -38,7 +38,13 @@
 }
 
 @layer utilities {
-  /* Marquee starts on-screen and loops seamlessly with duplicated content */
+  .max-w-site {
+    max-width: var(--layout-max-width);
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   @keyframes marquee {
     0% {
       transform: translateX(0);
@@ -49,12 +55,31 @@
   }
 
   .animate-marquee {
-    animation: marquee var(--marquee-duration, 20s) linear infinite;
+    animation: marquee 20s linear infinite;
     will-change: transform;
   }
 
+  .animate-marquee-single {
+    display: inline-block;
+    animation: marquee-single 20s linear infinite;
+    will-change: transform;
+    white-space: nowrap;
+  }
+
+  .marquee-viewport {
+    position: relative;
+    width: 100%;
+  }
+  .marquee-track {
+    position: absolute;
+    left: 0;
+    top: 0;
+    white-space: nowrap;
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .animate-marquee {
+    .animate-marquee,
+    .animate-marquee-single {
       animation-duration: 0.01ms;
       animation-iteration-count: 1;
     }

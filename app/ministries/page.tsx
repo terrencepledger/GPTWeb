@@ -15,7 +15,7 @@ export default async function Page() {
         </p>
       </section>
       <section>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="w-full grid gap-8 grid-cols-[repeat(auto-fit,minmax(16rem,1fr))]">
           {ministries.map((ministry) => (
             <MinistryCard key={ministry._id} ministry={ministry} />
           ))}

@@ -1,5 +1,3 @@
-import Hero from "@/components/Hero";
-import QuickActions from "@/components/QuickActions";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import { EventList } from "@/components/EventList";
 import { SermonList } from "@/components/SermonList";
@@ -22,33 +20,22 @@ export default async function Page() {
     ministriesHighlights(3),
   ]);
 
-  const actions = [
-    { label: "Visit", href: "/visit" },
-    { label: "Events", href: "/events" },
-    { label: "Livestream", href: "/livestreams" },
-    { label: "Giving", href: "/giving" },
-  ];
-
-  const headline = settings?.title ?? "Welcome";
-  const subline = settings?.description ?? "";
   const address = settings?.address ?? "";
 
   return (
-    <div className="space-y-12">
-      <Hero headline={headline} subline={subline} backgroundImage={settings?.logo} />
-      <QuickActions actions={actions} />
+    <div className="w-full space-y-12">
       {announcement && <AnnouncementBanner message={announcement.message} />}
-      <section>
+      <section className="w-full">
         <h2 className="mb-4 text-xl font-semibold text-[var(--brand-accent)]">Upcoming Events</h2>
         <EventList events={events} />
       </section>
-      <section>
+      <section className="w-full">
         <h2 className="mb-4 text-xl font-semibold text-[var(--brand-accent)]">Recent Sermon</h2>
         <SermonList sermons={sermon ? [sermon] : []} />
       </section>
-      <section>
+      <section className="w-full">
         <h2 className="mb-4 text-xl font-semibold text-[var(--brand-accent)]">Ministry Highlights</h2>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(16rem,1fr))]">
           {ministries.map((min) => (
             <MinistryCard key={min._id} ministry={min} />
           ))}

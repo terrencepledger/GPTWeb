@@ -13,7 +13,7 @@ export default function EventGallery({ events }: { events: GalleryEvent[] }) {
   if (events.length === 0) {
     return (
       <div className="w-full">
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(16rem,1fr))]">
           <div className="col-span-full w-full rounded-md p-8 text-center">
             <p className="text-sm text-[var(--brand-muted)]">No events found.</p>
           </div>
@@ -24,7 +24,7 @@ export default function EventGallery({ events }: { events: GalleryEvent[] }) {
 
   return (
     <div className="w-full">
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(16rem,1fr))]">
         {events.map((ev) => (
           <article
             key={ev._id}
