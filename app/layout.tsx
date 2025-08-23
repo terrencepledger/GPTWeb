@@ -29,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const settings = await siteSettings();
   const headerTitle = settings?.title ?? "Example Church";
-  const maxWidth = "80rem";
+  const maxWidth = "90vw";
 
   return (
     <html lang="en">
