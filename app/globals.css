@@ -38,6 +38,7 @@ img {
   --brand-primary-contrast: #FFFFFF;
   --brand-accent: #D6AF36; /* gold */
   --brand-alt: #FFFFFF; /* alt is white in all modes */
+  --brand-ink: #121212; /* deep ink for overlays */
 
   /* Set the entire page background to brand purple and ensure strong contrast */
   --brand-bg: #5C30A6; /* brand purple page background */
@@ -46,6 +47,8 @@ img {
   --brand-border: #8C6A15; /* deep gold border for contrast on purple */
   --brand-surface: #4A258E; /* deeper purple surface panels */
   --brand-surface-contrast: #FFFFFF; /* white for headings on surface */
+  --brand-overlay: color-mix(in oklab, var(--brand-ink) 50%, transparent);
+  --brand-overlay-muted: color-mix(in oklab, var(--brand-ink) 30%, transparent);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -62,6 +65,8 @@ img {
     --brand-border: #8C6A15; /* deep gold for dark mode accents */
     --brand-surface: #0B0B0B; /* same as bg for a flat look */
     --brand-surface-contrast: #FFFFFF; /* pure white */
+    --brand-overlay: color-mix(in oklab, var(--brand-ink) 50%, transparent);
+    --brand-overlay-muted: color-mix(in oklab, var(--brand-ink) 60%, transparent);
   }
 }
 
@@ -72,10 +77,13 @@ html {
   --brand-primary-contrast: #FFFFFF;
   --brand-accent: #D6AF36;
   --brand-alt: #FFFFFF; /* alt is white in all modes */
+  --brand-ink: #121212; /* deep ink for overlays */
   --brand-bg: #5C30A6;
   --brand-fg: #FFFFFF; /* white on purple */
   --brand-muted: var(--brand-accent); /* accent for low-contrast text */
   --brand-border: #8C6A15; /* deep gold */
   --brand-surface: #4A258E; /* deeper purple */
   --brand-surface-contrast: #FFFFFF; /* white */
+  --brand-overlay: color-mix(in oklab, var(--brand-ink) 50%, transparent);
+  --brand-overlay-muted: color-mix(in oklab, var(--brand-ink) 30%, transparent);
 }
