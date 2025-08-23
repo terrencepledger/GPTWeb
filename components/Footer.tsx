@@ -9,7 +9,7 @@ export default async function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-12 bg-[var(--brand-bg)] text-[var(--brand-fg)]">
+    <footer className="mt-12 border-t-2 border-[var(--brand-accent)] bg-[var(--brand-bg)] text-[var(--brand-fg)]">
       <div className="max-w-site px-4 py-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div>
