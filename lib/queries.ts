@@ -1,5 +1,6 @@
 import groq from 'groq';
 import {sanity} from './sanity';
+import {cache} from 'react';
 
 export interface Event {
   _id: string;
@@ -74,10 +75,11 @@ export interface SiteSettings {
   logo?: string;
 }
 
-export const siteSettings = () =>
+export const siteSettings = cache(() =>
   sanity.fetch<SiteSettings | null>(
     groq`*[_type == "siteSettings"] | order(_updatedAt desc)[0]{_id, title, description, address, serviceTimes, "logo": logo.asset->url}`
-  );
+  )
+);
 
 export interface Ministry {
   _id: string;

@@ -7,7 +7,7 @@ const dataset = process.env.SANITY_STUDIO_DATASET;
 // Optional read token (single canonical name)
 const token = process.env.SANITY_READ_TOKEN;
 
-const useCdn = !token; // Disable CDN if using a token to ensure fresh, authorized data
+const useCdn = false; // Always disable CDN to ensure fresh data
 
 const client = createClient({
   projectId,
