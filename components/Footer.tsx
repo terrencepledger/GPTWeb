@@ -9,73 +9,72 @@ export default async function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-12 border-t-2 border-[var(--brand-accent)] bg-[var(--brand-bg)] text-[var(--brand-fg)]">
-      <div className="max-w-site px-4 py-8">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
+    <footer className="mt-12 border-t border-[var(--brand-border)] bg-[var(--brand-surface)] text-[var(--brand-fg)]">
+      <div className="max-w-site px-4 py-6">
+        <div className="grid grid-cols-1 gap-y-6 md:grid-cols-5 md:gap-x-8">
           <div>
-            <h4 className="mb-3 font-semibold text-[var(--brand-surface-contrast)]">{title}</h4>
+            <h4 className="mb-2 font-semibold text-[var(--brand-surface-contrast)]">{title}</h4>
             <p>
               <a
                 href={`https://www.google.com/maps?q=${encodeURIComponent(address)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[var(--brand-accent)] hover:underline"
+                className="text-[var(--brand-accent)] no-underline hover:underline hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded"
               >
                 {address}
               </a>
             </p>
-            <div className="mt-2 text-[var(--brand-surface-contrast)]">
-                <br/>
-                <strong>Service Times:</strong>
-                <div className="mt-1 space-y-1">
-                {serviceTimes
-                  .split(/[,;\n|]+/)
-                  .map((s) => s.trim())
-                  .filter(Boolean)
-                  .map((line, idx) => (
-                    <div key={idx}>{line}</div>
-                  ))}
-              </div>
+          </div>
+
+          <div className="text-center">
+            <h4 className="mb-2 font-semibold text-[var(--brand-surface-contrast)]">Service Times</h4>
+            <div className="space-y-0.5">
+              {serviceTimes
+                .split(/[,;\n|]+/)
+                .map((s) => s.trim())
+                .filter(Boolean)
+                .map((line, idx) => (
+                  <div key={idx}>{line}</div>
+                ))}
             </div>
           </div>
+
           <div>
-            <h4 className="mb-3 font-semibold text-[var(--brand-surface-contrast)]">Quick Links</h4>
-            <ul className="space-y-1">
-              <li>
-                <Link className="text-[var(--brand-accent)] hover:underline" href="/visit">
-                  Visit
-                </Link>
-              </li>
-              <li>
-                <Link className="text-[var(--brand-accent)] hover:underline" href="/events">
-                  Events
-                </Link>
-              </li>
-              <li>
-                <Link className="text-[var(--brand-accent)] hover:underline" href="/livestreams">
-                  Livestreams
-                </Link>
-              </li>
-              <li>
-                <Link className="text-[var(--brand-accent)] hover:underline" href="/ministries">
-                  Ministries
-                </Link>
-              </li>
-              <li>
-                <Link className="text-[var(--brand-accent)] hover:underline" href="/giving">
-                  Giving
-                </Link>
-              </li>
-            </ul>
+            <div className="w-max mx-auto text-center">
+              <h4 className="mb-2 font-semibold text-[var(--brand-surface-contrast)]">Quick Links</h4>
+              <ul className="grid grid-cols-2 gap-x-6 gap-y-1">
+                <li>
+                  <Link className="text-[var(--brand-accent)] no-underline hover:underline hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded" href="/visit">
+                    Visit
+                  </Link>
+                </li>
+                <li>
+                  <Link className="text-[var(--brand-accent)] no-underline hover:underline hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded" href="/events">
+                    Events
+                  </Link>
+                </li>
+                <li>
+                  <Link className="text-[var(--brand-accent)] no-underline hover:underline hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded" href="/livestreams">
+                    Livestreams
+                  </Link>
+                </li>
+                <li>
+                  <Link className="text-[var(--brand-accent)] no-underline hover:underline hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded" href="/giving">
+                    Giving
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
-          <div>
-            <h4 className="mb-3 font-semibold text-[var(--brand-surface-contrast)]">Connect</h4>
-            <ul className="flex gap-4">
+
+          <div className="text-center">
+            <h4 className="mb-2 font-semibold text-[var(--brand-surface-contrast)]">Connect</h4>
+            <ul className="flex justify-center gap-3">
               <li>
                 <a
                   href="#"
                   aria-label="Facebook"
-                  className="text-[var(--brand-muted)] hover:text-[var(--brand-fg)]"
+                  className="text-[var(--brand-muted)] hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded"
                 >
                   <svg
                     className="h-5 w-5"
@@ -91,7 +90,7 @@ export default async function Footer() {
                 <a
                   href="#"
                   aria-label="Instagram"
-                  className="text-[var(--brand-muted)] hover:text-[var(--brand-fg)]"
+                  className="text-[var(--brand-muted)] hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded"
                 >
                   <svg
                     className="h-5 w-5"
@@ -107,7 +106,7 @@ export default async function Footer() {
                 <a
                   href="#"
                   aria-label="YouTube"
-                  className="text-[var(--brand-muted)] hover:text-[var(--brand-fg)]"
+                  className="text-[var(--brand-muted)] hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded"
                 >
                   <svg
                     className="h-5 w-5"
@@ -121,8 +120,9 @@ export default async function Footer() {
               </li>
             </ul>
           </div>
+
           <div>
-            <h4 className="mb-3 font-semibold text-[var(--brand-surface-contrast)]">Newsletter</h4>
+            <h4 className="mb-2 font-semibold text-[var(--brand-surface-contrast)]">Newsletter</h4>
             <form className="flex flex-col sm:flex-row">
               <input
                 type="email"
@@ -132,13 +132,13 @@ export default async function Footer() {
             </form>
           </div>
         </div>
-        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-[var(--brand-border)] pt-4 text-sm text-[var(--brand-muted)] md:flex-row">
+        <div className="mt-4 flex flex-col items-center justify-between gap-2 border-t border-[var(--brand-border)] pt-3 text-sm text-[var(--brand-muted)] md:flex-row">
           <div>© {year} {title}</div>
           <div className="flex gap-3">
-            <Link className="hover:underline" href="/privacy">
+            <Link className="text-[var(--brand-accent)] no-underline hover:underline hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded" href="/privacy">
               Privacy
             </Link>
-            <Link className="hover:underline" href="/terms">
+            <Link className="text-[var(--brand-accent)] no-underline hover:underline hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded" href="/terms">
               Terms
             </Link>
           </div>
