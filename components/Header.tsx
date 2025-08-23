@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import MobileMenu from "./MobileMenu";
+import { useRef, useState } from "react";
+import MobileMenu, { MobileMenuHandle } from "./MobileMenu";
 
 export default function Header({ initialTitle }: { initialTitle?: string }) {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const mobileMenuRef = useRef<MobileMenuHandle>(null);
   const [siteTitle] = useState(initialTitle ?? "Example Church");
 
   const nav = [
@@ -136,7 +136,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
         <button
           className="ml-auto text-[var(--brand-accent)] hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)] md:hidden"
           aria-label="Open menu"
-          onClick={() => setMobileOpen(true)}
+          onClick={() => mobileMenuRef.current?.open()}
         >
           <svg
             className="h-6 w-6"
@@ -150,7 +150,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
         </button>
       </div>
 
-      <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} nav={nav} />
+      <MobileMenu ref={mobileMenuRef} nav={nav} />
     </header>
   );
 }

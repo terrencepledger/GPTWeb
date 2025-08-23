@@ -2,7 +2,7 @@
 
 import { Dialog, Disclosure, Transition } from "@headlessui/react";
 import Link from "next/link";
-import { Fragment } from "react";
+import React, { Fragment, forwardRef, useImperativeHandle, useState } from "react";
 import { usePathname } from "next/navigation";
 
 interface NavItem {
@@ -10,9 +10,12 @@ interface NavItem {
   label: string;
 }
 
+export type MobileMenuHandle = {
+  open: () => void;
+  close: () => void;
+};
+
 interface MobileMenuProps {
-  open: boolean;
-  onClose: () => void;
   nav: NavItem[];
 }
 
@@ -20,12 +23,21 @@ function linkClasses(active: boolean) {
   return `block ${active ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]`;
 }
 
-export default function MobileMenu({ open, onClose, nav }: MobileMenuProps) {
+
+function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHandle>) {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+
+  useImperativeHandle(ref, () => ({
+    open: () => setOpen(true),
+    close: () => setOpen(false),
+  }), []);
+
+  const handleClose = () => setOpen(false);
 
   return (
     <Transition show={open} as={Fragment}>
-      <Dialog as="div" className="md:hidden" onClose={onClose}>
+      <Dialog as="div" className="md:hidden" onClose={handleClose}>
         <Transition.Child
           as={Fragment}
           enter="transition-opacity ease-linear duration-200"
@@ -52,7 +64,7 @@ export default function MobileMenu({ open, onClose, nav }: MobileMenuProps) {
               <button
                 className="mb-6 block"
                 aria-label="Close menu"
-                onClick={onClose}
+                onClick={handleClose}
               >
                 <svg
                   className="h-6 w-6"
@@ -69,7 +81,7 @@ export default function MobileMenu({ open, onClose, nav }: MobileMenuProps) {
                   href="/"
                   className={linkClasses(pathname === "/")}
                   aria-current={pathname === "/" ? "page" : undefined}
-                  onClick={onClose}
+                  onClick={handleClose}
                 >
                   Home
                 </Link>
@@ -93,7 +105,7 @@ export default function MobileMenu({ open, onClose, nav }: MobileMenuProps) {
                             href="/about/staff"
                             className={linkClasses(pathname === "/about/staff")}
                             aria-current={pathname === "/about/staff" ? "page" : undefined}
-                            onClick={onClose}
+                            onClick={handleClose}
                           >
                             Staff
                           </Link>
@@ -105,7 +117,7 @@ export default function MobileMenu({ open, onClose, nav }: MobileMenuProps) {
                             aria-current={
                               pathname === "/about/mission-statement" ? "page" : undefined
                             }
-                            onClick={onClose}
+                            onClick={handleClose}
                           >
                             Mission Statement
                           </Link>
@@ -134,7 +146,7 @@ export default function MobileMenu({ open, onClose, nav }: MobileMenuProps) {
                             href="/contact"
                             className={linkClasses(pathname === "/contact")}
                             aria-current={pathname === "/contact" ? "page" : undefined}
-                            onClick={onClose}
+                            onClick={handleClose}
                           >
                             Contact Form
                           </Link>
@@ -146,7 +158,7 @@ export default function MobileMenu({ open, onClose, nav }: MobileMenuProps) {
                             aria-current={
                               pathname === "/contact/prayer-requests" ? "page" : undefined
                             }
-                            onClick={onClose}
+                            onClick={handleClose}
                           >
                             Prayer Requests
                           </Link>
@@ -161,7 +173,7 @@ export default function MobileMenu({ open, onClose, nav }: MobileMenuProps) {
                     href={item.href}
                     className={linkClasses(pathname.startsWith(item.href))}
                     aria-current={pathname.startsWith(item.href) ? "page" : undefined}
-                    onClick={onClose}
+                    onClick={handleClose}
                   >
                     {item.label}
                   </Link>
@@ -174,4 +186,6 @@ export default function MobileMenu({ open, onClose, nav }: MobileMenuProps) {
     </Transition>
   );
 }
+
+export default forwardRef<MobileMenuHandle, MobileMenuProps>(MobileMenuInner);
 
