@@ -1,6 +1,5 @@
 import groq from 'groq';
 import {sanity} from './sanity';
-import {cache} from 'react';
 
 export interface Event {
   _id: string;
@@ -75,11 +74,33 @@ export interface SiteSettings {
   logo?: string;
 }
 
-export const siteSettings = cache(() =>
-  sanity.fetch<SiteSettings | null>(
-    groq`*[_type == "siteSettings"] | order(_updatedAt desc)[0]{_id, title, description, address, serviceTimes, "logo": logo.asset->url}`
-  )
-);
+let _siteSettingsCache: { value: SiteSettings | null; ts: number } | null = null;
+let _siteSettingsPromise: Promise<SiteSettings | null> | null = null;
+const SETTINGS_TTL_MS = 30000; // 30s TTL to reduce duplicate pulls while keeping data fresh
+
+export const siteSettings = (): Promise<SiteSettings | null> => {
+  const now = Date.now();
+  if (_siteSettingsCache && now - _siteSettingsCache.ts < SETTINGS_TTL_MS) {
+    return Promise.resolve(_siteSettingsCache.value);
+  }
+  if (_siteSettingsPromise) {
+    return _siteSettingsPromise;
+  }
+  _siteSettingsPromise = sanity
+    .fetch<SiteSettings | null>(
+      groq`*[_type == "siteSettings"] | order(_updatedAt desc)[0]{_id, title, description, address, serviceTimes, "logo": logo.asset->url}`
+    )
+    .then((val) => {
+      _siteSettingsCache = { value: val, ts: Date.now() };
+      _siteSettingsPromise = null;
+      return val;
+    })
+    .catch((err) => {
+      _siteSettingsPromise = null;
+      throw err;
+    });
+  return _siteSettingsPromise;
+};
 
 export interface Ministry {
   _id: string;
