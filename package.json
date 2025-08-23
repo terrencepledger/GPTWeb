@@ -9,6 +9,7 @@
     "test": "echo \"No tests yet\" && exit 0"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.7",
     "@portabletext/react": "^3.2.1",
     "@sanity/client": "^7.8.2",
     "@sanity/image-url": "^1.1.0",

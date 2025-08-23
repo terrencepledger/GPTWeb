@@ -1,61 +1,80 @@
 import Link from "next/link";
-import { siteSettings as fetchSiteSettings } from "../lib/queries";
+import { siteSettings } from "@/lib/queries";
 
 export default async function Footer() {
-  const settings = await fetchSiteSettings();
-  const address = settings?.address ?? "864 Splitlog Ave., Kansas City, KS 66101";
-  const serviceTimes = settings?.serviceTimes ?? "Sundays 10:30 AM and Wednesdays 7:00 PM";
+  const settings = await siteSettings();
+  const title = settings?.title ?? "Example Church";
+  const address = settings?.address ?? "123 Main St, Hometown, ST 12345";
+  const serviceTimes = settings?.serviceTimes ?? "Sundays 10:00 AM";
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-12 bg-gray-900 text-gray-200">
+    <footer className="mt-12 bg-[var(--brand-bg)] text-[var(--brand-fg)]">
       <div className="mx-auto max-w-5xl px-4 py-8">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div>
-            <h4 className="mb-3 font-semibold text-white">Example Church</h4>
-            <p>{address}</p>
-            <p className="mt-2">
-              <strong>Service Times:</strong> {serviceTimes}
+            <h4 className="mb-3 font-semibold text-[var(--brand-surface-contrast)]">{title}</h4>
+            <p>
+              <a
+                href={`https://www.google.com/maps?q=${encodeURIComponent(address)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[var(--brand-accent)] hover:underline"
+              >
+                {address}
+              </a>
             </p>
+            <div className="mt-2">
+              <strong>Service Times:</strong>
+              <div className="mt-1 space-y-1">
+                {serviceTimes
+                  .split(/[,;\n|]+/)
+                  .map((s) => s.trim())
+                  .filter(Boolean)
+                  .map((line, idx) => (
+                    <div key={idx}>{line}</div>
+                  ))}
+              </div>
+            </div>
           </div>
           <div>
-            <h4 className="mb-3 font-semibold text-white">Quick Links</h4>
+            <h4 className="mb-3 font-semibold text-[var(--brand-surface-contrast)]">Quick Links</h4>
             <ul className="space-y-1">
               <li>
-                <Link className="text-indigo-200 hover:underline" href="/visit">
+                <Link className="text-[var(--brand-accent)] hover:underline" href="/visit">
                   Visit
                 </Link>
               </li>
               <li>
-                <Link className="text-indigo-200 hover:underline" href="/events">
+                <Link className="text-[var(--brand-accent)] hover:underline" href="/events">
                   Events
                 </Link>
               </li>
               <li>
-                <Link className="text-indigo-200 hover:underline" href="/livestreams">
+                <Link className="text-[var(--brand-accent)] hover:underline" href="/livestreams">
                   Livestreams
                 </Link>
               </li>
               <li>
-                <Link className="text-indigo-200 hover:underline" href="/ministries">
+                <Link className="text-[var(--brand-accent)] hover:underline" href="/ministries">
                   Ministries
                 </Link>
               </li>
               <li>
-                <Link className="text-indigo-200 hover:underline" href="/giving">
+                <Link className="text-[var(--brand-accent)] hover:underline" href="/giving">
                   Giving
                 </Link>
               </li>
             </ul>
           </div>
           <div>
-            <h4 className="mb-3 font-semibold text-white">Connect</h4>
+            <h4 className="mb-3 font-semibold text-[var(--brand-surface-contrast)]">Connect</h4>
             <ul className="flex gap-4">
               <li>
                 <a
                   href="#"
                   aria-label="Facebook"
-                  className="text-gray-400 hover:text-white"
+                  className="text-[var(--brand-muted)] hover:text-[var(--brand-fg)]"
                 >
                   <svg
                     className="h-5 w-5"
@@ -71,7 +90,7 @@ export default async function Footer() {
                 <a
                   href="#"
                   aria-label="Instagram"
-                  className="text-gray-400 hover:text-white"
+                  className="text-[var(--brand-muted)] hover:text-[var(--brand-fg)]"
                 >
                   <svg
                     className="h-5 w-5"
@@ -87,7 +106,7 @@ export default async function Footer() {
                 <a
                   href="#"
                   aria-label="YouTube"
-                  className="text-gray-400 hover:text-white"
+                  className="text-[var(--brand-muted)] hover:text-[var(--brand-fg)]"
                 >
                   <svg
                     className="h-5 w-5"
@@ -102,18 +121,18 @@ export default async function Footer() {
             </ul>
           </div>
           <div>
-            <h4 className="mb-3 font-semibold text-white">Newsletter</h4>
+            <h4 className="mb-3 font-semibold text-[var(--brand-surface-contrast)]">Newsletter</h4>
             <form className="flex flex-col sm:flex-row">
               <input
                 type="email"
                 placeholder="Email address"
-                className="flex-1 rounded px-2 py-1 text-gray-900"
+                className="flex-1 rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] px-2 py-1 text-[var(--brand-fg)] placeholder-[var(--brand-muted)] focus:border-[var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary)]"
               />
             </form>
           </div>
         </div>
-        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-gray-700 pt-4 text-sm text-gray-400 md:flex-row">
-          <div>© {year} Example Church</div>
+        <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-[var(--brand-border)] pt-4 text-sm text-[var(--brand-muted)] md:flex-row">
+          <div>© {year} {title}</div>
           <div className="flex gap-3">
             <Link className="hover:underline" href="/privacy">
               Privacy

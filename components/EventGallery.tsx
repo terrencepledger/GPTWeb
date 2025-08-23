@@ -1,0 +1,59 @@
+import Image from "next/image";
+
+export type GalleryEvent = {
+  _id: string;
+  title: string;
+  date: string;
+  location?: string;
+  description?: string;
+  image?: string;
+};
+
+export default function EventGallery({ events }: { events: GalleryEvent[] }) {
+  if (events.length === 0) {
+    return (
+      <div className="w-full">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="col-span-full w-full rounded-md p-8 text-center">
+            <p className="text-sm text-[var(--brand-muted)]">No events found.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {events.map((ev) => (
+          <article
+            key={ev._id}
+            className="group relative overflow-hidden rounded-lg border border-[var(--brand-border)] transition"
+          >
+            {ev.image && (
+              <Image
+                src={ev.image}
+                alt=""
+                width={600}
+                height={320}
+                className="h-40 w-full object-cover"
+              />
+            )}
+            <div className="p-4">
+              <h3 className="text-base font-semibold text-[var(--brand-fg)]">{ev.title}</h3>
+              <p className="mt-1 text-xs text-[var(--brand-muted)]">
+                {ev.date}
+                {ev.location ? ` • ${ev.location}` : ""}
+              </p>
+              {ev.description && (
+                <p className="mt-2 line-clamp-3 text-sm text-[var(--brand-fg)]/90">
+                  {ev.description}
+                </p>
+              )}
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
