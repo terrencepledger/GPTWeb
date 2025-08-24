@@ -60,7 +60,7 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
             leaveFrom="translate-x-0"
             leaveTo="translate-x-full"
           >
-            <Dialog.Panel className="h-full w-64 bg-[var(--brand-alt)] p-6 shadow">
+            <Dialog.Panel className="h-full w-64 bg-[var(--brand-surface)] p-6 shadow">
               <button
                 className="mb-6 block"
                 aria-label="Close menu"
@@ -85,11 +85,20 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
                 >
                   Home
                 </Link>
-                <Disclosure>
+                <Disclosure defaultOpen={pathname.startsWith("/about")}>
                   {({ open: aboutOpen }) => (
                     <div>
-                      <Disclosure.Button className={`${pathname.startsWith("/about") ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} w-full text-left hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]`}>
-                        About
+                      <Disclosure.Button className={`${pathname.startsWith("/about") ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} w-full inline-flex items-center justify-between hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]`}>
+                        <span>About</span>
+                        <svg
+                          className={`h-4 w-4 transition-transform duration-150 ${aboutOpen ? "rotate-180" : "rotate-0"}`}
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          aria-hidden="true"
+                          focusable="false"
+                        >
+                          <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
+                        </svg>
                       </Disclosure.Button>
                       <Transition
                         show={aboutOpen}
@@ -126,11 +135,20 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
                     </div>
                   )}
                 </Disclosure>
-                <Disclosure>
+                <Disclosure defaultOpen={pathname.startsWith("/contact")}>
                   {({ open: contactOpen }) => (
                     <div>
-                      <Disclosure.Button className={`${pathname.startsWith("/contact") ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} w-full text-left hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]`}>
-                        Contact
+                      <Disclosure.Button className={`${pathname.startsWith("/contact") ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} w-full inline-flex items-center justify-between hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]`}>
+                        <span>Contact</span>
+                        <svg
+                          className={`h-4 w-4 transition-transform duration-150 ${contactOpen ? "rotate-180" : "rotate-0"}`}
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          aria-hidden="true"
+                          focusable="false"
+                        >
+                          <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
+                        </svg>
                       </Disclosure.Button>
                       <Transition
                         show={contactOpen}

@@ -32,7 +32,7 @@ export function EventCard({
   }
   return (
     <div
-      className="card relative flex h-full flex-col overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)]"
+      className="card relative flex h-full transform flex-col overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)] transition duration-300 ease-out hover:-translate-y-1 hover:-rotate-1 hover:scale-[1.02] hover:shadow-lg focus-within:-translate-y-1 focus-within:-rotate-1 focus-within:scale-[1.02] focus-within:shadow-lg"
       style={style}
     >
       {event.image && (
@@ -58,7 +58,7 @@ export function EventCard({
         {event.href && (
           <Link
             href={event.href}
-            className="mt-4 text-sm font-medium text-[var(--brand-accent)] hover:underline hover:text-[var(--brand-primary-contrast)]"
+            className="relative mt-4 inline-block rounded px-1 py-0.5 text-sm font-medium text-[var(--brand-accent)] transition-colors hover:underline hover:text-[var(--brand-primary-contrast)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] active:bg-[var(--brand-accent)]/20"
           >
             Learn more
           </Link>
