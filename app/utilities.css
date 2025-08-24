@@ -45,6 +45,60 @@
     margin-right: auto;
   }
 
+  /* Fade-in animations */
+  @keyframes fade-in-up {
+    0% {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes fade-in-down {
+    0% {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-fade-in-up {
+    animation: fade-in-up 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .animate-fade-in-down {
+    animation: fade-in-down 500ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  @keyframes fade-in-opacity {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .animate-fade-in-opacity {
+    animation: fade-in-opacity 300ms ease-out both;
+  }
+
+  /* Strong entrance from the very top of the page */
+  @keyframes slide-in-from-top {
+    0% {
+      opacity: 0;
+      /* Start above the header and slide down into place (distance equals header height) */
+      transform: translateY(calc(-1 * var(--header-height-px, 64px)));
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-slide-in-from-top {
+    animation: slide-in-from-top 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+  }
+
+  /* Marquee animations */
   @keyframes marquee {
     0% {
       transform: translateX(0);
@@ -65,6 +119,11 @@
     will-change: transform;
   }
 
+  .animate-marquee-intro {
+    animation: marquee-intro var(--marquee-duration) linear both;
+    will-change: transform;
+  }
+
   .marquee-viewport {
     position: relative;
     width: 100%;
@@ -77,18 +136,37 @@
 
   @keyframes marquee-single {
     from {
-      transform: translateX(0);
+      transform: translate3d(0, 0, 0);
     }
     to {
-      transform: translateX(calc(-1 * (var(--content-width) + var(--marquee-gap))));
+      transform: translate3d(calc(-1 * (var(--content-width) + var(--marquee-gap))), 0, 0);
+    }
+  }
+
+  @keyframes marquee-intro {
+    from {
+      transform: translate3d(calc(var(--container-width) - 1%), 0, 0);
+    }
+    to {
+      transform: translate3d(calc(-1 * var(--content-width)), 0, 0);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .animate-marquee,
-    .animate-marquee-single {
+    .animate-marquee-single,
+    .animate-marquee-intro {
       animation-duration: 0.01ms;
       animation-iteration-count: 1;
     }
+    .animate-fade-in-up,
+    .animate-fade-in-down,
+    .animate-fade-in-opacity,
+    .animate-slide-in-from-top {
+      animation: none;
+      opacity: 1 !important;
+      transform: none !important;
+    }
   }
 }
+

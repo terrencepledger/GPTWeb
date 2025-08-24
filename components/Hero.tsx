@@ -36,12 +36,20 @@ export default function Hero({
       <div className="absolute inset-0 -z-10 bg-[var(--brand-overlay)]" />
 
       <div className="px-4 py-24 text-center text-[var(--brand-fg)]">
-        <h1 className="text-4xl font-bold tracking-tight">{headline}</h1>
-        {subline && <p className="mt-4 text-lg">{subline}</p>}
+        <h1 className="text-4xl font-bold tracking-tight opacity-0 animate-fade-in-up">{headline}</h1>
+        {subline && (
+          <p
+            className="mt-4 text-lg opacity-0 animate-fade-in-up"
+            style={{ animationDelay: '0.15s' }}
+          >
+            {subline}
+          </p>
+        )}
         {cta && (
           <Link
             href={cta.href}
-            className="mt-8 inline-block rounded-md border border-[var(--brand-primary)] bg-[var(--brand-primary)] px-6 py-2 font-medium text-[var(--brand-primary-contrast)] shadow-sm hover:bg-[color:color-mix(in_oklab,var(--brand-primary)_85%,white_15%)]"
+            className="mt-8 inline-block rounded-md border border-[var(--brand-primary)] bg-[var(--brand-primary)] px-6 py-2 font-medium text-[var(--brand-primary-contrast)] shadow-sm hover:bg-[color:color-mix(in_oklab,var(--brand-primary)_85%,white_15%)] opacity-0 animate-fade-in-up"
+            style={{ animationDelay: '0.3s' }}
           >
             {cta.label}
           </Link>
