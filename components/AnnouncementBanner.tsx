@@ -78,7 +78,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
       role="status"
       aria-live="polite"
       aria-label="Site announcement"
-      className="relative w-full overflow-hidden rounded-md border border-[var(--brand-accent)] bg-[var(--brand-primary)] dark:bg-[var(--brand-surface)] px-4 pl-8 py-3 pr-10 text-center text-sm text-[var(--brand-primary-contrast)] dark:text-[var(--brand-accent)]"
+      className="relative w-full overflow-hidden rounded-md border border-[var(--brand-accent)] bg-[var(--brand-primary)] dark:bg-[var(--brand-surface)] px-4 pl-8 py-3 pr-10 text-center text-sm text-[var(--brand-primary-contrast)] dark:text-[var(--brand-accent)] animate-fade-in-down"
     >
       <div className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-[var(--brand-accent)]" aria-hidden="true">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
