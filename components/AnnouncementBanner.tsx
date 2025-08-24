@@ -51,7 +51,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
   // Ensure continuous coverage during the loop by rendering enough copies to cover the viewport
   const loopRepeatCount = useMemo(() => {
     if (!isOverflowing) return 0;
-    const tile = contentWidth + gap; // width of one message + gap
+    const tile = contentWidth + gap; // width of one message and gap
     if (!(tile > 0) || !(containerWidth > 0)) return 2;
     // We want the track width to be at least containerWidth + one tile so that
     // when a full gap passes through the viewport, the adjacent copy still covers the rest.
@@ -70,7 +70,6 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
       } catch {}
   }, [storageKey]);
 
-  // Run entrance animation on mount and when message changes, with resilient fallbacks
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
@@ -169,15 +168,14 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
       });
     };
 
-    // Trigger on mount (and if the message itself changes) with a 1s delay before entrance
-    if (delayTimer) window.clearTimeout(delayTimer);
+    const START_DELAY_MS = 1000;
     delayTimer = window.setTimeout(() => {
-      setReady(true);
-      readyRef.current = true;
-      requestAnimationFrame(() => start());
-    }, 1000);
+        setReady(true);
+        readyRef.current = true;
+        requestAnimationFrame(start);
+        }, START_DELAY_MS);
 
-    const onPageShow = (e: PageTransitionEvent) => {
+      const onPageShow = (e: PageTransitionEvent) => {
       // @ts-ignore - persisted exists on PageTransitionEvent in browsers
       if ((e as any).persisted) {
         start();
@@ -206,7 +204,6 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
       el.removeEventListener('animationend', onAnimationEnd);
       if (fallbackTimer) window.clearTimeout(fallbackTimer);
       if (delayTimer) window.clearTimeout(delayTimer);
-      // ensure we don't leave it elevated on unmount
       dispatchAnimating(false);
     };
   }, [message]);
@@ -239,7 +236,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
         const speed = 80; // px/sec
         const travel = tW + gap; // distance to move before looping
         setDuration(travel / speed);
-        // Intro travels from ~1% from right edge (0.99 * container) through entire content width
+        // Intro travels from ~1% from right edge (0.99 * container) through the entire content width
         const introTravel = cW * 0.99 + tW;
         setIntroDuration(introTravel / speed);
       } else {
