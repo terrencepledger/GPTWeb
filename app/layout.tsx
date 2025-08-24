@@ -4,7 +4,9 @@ import "./globals.css";
 import "./utilities.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { siteSettings } from "@/lib/queries";
+import AnnouncementBanner from "@/components/AnnouncementBanner";
+import BannerAnchor from "@/components/BannerAnchor";
+import { siteSettings, announcementLatest } from "@/lib/queries";
 
 export const revalidate = 0;
 
@@ -29,9 +31,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const settings = await siteSettings();
+  const [settings, announcement] = await Promise.all([
+    siteSettings(),
+    announcementLatest(),
+  ]);
   const headerTitle = settings?.title ?? "Example Church";
   const maxWidth = "90vw";
+  const message = announcement?.message ?? "";
 
   return (
     <html lang="en">
@@ -40,6 +46,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         style={{ "--layout-max-width": maxWidth } as CSSProperties}
       >
         <Header initialTitle={headerTitle} />
+        {message && (
+          <BannerAnchor gap={0}>
+            <div className="max-w-site mx-auto w-full px-4">
+              <AnnouncementBanner message={message} />
+            </div>
+          </BannerAnchor>
+        )}
         <main className="max-w-site flex-1 px-4 py-8">{children}</main>
         <Footer />
       </body>

@@ -47,10 +47,10 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-[var(--brand-overlay)]" aria-hidden="true" />
+          <div className="fixed inset-0 bg-[var(--brand-overlay)] z-50" aria-hidden="true" />
         </Transition.Child>
 
-        <div className="fixed inset-0 flex justify-end">
+        <div className="fixed inset-0 flex justify-end z-50">
           <Transition.Child
             as={Fragment}
             enter="transition transform duration-300"

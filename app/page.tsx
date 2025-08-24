@@ -1,10 +1,8 @@
-import AnnouncementBanner from "@/components/AnnouncementBanner";
 import { EventList } from "@/components/EventList";
 import { SermonList } from "@/components/SermonList";
 import { MinistryCard } from "@/components/MinistryCard";
 import MapBlock from "@/components/MapBlock";
 import {
-  announcementLatest,
   eventsUpcoming,
   sermonLatest,
   siteSettings,
@@ -12,8 +10,7 @@ import {
 } from "@/lib/queries";
 
 export default async function Page() {
-  const [announcement, events, sermon, settings, ministries] = await Promise.all([
-    announcementLatest(),
+  const [events, sermon, settings, ministries] = await Promise.all([
     eventsUpcoming(3),
     sermonLatest(),
     siteSettings(),
@@ -24,7 +21,6 @@ export default async function Page() {
 
   return (
     <div className="w-full space-y-12">
-      {announcement && <AnnouncementBanner message={announcement.message} />}
       <section
         className="w-full opacity-0 animate-fade-in-up"
         style={{ animationDelay: '0.1s' }}

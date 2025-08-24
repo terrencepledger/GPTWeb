@@ -49,6 +49,17 @@ img {
   --brand-surface-contrast: #FFFFFF; /* white for headings on surface */
   --brand-overlay: color-mix(in oklab, var(--brand-ink) 50%, transparent);
   --brand-overlay-muted: color-mix(in oklab, var(--brand-ink) 30%, transparent);
+
+  /* Layout and component variables (defaults) */
+  --layout-max-width: 90vw;
+  --header-height-px: 64px;
+
+  /* Marquee defaults; may be overridden inline per measurement */
+  --marquee-duration: 20s;
+  --marquee-delay: 0s;
+  --marquee-gap: 50px;
+  --content-width: 0px;
+  --container-width: 0px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -79,4 +90,15 @@ html {
   --brand-surface-contrast: #FFFFFF; /* white */
   --brand-overlay: color-mix(in oklab, var(--brand-ink) 50%, transparent);
   --brand-overlay-muted: color-mix(in oklab, var(--brand-ink) 30%, transparent);
+
+  /* Layout and component variables (defaults) */
+  --layout-max-width: 90vw;
+  --header-height-px: 64px;
+
+  /* Marquee defaults; may be overridden inline per measurement */
+  --marquee-duration: 20s;
+  --marquee-delay: 0s;
+  --marquee-gap: 50px;
+  --content-width: 0px;
+  --container-width: 0px;
 }
