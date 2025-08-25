@@ -178,6 +178,12 @@
     will-change: box-shadow;
   }
 
+  /* Generic element border glow (applies animation to the element itself) */
+  .border-glow {
+    animation: annc-border-glow 2400ms ease-in-out infinite;
+    will-change: box-shadow;
+  }
+
   /* Shimmer text animation for announcement banner */
   @keyframes shimmer-sweep {
     0% { background-position: -200% 0; }
@@ -232,6 +238,7 @@
     .animate-slide-in-from-top,
     .annc-border-glow,
     .annc-border-glow::after,
+    .border-glow,
     .shimmer-text,
     .shimmer-text-slow {
       animation: none;

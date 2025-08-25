@@ -19,7 +19,7 @@ export const heroSlides = () =>
       headline,
       subline,
       "cta": cta{label, href},
-      "image": backgroundImage.asset->url
+      "image": coalesce(backgroundImage.asset->url, image.asset->url)
     }`
   );
 
