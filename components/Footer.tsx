@@ -11,7 +11,7 @@ export default async function Footer() {
   return (
     <footer className="mt-12 border-t border-[var(--brand-border)] bg-[var(--brand-surface)] text-[var(--brand-fg)]">
       <div className="max-w-site px-4 py-6">
-        <div className="grid grid-cols-1 gap-y-6 md:grid-cols-5 md:gap-x-8">
+        <div className="grid grid-cols-1 justify-items-center gap-y-8 text-center md:grid-cols-5 md:gap-x-8 md:justify-items-start md:text-left">
           <div>
             <h4 className="mb-2 font-semibold text-[var(--brand-surface-contrast)]">{title}</h4>
             <p>
@@ -19,14 +19,14 @@ export default async function Footer() {
                 href={`https://www.google.com/maps?q=${encodeURIComponent(address)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[var(--brand-accent)] no-underline hover:underline hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded"
+                className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
               >
                 {address}
               </a>
             </p>
           </div>
 
-          <div className="text-center">
+          <div>
             <h4 className="mb-2 font-semibold text-[var(--brand-surface-contrast)]">Service Times</h4>
             <div className="space-y-0.5">
               {serviceTimes
@@ -40,26 +40,26 @@ export default async function Footer() {
           </div>
 
           <div>
-            <div className="w-max mx-auto text-center">
+            <div className="mx-auto w-max">
               <h4 className="mb-2 font-semibold text-[var(--brand-surface-contrast)]">Quick Links</h4>
-              <ul className="grid grid-cols-2 gap-x-6 gap-y-1">
+              <ul className="grid grid-cols-2 justify-items-center gap-x-6 gap-y-1">
                 <li>
-                  <Link className="text-[var(--brand-accent)] no-underline hover:underline hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded" href="/visit">
+                  <Link className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]" href="/visit">
                     Visit
                   </Link>
                 </li>
                 <li>
-                  <Link className="text-[var(--brand-accent)] no-underline hover:underline hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded" href="/events">
+                  <Link className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]" href="/events">
                     Events
                   </Link>
                 </li>
                 <li>
-                  <Link className="text-[var(--brand-accent)] no-underline hover:underline hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded" href="/livestreams">
+                  <Link className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]" href="/livestreams">
                     Livestreams
                   </Link>
                 </li>
                 <li>
-                  <Link className="text-[var(--brand-accent)] no-underline hover:underline hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded" href="/giving">
+                  <Link className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]" href="/giving">
                     Giving
                   </Link>
                 </li>
@@ -67,14 +67,14 @@ export default async function Footer() {
             </div>
           </div>
 
-          <div className="text-center">
+          <div>
             <h4 className="mb-2 font-semibold text-[var(--brand-surface-contrast)]">Connect</h4>
-            <ul className="flex justify-center gap-3">
+            <ul className="flex justify-center gap-3 md:justify-start">
               <li>
                 <a
                   href="#"
                   aria-label="Facebook"
-                  className="text-[var(--brand-muted)] hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded"
+                  className="rounded text-[var(--brand-muted)] hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
                 >
                   <svg
                     className="h-5 w-5"
@@ -90,7 +90,7 @@ export default async function Footer() {
                 <a
                   href="#"
                   aria-label="Instagram"
-                  className="text-[var(--brand-muted)] hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded"
+                  className="rounded text-[var(--brand-muted)] hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
                 >
                   <svg
                     className="h-5 w-5"
@@ -106,7 +106,7 @@ export default async function Footer() {
                 <a
                   href="#"
                   aria-label="YouTube"
-                  className="text-[var(--brand-muted)] hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded"
+                  className="rounded text-[var(--brand-muted)] hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
                 >
                   <svg
                     className="h-5 w-5"
@@ -123,12 +123,18 @@ export default async function Footer() {
 
           <div>
             <h4 className="mb-2 font-semibold text-[var(--brand-surface-contrast)]">Newsletter</h4>
-            <form className="flex flex-col sm:flex-row">
+            <form className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
               <input
                 type="email"
                 placeholder="Email address"
                 className="flex-1 rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] px-2 py-1 text-[var(--brand-fg)] placeholder-[var(--brand-muted)] focus:border-[var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary)]"
               />
+              <button
+                type="submit"
+                className="rounded bg-[var(--brand-primary)] px-3 py-1 text-sm font-medium text-[var(--brand-surface)] hover:bg-[var(--brand-alt)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
+              >
+                Subscribe
+              </button>
             </form>
           </div>
         </div>
