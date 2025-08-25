@@ -25,7 +25,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
       <div className="max-w-site relative flex h-16 items-center px-4">
         <Link
           href="/"
-          className="logo-hover font-bold shimmer-text-slow text-[var(--brand-accent)]"
+          className="logo-hover font-bold shimmer-text-slow"
         >
           {siteTitle}
         </Link>
