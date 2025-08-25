@@ -1,8 +1,10 @@
 import { EventList } from "@/components/EventList";
 import { SermonList } from "@/components/SermonList";
 import { MinistryCard } from "@/components/MinistryCard";
+import Hero from "@/components/Hero";
 import MapBlock from "@/components/MapBlock";
 import {
+  heroSlides,
   eventsUpcoming,
   sermonLatest,
   siteSettings,
@@ -10,7 +12,8 @@ import {
 } from "@/lib/queries";
 
 export default async function Page() {
-  const [events, sermon, settings, ministries] = await Promise.all([
+  const [slides, events, sermon, settings, ministries] = await Promise.all([
+    heroSlides(),
     eventsUpcoming(3),
     sermonLatest(),
     siteSettings(),
@@ -21,6 +24,7 @@ export default async function Page() {
 
   return (
     <div className="w-full space-y-12">
+      <Hero slides={slides} />
       <section
         className="w-full opacity-0 animate-fade-in-up"
         style={{ animationDelay: '0.1s' }}

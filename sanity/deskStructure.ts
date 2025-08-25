@@ -8,6 +8,7 @@ export const structure = (S: any) =>
       S.documentTypeListItem('sermon').title('Sermons'),
       S.documentTypeListItem('service').title('Services'),
       S.documentTypeListItem('ministry').title('Ministries'),
+      S.documentTypeListItem('heroSlide').title('Hero Slides'),
       S.documentTypeListItem('siteSettings').title('Site Settings'),
       S.documentTypeListItem('staff').title('Staff'),
     ])

@@ -5,6 +5,7 @@ import service from './schemas/service';
 import staff from './schemas/staff';
 import siteSettings from './schemas/siteSettings';
 import ministry from './schemas/ministry';
+import heroSlide from './schemas/heroSlide';
 
 export const schemaTypes = [
   announcement,
@@ -14,4 +15,5 @@ export const schemaTypes = [
   staff,
   siteSettings,
   ministry,
+  heroSlide,
 ];
