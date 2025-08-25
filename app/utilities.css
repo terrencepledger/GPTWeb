@@ -152,6 +152,73 @@
     }
   }
 
+  /* Announcement banner border glow */
+  @keyframes annc-border-glow {
+    0%, 100% {
+      box-shadow:
+        0 1px 8px 0 color-mix(in oklab, var(--brand-border) 60%, transparent),
+        0 0 0 0 color-mix(in oklab, var(--brand-accent) 0%, transparent);
+    }
+    50% {
+      box-shadow:
+        0 2px 14px 2px color-mix(in oklab, var(--brand-border) 70%, transparent),
+        0 0 18px 4px color-mix(in oklab, var(--brand-accent) 60%, transparent);
+    }
+  }
+  .annc-border-glow {
+    position: relative;
+  }
+  .annc-border-glow::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    animation: annc-border-glow 2400ms ease-in-out infinite;
+    will-change: box-shadow;
+  }
+
+  /* Shimmer text animation for announcement banner */
+  @keyframes shimmer-sweep {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .shimmer-text {
+    /* Base gradient is the brand accent with a moving lighter band */
+    background-image: linear-gradient(
+      100deg,
+      color-mix(in oklab, var(--brand-accent) 95%, white 5%) 0%,
+      color-mix(in oklab, var(--brand-accent) 95%, white 5%) 40%,
+      color-mix(in oklab, var(--brand-accent) 60%, white 40%) 50%,
+      color-mix(in oklab, var(--brand-accent) 95%, white 5%) 60%,
+      color-mix(in oklab, var(--brand-accent) 95%, white 5%) 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    /* Make the gradient define the text color */
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer-sweep 2.2s linear infinite;
+  }
+  /* Slower variant for long, subtle shimmer (e.g., site title) */
+  .shimmer-text-slow {
+    background-image: linear-gradient(
+      100deg,
+      color-mix(in oklab, var(--brand-accent) 95%, white 5%) 0%,
+      color-mix(in oklab, var(--brand-accent) 95%, white 5%) 40%,
+      color-mix(in oklab, var(--brand-accent) 60%, white 40%) 50%,
+      color-mix(in oklab, var(--brand-accent) 95%, white 5%) 60%,
+      color-mix(in oklab, var(--brand-accent) 95%, white 5%) 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer-sweep 12s linear infinite;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .animate-marquee,
     .animate-marquee-single,
@@ -162,10 +229,18 @@
     .animate-fade-in-up,
     .animate-fade-in-down,
     .animate-fade-in-opacity,
-    .animate-slide-in-from-top {
+    .animate-slide-in-from-top,
+    .annc-border-glow,
+    .annc-border-glow::after,
+    .shimmer-text,
+    .shimmer-text-slow {
       animation: none;
       opacity: 1 !important;
       transform: none !important;
+      /* In reduced motion, fall back to static text color */
+      background-image: none !important;
+      color: var(--brand-accent) !important;
+      -webkit-text-fill-color: var(--brand-accent) !important;
     }
   }
 }
