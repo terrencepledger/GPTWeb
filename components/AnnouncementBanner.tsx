@@ -380,7 +380,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
       aria-live="polite"
       aria-label="Site announcement"
       aria-hidden={!ready || !showContent}
-      className={`${hasEntered ? "relative z-40 mx-auto mt-2" : "fixed z-[60] left-0 right-0 mx-auto"} px-4 pl-8 py-2 pr-10 text-center text-sm text-[var(--brand-accent)] rounded-md border shadow-lg bg-[var(--brand-surface)] border-[var(--brand-border)] w-[60vw] sm:w-[33vw]`}
+      className={`${hasEntered ? "relative z-40 mx-auto mt-2" : "fixed z-[60] left-0 right-0 mx-auto"} px-4 pl-8 py-2 pr-10 text-center text-sm text-[var(--brand-accent)] rounded-md border shadow-lg bg-[var(--brand-surface)] border-[var(--brand-border)] announcement-border-trace w-[60vw] sm:w-[33vw]`}
       style={{
         ...(ready ? {} : { display: 'none' }),
         ...(hasEntered ? {} : { top: 'calc(var(--header-height-px, 64px) + 8px)' }),
