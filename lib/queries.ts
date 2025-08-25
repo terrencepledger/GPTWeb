@@ -1,6 +1,28 @@
 import groq from 'groq';
 import {sanity} from './sanity';
 
+export interface HeroSlide {
+  _id: string;
+  headline: string;
+  subline?: string;
+  cta?: {
+    label?: string;
+    href?: string;
+  };
+  image?: string;
+}
+
+export const heroSlides = () =>
+  sanity.fetch<HeroSlide[]>(
+    groq`*[_type == "heroSlide"] | order(_createdAt asc){
+      _id,
+      headline,
+      subline,
+      "cta": cta{label, href},
+      "image": coalesce(backgroundImage.asset->url, image.asset->url)
+    }`
+  );
+
 export interface Event {
   _id: string;
   title: string;
