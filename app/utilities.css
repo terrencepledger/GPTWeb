@@ -169,6 +169,7 @@
     position: absolute;
     inset: 0;
     padding: 1px;
+    box-sizing: border-box;
     border-radius: inherit;
     background: conic-gradient(
       from 0deg,
@@ -177,6 +178,9 @@
       transparent 20deg
     ) border-box;
     -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask:
       linear-gradient(#000 0 0) content-box,
       linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
