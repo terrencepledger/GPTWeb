@@ -154,39 +154,20 @@
 
   /* Subtle light trace around announcement banner */
   @keyframes announcement-border-trace {
-    from {
-      transform: rotate(0deg);
-    }
     to {
-      transform: rotate(360deg);
+      --trace-angle: 360deg;
     }
   }
   .announcement-border-trace {
-    position: relative;
-  }
-  .announcement-border-trace::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    padding: 1px;
-    box-sizing: border-box;
-    border-radius: inherit;
-    background: conic-gradient(
-      from 0deg,
-      transparent 0deg,
-      color-mix(in oklab, var(--brand-accent) 50%, transparent) 10deg,
-      transparent 20deg
-    ) border-box;
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
+    --trace-angle: 0deg;
+    border-image-source: conic-gradient(
+      from var(--trace-angle),
+      var(--brand-border) 0deg,
+      var(--brand-border) 355deg,
+      color-mix(in oklab, var(--brand-accent) 80%, var(--brand-border)) 360deg
+    );
+    border-image-slice: 1;
     animation: announcement-border-trace 6s linear infinite;
-    pointer-events: none;
   }
 
   @media (prefers-reduced-motion: reduce) {
