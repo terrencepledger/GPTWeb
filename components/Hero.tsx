@@ -1,5 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useRef } from "react";
+import useInactivityNudge from "@/lib/useInactivityNudge";
 
 export type HeroProps = {
   headline: string;
@@ -19,6 +23,8 @@ export default function Hero({
   backgroundImage,
   backgroundGradient,
 }: HeroProps) {
+  const ctaRef = useRef<HTMLAnchorElement>(null);
+  useInactivityNudge(ctaRef);
   return (
     <section className="relative isolate overflow-hidden">
       {backgroundImage && (
@@ -40,6 +46,7 @@ export default function Hero({
         {subline && <p className="mt-4 text-lg">{subline}</p>}
         {cta && (
           <Link
+            ref={ctaRef}
             href={cta.href}
             className="mt-8 inline-block rounded-md border border-[var(--brand-primary)] bg-[var(--brand-primary)] px-6 py-2 font-medium text-[var(--brand-primary-contrast)] shadow-sm hover:bg-[color:color-mix(in_oklab,var(--brand-primary)_85%,white_15%)]"
           >

@@ -4,10 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
 import MobileMenu, { MobileMenuHandle } from "./MobileMenu";
+import useInactivityNudge from "@/lib/useInactivityNudge";
 
 export default function Header({ initialTitle }: { initialTitle?: string }) {
   const pathname = usePathname();
   const mobileMenuRef = useRef<MobileMenuHandle>(null);
+  const givingRef = useRef<HTMLAnchorElement>(null);
   const [siteTitle] = useState(initialTitle ?? "Example Church");
 
   const nav = [
@@ -16,6 +18,8 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
     { href: "/livestreams", label: "Livestreams" },
     { href: "/giving", label: "Giving" },
   ];
+
+  useInactivityNudge(givingRef);
 
   const linkClasses = (active: boolean) =>
     `${active ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]`;
@@ -127,6 +131,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
               href={item.href}
               className={linkClasses(pathname.startsWith(item.href))}
               aria-current={pathname.startsWith(item.href) ? "page" : undefined}
+              ref={item.href === "/giving" ? givingRef : undefined}
             >
               {item.label}
             </Link>
