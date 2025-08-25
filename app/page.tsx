@@ -11,15 +11,17 @@ import {
   sermonLatest,
   siteSettings,
   ministriesHighlights,
+  heroSlides,
 } from "@/lib/queries";
 
 export default async function Page() {
-  const [announcement, events, sermon, settings, ministries] = await Promise.all([
+  const [announcement, events, sermon, settings, ministries, slides] = await Promise.all([
     announcementLatest(),
     eventsUpcoming(3),
     sermonLatest(),
     siteSettings(),
     ministriesHighlights(3),
+    heroSlides(),
   ]);
 
   const actions = [
@@ -29,13 +31,11 @@ export default async function Page() {
     { label: "Giving", href: "/giving" },
   ];
 
-  const headline = settings?.title ?? "Welcome";
-  const subline = settings?.description ?? "";
   const address = settings?.address ?? "";
 
   return (
     <div className="space-y-12">
-      <Hero headline={headline} subline={subline} backgroundImage={settings?.logo} />
+      {slides.length > 0 && <Hero slides={slides} />}
       <QuickActions actions={actions} />
       {announcement && <AnnouncementBanner message={announcement.message} />}
       <section>

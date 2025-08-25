@@ -65,6 +65,22 @@ export const announcementLatest = () =>
     groq`*[_type == "announcement"] | order(publishedAt desc)[0]{_id, title, "message": body, publishedAt}`
   );
 
+export interface HeroSlide {
+  _id: string;
+  image: string;
+  headline?: string;
+  subline?: string;
+  cta?: {
+    label?: string;
+    href?: string;
+  };
+}
+
+export const heroSlides = () =>
+  sanity.fetch<HeroSlide[]>(
+    groq`*[_type == "heroSlide"] | order(_createdAt asc){_id, "image": image.asset->url, headline, subline, cta{label, href}}`
+  );
+
 export interface SiteSettings {
   _id: string;
   title: string;
