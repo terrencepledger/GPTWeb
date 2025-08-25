@@ -175,7 +175,7 @@
       transparent 0deg,
       color-mix(in oklab, var(--brand-accent) 50%, transparent) 10deg,
       transparent 20deg
-    );
+    ) border-box;
     -webkit-mask:
       linear-gradient(#000 0 0) content-box,
       linear-gradient(#000 0 0);
