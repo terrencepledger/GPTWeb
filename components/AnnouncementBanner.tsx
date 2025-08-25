@@ -2,6 +2,8 @@
 
 import {type CSSProperties, useEffect, useMemo, useRef, useState,} from "react";
 
+const MARQUEE_SPEED = 80; // px per second
+
 type AnnouncementBannerProps = {
   message: string;
 };
@@ -37,11 +39,9 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
   useEffect(() => {
     if (!introDone) return;
     // Freeze computed delay at loop start to avoid re-sync jumps if measurements update later
-    const next = (duration > 0 && introDuration > 0)
-      ? -(introDuration % duration)
-      : 0;
+    const next = duration > 0 ? -(contentWidth / MARQUEE_SPEED) : 0;
     setLoopDelaySeconds(next);
-  }, [introDone]);
+  }, [introDone, duration, contentWidth]);
 
   // Keep a mutable mirror to know when to stop measuring mid-loop
   useEffect(() => {
@@ -233,7 +233,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
       }
 
       if (overflowing) {
-        const speed = 80; // px/sec
+        const speed = MARQUEE_SPEED; // px/sec
         const travel = tW + gap; // distance to move before looping
         setDuration(travel / speed);
         // Intro travels from ~1% from right edge (0.99 * container) through the entire content width
