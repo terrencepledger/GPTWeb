@@ -35,6 +35,20 @@
     @apply pointer-events-none absolute inset-0;
     background-color: var(--brand-overlay-muted);
   }
+
+  .logo-hover {
+    @apply transition-all;
+    filter: drop-shadow(0 0 0 transparent);
+  }
+  .logo-hover:hover,
+  .logo-hover:focus {
+    background-image: none;
+    color: var(--brand-alt);
+    -webkit-text-fill-color: var(--brand-alt);
+    animation: none;
+    filter: drop-shadow(0 0 4px color-mix(in oklab, var(--brand-alt) 60%, transparent))
+      drop-shadow(0 0 8px color-mix(in oklab, var(--brand-alt) 40%, transparent));
+  }
 }
 
 @layer utilities {

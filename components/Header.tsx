@@ -23,7 +23,10 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--brand-border)] bg-[var(--brand-surface)]">
       <div className="max-w-site relative flex h-16 items-center px-4">
-        <Link href="/" className="font-bold shimmer-text-slow text-[var(--brand-accent)] hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]">
+        <Link
+          href="/"
+          className="logo-hover font-bold shimmer-text-slow text-[var(--brand-accent)]"
+        >
           {siteTitle}
         </Link>
         <nav className="absolute left-1/2 -translate-x-1/2 hidden items-center gap-6 text-sm font-medium md:flex">
