@@ -8,7 +8,21 @@ body {
   /* Base typography colors and background driven by tokens */
   background-color: var(--brand-bg);
   color: var(--brand-fg);
+  position: relative;
   @apply antialiased transition-colors;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: var(--watermark-url);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 50vmin;
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: -1;
 }
 
 a {
@@ -34,6 +48,7 @@ img {
 /* Brand color tokens for light and dark modes */
 :root {
   /* Light mode defaults */
+  --watermark-url: url('/static/favicon.svg');
   --brand-primary: #5C30A6; /* purple */
   --brand-primary-contrast: #FFFFFF;
   --brand-accent: #D6AF36; /* gold */
@@ -77,6 +92,7 @@ img {
 
 /* Fallback for environments mis-parsing :root — define tokens on html as well */
 html {
+  --watermark-url: url('/static/favicon.svg');
   --brand-primary: #5C30A6;
   --brand-primary-contrast: #FFFFFF;
   --brand-accent: #D6AF36;
