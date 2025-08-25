@@ -38,14 +38,17 @@
 
   .logo-hover {
     @apply transition-all;
+    display: inline-block;
+    color: var(--brand-accent);
+    -webkit-text-fill-color: var(--brand-accent);
     filter: drop-shadow(0 0 0 transparent);
   }
   .logo-hover:hover,
   .logo-hover:focus {
-    background-image: none;
-    color: var(--brand-alt);
-    -webkit-text-fill-color: var(--brand-alt);
-    animation: none;
+    background: none !important;
+    color: var(--brand-alt) !important;
+    -webkit-text-fill-color: var(--brand-alt) !important;
+    animation: none !important;
     filter: drop-shadow(0 0 4px color-mix(in oklab, var(--brand-alt) 60%, transparent))
       drop-shadow(0 0 8px color-mix(in oklab, var(--brand-alt) 40%, transparent));
   }
