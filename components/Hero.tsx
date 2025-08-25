@@ -1,29 +1,65 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { HeroSlide } from '@/lib/queries';
+import useNudge from '@/lib/useNudge';
 
 export interface HeroProps {
   slides: HeroSlide[];
   intervalMs?: number;
 }
 
-export default function Hero({ slides, intervalMs = 8000 }: HeroProps) {
+export default function Hero({ slides, intervalMs = 10000 }: HeroProps) {
   const [index, setIndex] = useState(0);
   const count = slides.length;
+  const ctaRef = useRef<HTMLAnchorElement>(null);
+  const shouldNudge = useNudge(ctaRef);
 
-  useEffect(() => {
+  // Track the active interval and whether a navigation was user-initiated
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const userActionRef = useRef(false);
+
+  const startInterval = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
     if (count <= 1) return;
-    const id = setInterval(() => {
+    timerRef.current = setInterval(() => {
       setIndex((i) => (i + 1) % count);
     }, intervalMs);
-    return () => clearInterval(id);
+  };
+
+  useEffect(() => {
+    // (Re)start interval when slide count or interval changes
+    startInterval();
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, [count, intervalMs]);
 
-  const next = () => setIndex((i) => (i + 1) % count);
-  const prev = () => setIndex((i) => (i - 1 + count) % count);
+  // If the index change was caused by a user action, reset the timer so the full duration applies
+  useEffect(() => {
+    if (userActionRef.current) {
+      startInterval();
+      userActionRef.current = false;
+    }
+  }, [index]);
+
+  const next = () => {
+    userActionRef.current = true;
+    setIndex((i) => (i + 1) % count);
+  };
+  const prev = () => {
+    userActionRef.current = true;
+    setIndex((i) => (i - 1 + count) % count);
+  };
+
+  const goTo = (i: number) => {
+    userActionRef.current = true;
+    setIndex(i);
+  };
 
   return (
     <section className="relative isolate overflow-hidden h-[56vh] min-h-[22rem] md:h-[72vh] border border-[var(--brand-border)] border-glow">
@@ -51,10 +87,11 @@ export default function Hero({ slides, intervalMs = 8000 }: HeroProps) {
             {slide.subline && <p className="mt-4 text-lg">{slide.subline}</p>}
             {slide.cta && slide.cta.href && slide.cta.label && (
               <Link
+                ref={ctaRef}
                 href={slide.cta.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-8 inline-block rounded-md border border-[var(--brand-primary)] bg-[var(--brand-primary)] px-6 py-2 font-medium text-[var(--brand-primary-contrast)] shadow-sm hover:bg-[color:color-mix(in_oklab,var(--brand-primary)_85%,white_15%)]"
+                className={`mt-8 inline-block rounded-md border border-[var(--brand-primary)] bg-[var(--brand-primary)] px-6 py-2 font-medium text-[var(--brand-primary-contrast)] shadow-sm hover:bg-[color:color-mix(in_oklab,var(--brand-primary)_85%,white_15%)] ${shouldNudge ? 'animate-shake' : ''}`}
               >
                 {slide.cta.label}
               </Link>
@@ -89,7 +126,7 @@ export default function Hero({ slides, intervalMs = 8000 }: HeroProps) {
             {slides.map((_, i) => (
               <button
                 key={i}
-                onClick={() => setIndex(i)}
+                onClick={() => goTo(i)}
                 className={`h-2 w-2 rounded-full ${
                   i === index
                     ? 'bg-[var(--brand-fg)]'
