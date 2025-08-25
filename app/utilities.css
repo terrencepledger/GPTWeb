@@ -184,6 +184,22 @@
     will-change: box-shadow;
   }
 
+  /* Shake nudge animation */
+  @keyframes nudge-shake {
+    0% { transform: translateX(0) rotate(0); }
+    15% { transform: translateX(-2px) rotate(-1deg); }
+    30% { transform: translateX(2px) rotate(1deg); }
+    45% { transform: translateX(-2px) rotate(-1deg); }
+    60% { transform: translateX(2px) rotate(1deg); }
+    75% { transform: translateX(-1px) rotate(0.5deg); }
+    100% { transform: translateX(0) rotate(0); }
+  }
+  .animate-shake {
+    animation: nudge-shake 800ms ease-in-out 3;
+    transform-origin: center;
+    will-change: transform;
+  }
+
   /* Shimmer text animation for announcement banner */
   @keyframes shimmer-sweep {
     0% { background-position: -200% 0; }
@@ -236,6 +252,7 @@
     .animate-fade-in-down,
     .animate-fade-in-opacity,
     .animate-slide-in-from-top,
+    .animate-shake,
     .annc-border-glow,
     .annc-border-glow::after,
     .border-glow,

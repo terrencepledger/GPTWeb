@@ -4,11 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
 import MobileMenu, { MobileMenuHandle } from "./MobileMenu";
+import useNudge from "@/lib/useNudge";
 
 export default function Header({ initialTitle }: { initialTitle?: string }) {
   const pathname = usePathname();
   const mobileMenuRef = useRef<MobileMenuHandle>(null);
   const [siteTitle] = useState(initialTitle ?? "Example Church");
+
+  // Nudge the Giving link after inactivity when in view
+  const givingRef = useRef<HTMLAnchorElement>(null);
+  const shouldNudgeGiving = useNudge(givingRef);
 
   const nav = [
     { href: "/ministries", label: "Ministries" },
@@ -125,7 +130,8 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
             <Link
               key={item.href}
               href={item.href}
-              className={linkClasses(pathname.startsWith(item.href))}
+              ref={item.href === "/giving" ? givingRef : undefined}
+              className={`${linkClasses(pathname.startsWith(item.href))} ${item.href === "/giving" && shouldNudgeGiving ? "animate-shake" : ""}`}
               aria-current={pathname.startsWith(item.href) ? "page" : undefined}
             >
               {item.label}
