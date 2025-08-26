@@ -9,7 +9,7 @@ import useNudge from "@/lib/useNudge";
 export default function Header({ initialTitle }: { initialTitle?: string }) {
   const pathname = usePathname();
   const mobileMenuRef = useRef<MobileMenuHandle>(null);
-  const [siteTitle] = useState(initialTitle ?? "Example Church");
+  const [siteTitle] = useState(initialTitle ?? "Greater Pentecostal Temple");
 
   // Nudge the Giving link after inactivity when in view
   const givingRef = useRef<HTMLAnchorElement>(null);
