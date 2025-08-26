@@ -42,7 +42,7 @@ export function MinistryCard({
         />
       )}
       <div className="flex flex-1 flex-col p-4">
-        <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">{ministry.name}</h3>
+        <h3 className="text-lg font-semibold headline-style">{ministry.name}</h3>
         <p className="mt-2 flex-1 text-sm text-[var(--brand-fg)]/90">
           {ministry.description}
         </p>

@@ -45,7 +45,7 @@ export function EventCard({
         />
       )}
       <div className="flex flex-1 flex-col p-4">
-        <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">{event.title}</h3>
+        <h3 className="text-lg font-semibold headline-style">{event.title}</h3>
         <p className="mt-1 text-sm text-[var(--brand-muted)]">
           {event.date}
           {event.location ? ` • ${event.location}` : ""}

@@ -6,6 +6,10 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        heading: ['Georgia', 'serif'],
+        body: ['Arial', 'sans-serif'],
+      },
       colors: {
         // Project brand palette. Prefer these colors in components over Tailwind defaults.
         brand: {

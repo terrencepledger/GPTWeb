@@ -29,21 +29,21 @@ export default async function Page() {
         className="w-full opacity-0 animate-fade-in-up"
         style={{ animationDelay: '0.1s' }}
       >
-        <h2 className="mb-4 text-xl font-semibold text-[var(--brand-accent)]">Upcoming Events</h2>
+        <h2 className="mb-6 inline-block border-b-2 border-[var(--brand-accent)] pb-1 text-2xl font-semibold headline-style">Upcoming Events</h2>
         <EventList events={events} />
       </section>
       <section
         className="w-full opacity-0 animate-fade-in-up"
         style={{ animationDelay: '0.2s' }}
       >
-        <h2 className="mb-4 text-xl font-semibold text-[var(--brand-accent)]">Recent Sermon</h2>
+        <h2 className="mb-6 inline-block border-b-2 border-[var(--brand-accent)] pb-1 text-2xl font-semibold headline-style">Recent Sermon</h2>
         <SermonList sermons={sermon ? [sermon] : []} />
       </section>
       <section
         className="w-full opacity-0 animate-fade-in-up"
         style={{ animationDelay: '0.3s' }}
       >
-        <h2 className="mb-4 text-xl font-semibold text-[var(--brand-accent)]">Ministry Highlights</h2>
+        <h2 className="mb-6 inline-block border-b-2 border-[var(--brand-accent)] pb-1 text-2xl font-semibold headline-style">Ministry Highlights</h2>
         <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(16rem,1fr))]">
           {ministries.map((min) => (
             <MinistryCard key={min._id} ministry={min} />

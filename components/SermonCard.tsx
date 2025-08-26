@@ -35,7 +35,7 @@ export function SermonCard({
       style={style}
     >
       <div className="flex flex-1 flex-col p-4">
-        <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">{sermon.title}</h3>
+        <h3 className="text-lg font-semibold headline-style">{sermon.title}</h3>
         <p className="mt-1 text-sm text-[var(--brand-muted)]">
           {sermon.date}
           {sermon.speaker ? ` • ${sermon.speaker}` : ""}

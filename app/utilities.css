@@ -35,6 +35,14 @@
     @apply pointer-events-none absolute inset-0;
     background-color: var(--brand-overlay-muted);
   }
+
+  .headline-style {
+    @apply font-heading tracking-wide text-[var(--brand-accent)] drop-shadow-sm;
+  }
+
+  .body-style {
+    @apply font-body text-[var(--brand-primary-contrast)] drop-shadow-sm;
+  }
 }
 
 @layer utilities {
