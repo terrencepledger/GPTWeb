@@ -1,12 +1,13 @@
 {
-  "name": "example-church",
+  "name": "greater-pentecostal-temple",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node scripts/brand-consistency.js"
+    "test": "node scripts/brand-consistency.js",
+    "seed:mission": "node scripts/seed-mission-statement.js"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.7",

@@ -12,8 +12,8 @@ export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await siteSettings();
-  const title = settings?.title ?? "Example Church";
-  const description = settings?.description ?? "Example Church website";
+  const title = settings?.title ?? "Greater Pentecostal Temple";
+  const description = settings?.description ?? "Greater Pentecostal Temple website";
   const logoUrl = settings?.logo ?? "/static/favicon.ico";
 
   return {
@@ -35,7 +35,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     siteSettings(),
     announcementLatest(),
   ]);
-  const headerTitle = settings?.title ?? "Example Church";
+  const headerTitle = settings?.title ?? "Greater Pentecostal Temple";
   const maxWidth = "90vw";
   const message = announcement?.message ?? "";
   const watermarkUrl = settings?.logo ?? "/static/favicon.svg";
