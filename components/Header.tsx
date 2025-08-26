@@ -30,7 +30,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
       <div className="max-w-site relative flex h-16 items-center px-4">
         <Link
           href="/"
-          className="logo-hover font-bold shimmer-text-slow"
+          className="font-bold inline-block shimmer-text-slow glow-text-hover no-shimmer-on-hover transition-transform duration-200 hover:no-underline focus:no-underline hover:scale-110 focus:scale-110"
         >
           {siteTitle}
         </Link>
