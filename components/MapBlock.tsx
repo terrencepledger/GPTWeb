@@ -1,22 +1,128 @@
-import Script from "next/script";
+"use client";
+
+import { useEffect, useRef } from "react";
 
 type MapBlockProps = {
   address?: string;
   zoom?: number;
 };
 
-export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
-  const apiKey = process.env.GOOGLE_MAPS_KEY;
-  if (!apiKey) return <div style={{ padding: 12 }}>Map unavailable: missing GOOGLE_MAPS_KEY.</div>;
+declare const google: any;
 
-  const mapId = `map-${Math.random().toString(36).slice(2)}`;
+export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const markerRef = useRef<any>();
+  const seenRef = useRef(false);
+  const revealDoneRef = useRef(false);
+
+  const apiKey = process.env.GOOGLE_MAPS_KEY;
+
   const hasAddress = typeof address === "string" && address.trim().length > 0;
   const addressQuery = hasAddress ? encodeURIComponent(address as string) : "";
 
+  const tryBounce = () => {
+    if (revealDoneRef.current && markerRef.current) {
+      markerRef.current.setAnimation(google.maps.Animation.BOUNCE);
+      setTimeout(() => markerRef.current?.setAnimation(null), 1400);
+    }
+  };
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    function reveal() {
+      const el = containerRef.current;
+      if (!el) return;
+      let completed = false;
+      const onDone = () => {
+        if (completed) return;
+        completed = true;
+        revealDoneRef.current = true;
+        tryBounce();
+      };
+      el.addEventListener("transitionend", onDone, { once: true });
+      requestAnimationFrame(() => el.classList.remove("opacity-0"));
+      // Fallback in case transitionend doesn't fire (e.g., prefers-reduced-motion)
+      setTimeout(onDone, 700);
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          seenRef.current = true;
+          reveal();
+          tryBounce();
+          observer.disconnect();
+        }
+      });
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!apiKey || !mapRef.current) return;
+
+    function initMap() {
+      const map = new google.maps.Map(mapRef.current as HTMLElement, {
+        center: { lat: 39.5, lng: -98.35 },
+        zoom,
+        clickableIcons: false,
+        gestureHandling: "greedy",
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
+      });
+
+      if (hasAddress) {
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode(
+          { address: address as string },
+          (results: any, status: string) => {
+            if (status === "OK" && results && results[0]) {
+              const loc = results[0].geometry.location;
+              map.setCenter(loc);
+              map.setZoom(zoom);
+              markerRef.current = new google.maps.Marker({
+                map,
+                position: loc,
+                title: address as string,
+              });
+              if (seenRef.current) tryBounce();
+            }
+          }
+        );
+      }
+    }
+
+    const w = window as any;
+    if (w.google && w.google.maps) {
+      initMap();
+    } else {
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}`;
+      script.async = true;
+      script.addEventListener("load", initMap);
+      document.head.appendChild(script);
+    }
+  }, [address, apiKey, hasAddress, zoom]);
+
+  if (!apiKey)
+    return (
+      <div style={{ padding: 12 }}>
+        Map unavailable: missing GOOGLE_MAPS_KEY.
+      </div>
+    );
+
   return (
     <div className="my-6 w-full">
-      <div className="w-full overflow-hidden rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] shadow opacity-0 transition-opacity duration-500">
-        <div id={mapId} style={{ width: "100%", height: 300 }} />
+      <div
+        ref={containerRef}
+        className="w-full overflow-hidden rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] shadow opacity-0 transition-opacity duration-500"
+      >
+        <div ref={mapRef} style={{ width: "100%", height: 300 }} />
       </div>
       {hasAddress && (
         <p className="mt-2 text-center">
@@ -30,47 +136,6 @@ export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
           </a>
         </p>
       )}
-      <Script src={`https://maps.googleapis.com/maps/api/js?key=${apiKey}`} strategy="afterInteractive" />
-      <Script
-        id={`init-${mapId}`}
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `(() => {
-  function init() {
-    if (!window.google) { setTimeout(init, 150); return; }
-    var el = document.getElementById(${JSON.stringify(mapId)});
-    if (!el) return;
-    var container = el.parentElement;
-    var map = new google.maps.Map(el, {
-      center: { lat: 39.5, lng: -98.35 },
-      zoom: ${zoom},
-      clickableIcons: false,
-      gestureHandling: "greedy",
-      mapTypeControl: false,
-      streetViewControl: false,
-      fullscreenControl: false
-    });
-    ${hasAddress ? `
-    var geocoder = new google.maps.Geocoder();
-    geocoder.geocode({ address: ${JSON.stringify(address)} }, function(results, status) {
-      if (status === "OK" && results && results[0]) {
-        var loc = results[0].geometry.location;
-        map.setCenter(loc);
-        map.setZoom(${zoom});
-        var marker = new google.maps.Marker({ map: map, position: loc, title: ${JSON.stringify(address)} });
-        marker.setAnimation(google.maps.Animation.BOUNCE);
-        setTimeout(function(){ marker.setAnimation(null); }, 1400);
-      }
-    });
-    ` : ``}
-    if (container) {
-      requestAnimationFrame(function() { container.classList.remove("opacity-0"); });
-    }
-  }
-  init();
-})();`,
-        }}
-      />
     </div>
   );
 }
