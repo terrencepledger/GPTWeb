@@ -26,7 +26,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
     `${active ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]`;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[var(--brand-border)] bg-[var(--brand-surface)]">
+    <header className="font-header sticky top-0 z-50 border-b border-[var(--brand-border)] bg-[var(--brand-surface)]">
       <div className="max-w-site relative flex h-16 items-center px-4">
         <Link
           href="/"
