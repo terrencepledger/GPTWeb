@@ -3,7 +3,7 @@ import { siteSettings } from "@/lib/queries";
 
 export default async function Footer() {
   const settings = await siteSettings();
-  const title = settings?.title ?? "Example Church";
+  const title = settings?.title ?? "Greater Pentecostal Temple";
   const address = settings?.address ?? "123 Main St, Hometown, ST 12345";
   const serviceTimes = settings?.serviceTimes ?? "Sundays 10:00 AM";
   const year = new Date().getFullYear();

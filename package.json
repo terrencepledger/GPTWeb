@@ -1,5 +1,5 @@
 {
-  "name": "example-church",
+  "name": "greater-pentecostal-temple",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -14,6 +14,7 @@
     "@sanity/client": "^7.8.2",
     "@sanity/image-url": "^1.1.0",
     "@sanity/vision": "^4.5.0",
+    "dotenv": "^16.4.5",
     "next": "^14.2.15",
     "next-sanity": "^9.12.3",
     "react": "^18.3.1",
@@ -31,6 +32,7 @@
     "eslint-config-next": "^14.2.32",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.12",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.2",
+    "dotenv": "^16.4.5"
   }
 }

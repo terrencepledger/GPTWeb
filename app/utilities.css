@@ -35,6 +35,7 @@
     @apply pointer-events-none absolute inset-0;
     background-color: var(--brand-overlay-muted);
   }
+
 }
 
 @layer utilities {
@@ -241,6 +242,42 @@
     animation: shimmer-sweep 12s linear infinite;
   }
 
+  /* Cancel shimmer on hover for opted elements */
+  .no-shimmer-on-hover:hover,
+  .no-shimmer-on-hover:focus,
+  .no-shimmer-on-hover:active {
+    background-image: none !important;
+    -webkit-background-clip: border-box !important;
+    background-clip: border-box !important;
+    color: var(--brand-alt) !important;
+    -webkit-text-fill-color: var(--brand-alt) !important;
+  }
+
+  /* Soft pulsing glow for prominent titles */
+  @keyframes text-glow-pulse {
+    0%, 100% {
+      text-shadow:
+        0 0 0 transparent,
+        0 0 0 transparent;
+    }
+    50% {
+      text-shadow:
+        0 0 6px color-mix(in oklab, var(--brand-accent) 70%, transparent),
+        0 0 14px color-mix(in oklab, var(--brand-accent) 55%, transparent);
+    }
+  }
+  .glow-text {
+    animation: text-glow-pulse 2400ms ease-in-out infinite;
+    will-change: text-shadow, filter;
+  }
+  /* Hover-only variant for glow */
+  .glow-text-hover:hover,
+  .glow-text-hover:focus,
+  .glow-text-hover:active {
+    animation: text-glow-pulse 4200ms ease-in-out infinite;
+    will-change: text-shadow, filter;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .animate-marquee,
     .animate-marquee-single,
@@ -257,7 +294,9 @@
     .annc-border-glow::after,
     .border-glow,
     .shimmer-text,
-    .shimmer-text-slow {
+    .shimmer-text-slow,
+    .glow-text,
+    .glow-text-hover {
       animation: none;
       opacity: 1 !important;
       transform: none !important;
@@ -268,4 +307,5 @@
     }
   }
 }
+
 
