@@ -93,6 +93,7 @@ export default function Hero({ slides, intervalMs = 10000 }: HeroProps) {
                 href={slide.cta.href}
                 target="_blank"
                 rel="noopener noreferrer"
+                role="button"
                 className={`mt-8 inline-flex items-center justify-center gap-2 rounded-full px-7 py-3 font-semibold tracking-wide no-underline
                 bg-[var(--brand-accent)] text-[var(--brand-ink)] ring-2 ring-[color:color-mix(in_oklab,var(--brand-ink)_30%,transparent)] shadow-[0_8px_18px_-6px_color-mix(in_oklab,var(--brand-ink)_40%,transparent)]
                 /* Preserve current branch's hover effect: scale and stronger shadow */
