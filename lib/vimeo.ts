@@ -9,7 +9,9 @@ export type VimeoItem = VimeoVideo & { id: string }
 
 const user = process.env.VIMEO_USER_ID
 const token = process.env.VIMEO_ACCESS_TOKEN
-const headers = token ? { Authorization: `Bearer ${token}` } : {}
+const headers: HeadersInit | undefined = token
+  ? { Authorization: `Bearer ${token}` }
+  : undefined
 
 function idFromUri(uri: string) {
   const parts = uri.split("/")
