@@ -50,6 +50,22 @@ export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
       streetViewControl: false,
       fullscreenControl: false
     });
+    var marker;
+    function reveal() {
+      if (container) {
+        requestAnimationFrame(function() { container.classList.remove("opacity-0"); });
+      }
+    }
+    function bounce() {
+      if (marker) {
+        marker.setAnimation(google.maps.Animation.BOUNCE);
+        setTimeout(function(){ marker.setAnimation(null); }, 1400);
+      }
+    }
+    function onView() {
+      reveal();
+      bounce();
+    }
     ${hasAddress ? `
     var geocoder = new google.maps.Geocoder();
     geocoder.geocode({ address: ${JSON.stringify(address)} }, function(results, status) {
@@ -57,30 +73,37 @@ export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
         var loc = results[0].geometry.location;
         map.setCenter(loc);
         map.setZoom(${zoom});
-        var marker = new google.maps.Marker({ map: map, position: loc, title: ${JSON.stringify(address)} });
-        function triggerAnimation() {
-          marker.setAnimation(google.maps.Animation.BOUNCE);
-          setTimeout(function(){ marker.setAnimation(null); }, 1400);
-        }
+        marker = new google.maps.Marker({ map: map, position: loc, title: ${JSON.stringify(address)} });
         if ("IntersectionObserver" in window && container) {
           var observer = new IntersectionObserver(function(entries) {
             entries.forEach(function(entry) {
               if (entry.isIntersecting) {
-                triggerAnimation();
+                onView();
                 observer.disconnect();
               }
             });
           });
           observer.observe(container);
         } else {
-          triggerAnimation();
+          onView();
         }
       }
     });
-    ` : ``}
-    if (container) {
-      requestAnimationFrame(function() { container.classList.remove("opacity-0"); });
+    ` : `
+    if ("IntersectionObserver" in window && container) {
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            onView();
+            observer.disconnect();
+          }
+        });
+      });
+      observer.observe(container);
+    } else {
+      onView();
     }
+    `}
   }
   init();
 })();`,
