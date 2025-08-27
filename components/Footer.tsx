@@ -11,7 +11,7 @@ export default async function Footer() {
   return (
     <footer className="mt-12 border-t border-[var(--brand-border)] bg-[var(--brand-surface)] text-[var(--brand-fg)]">
       <div className="max-w-site px-4 py-6">
-        <div className="grid grid-cols-1 justify-items-center gap-y-8 text-center md:grid-cols-5 md:gap-x-8 md:justify-items-start md:text-left">
+        <div className="grid grid-cols-1 justify-items-center gap-y-8 text-center md:grid-cols-5 md:gap-x-8 md:justify-items-center md:text-center">
           <div>
             <h4 className="mb-2 font-semibold text-[var(--brand-surface-contrast)]">{title}</h4>
             <p>
@@ -138,9 +138,9 @@ export default async function Footer() {
             </form>
           </div>
         </div>
-        <div className="mt-4 flex flex-col items-center justify-between gap-2 border-t border-[var(--brand-border)] pt-3 text-sm text-[var(--brand-muted)] md:flex-row">
+        <div className="mt-4 flex flex-col items-center justify-between gap-2 border-t border-[var(--brand-border)] pt-3 text-sm text-[var(--brand-muted)] md:flex-row md:justify-center md:gap-8">
           <div>© {year} {title}</div>
-          <div className="flex gap-3">
+          <div className="flex gap-3 md:gap-8">
             <Link className="text-[var(--brand-accent)] no-underline hover:underline hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded" href="/privacy">
               Privacy
             </Link>
