@@ -6,7 +6,6 @@ import {visionTool} from '@sanity/vision'
 // Schemas
 import announcement from './sanity/schemas/announcement'
 import event from './sanity/schemas/event'
-import sermon from './sanity/schemas/sermon'
 import service from './sanity/schemas/service'
 import siteSettings from './sanity/schemas/siteSettings'
 import staff from './sanity/schemas/staff'
@@ -24,7 +23,7 @@ export default defineConfig({
     projectId: import.meta.env.SANITY_STUDIO_PROJECT_ID,
     dataset: import.meta.env.SANITY_STUDIO_DATASET,
     schema: {
-        types: [announcement, event, sermon, service, siteSettings, staff, ministry, heroSlide, missionStatement],
+        types: [announcement, event, service, siteSettings, staff, ministry, heroSlide, missionStatement],
     },
     plugins: [
         structureTool({
