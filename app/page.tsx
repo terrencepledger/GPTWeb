@@ -3,6 +3,7 @@ import { SermonList } from "@/components/SermonList";
 import { MinistryCard } from "@/components/MinistryCard";
 import Hero from "@/components/Hero";
 import MapBlock from "@/components/MapBlock";
+import VisitorCTA from "@/components/VisitorCTA";
 import {
   heroSlides,
   eventsUpcoming,
@@ -25,6 +26,7 @@ export default async function Page() {
   return (
     <div className="w-full space-y-12">
       <Hero slides={slides} />
+      <VisitorCTA />
       <section
         className="w-full opacity-0 animate-fade-in-up"
         style={{ animationDelay: '0.1s' }}
