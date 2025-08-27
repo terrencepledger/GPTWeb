@@ -32,6 +32,8 @@ export function useNudge<T extends HTMLElement>(
     window.addEventListener('scroll', handleActivity);
     window.addEventListener('mousemove', handleActivity);
     window.addEventListener('keydown', handleActivity);
+    window.addEventListener('touchstart', handleActivity);
+    window.addEventListener('touchmove', handleActivity);
 
     reset();
 
@@ -40,6 +42,8 @@ export function useNudge<T extends HTMLElement>(
       window.removeEventListener('scroll', handleActivity);
       window.removeEventListener('mousemove', handleActivity);
       window.removeEventListener('keydown', handleActivity);
+      window.removeEventListener('touchstart', handleActivity);
+      window.removeEventListener('touchmove', handleActivity);
       clearTimeout(timeout);
     };
   }, [ref, delay]);
