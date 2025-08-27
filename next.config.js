@@ -17,6 +17,10 @@ const nextConfig = {
       },
     ],
   },
+  // Expose server env to client for MapBlock (Google Maps)
+  env: {
+    GOOGLE_MAPS_KEY: process.env.GOOGLE_MAPS_KEY,
+  },
 };
 
 module.exports = nextConfig;

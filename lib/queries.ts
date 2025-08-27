@@ -45,24 +45,6 @@ export const eventsAll = () =>
     groq`*[_type == "event"] | order(date asc){_id, title, date, description, location, "image": image.asset->url}`
   );
 
-export interface Sermon {
-  _id: string;
-  title: string;
-  speaker: string;
-  passage?: string;
-}
-
-export const sermonLatest = () =>
-  sanity.fetch<Sermon | null>(
-    groq`*[_type == "sermon"] | order(_createdAt desc)[0]{_id, title, speaker, "passage": scripture}`
-  );
-
-export const sermonsPage = (offset: number, limit: number) =>
-  sanity.fetch<Sermon[]>(
-    groq`*[_type == "sermon"] | order(_createdAt desc)[$offset...$end]{_id, title, speaker, "passage": scripture}`,
-    {offset, end: offset + limit}
-  );
-
 export interface Staff {
   _id: string;
   name: string;
