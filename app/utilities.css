@@ -1,9 +1,14 @@
 @reference "tailwindcss"
 
 @layer components {
+  /* Base brand button: default rounded edges and interactions */
+  .btn-brand {
+    @apply rounded-full px-6 py-3 inline-flex items-center justify-center gap-2 font-medium transition-all shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)] focus:ring-offset-2 focus:ring-offset-[var(--brand-bg)] overflow-hidden;
+  }
+
   .btn-primary {
     /* Use brand tokens */
-    @apply rounded-md px-4 py-2 font-medium transition-colors shadow-sm;
+    @apply btn-brand;
     background-color: var(--brand-primary);
     color: var(--brand-primary-contrast);
     border: 1px solid var(--brand-primary);
@@ -16,13 +21,45 @@
   }
 
   .btn-ghost {
-    @apply rounded-md border border-transparent px-4 py-2 font-medium transition-colors;
+    @apply btn-brand border border-transparent;
     color: var(--brand-primary);
     background-color: transparent;
   }
   .btn-ghost:hover {
     background-color: color-mix(in oklab, var(--brand-primary) 10%, var(--brand-surface) 90%);
     color: var(--brand-primary);
+  }
+
+  /* Brand outlined button: transparent fill with visible border */
+  .btn-outline {
+    @apply btn-brand;
+    background-color: transparent;
+    color: var(--brand-primary);
+    border: 1px solid var(--brand-primary);
+  }
+  .btn-outline:hover {
+    background-color: color-mix(in oklab, var(--brand-primary) 10%, var(--brand-surface) 90%);
+  }
+  .btn-outline:active {
+    transform: translateY(1px);
+  }
+
+  /* Contact form CTA: stronger border + soft, faded fill */
+  .btn-outline-cta {
+    @apply btn-brand font-semibold; /* inherits rounded-full, padding, layout, transitions */
+    border-radius: 9999px; /* ensure pill corners regardless of any resets */
+    color: var(--brand-primary);
+    /* More prominent border using accent+primary mix */
+    border: 2px solid color-mix(in oklab, var(--brand-accent) 65%, var(--brand-primary) 35%);
+    /* Faded light background to lift from purple page bg */
+    background-color: color-mix(in oklab, var(--brand-primary) 14%, white 86%);
+  }
+  .btn-outline-cta:hover {
+    background-color: color-mix(in oklab, var(--brand-primary) 20%, white 80%);
+    box-shadow: 0 8px 18px -8px color-mix(in oklab, var(--brand-accent) 35%, transparent);
+  }
+  .btn-outline-cta:active {
+    transform: translateY(1px);
   }
 
   .card {
@@ -35,6 +72,7 @@
     @apply pointer-events-none absolute inset-0;
     background-color: var(--brand-overlay-muted);
   }
+
 }
 
 @layer utilities {
@@ -43,6 +81,24 @@
     width: 100%;
     margin-left: auto;
     margin-right: auto;
+  }
+
+  /* Toned-down border pulse for CTAs */
+  @keyframes border-pulse-soft {
+    0%, 100% {
+      box-shadow:
+        0 1px 6px 0 color-mix(in oklab, var(--brand-border) 40%, transparent),
+        0 0 0 0 color-mix(in oklab, var(--brand-accent) 0%, transparent);
+    }
+    50% {
+      box-shadow:
+        0 2px 12px 2px color-mix(in oklab, var(--brand-border) 55%, transparent),
+        0 0 10px 2px color-mix(in oklab, var(--brand-accent) 35%, transparent);
+    }
+  }
+  .pulse-border-soft {
+    animation: border-pulse-soft 5000ms ease-in-out infinite;
+    will-change: box-shadow;
   }
 
   /* Fade-in animations */
@@ -241,6 +297,42 @@
     animation: shimmer-sweep 12s linear infinite;
   }
 
+  /* Cancel shimmer on hover for opted elements */
+  .no-shimmer-on-hover:hover,
+  .no-shimmer-on-hover:focus,
+  .no-shimmer-on-hover:active {
+    background-image: none !important;
+    -webkit-background-clip: border-box !important;
+    background-clip: border-box !important;
+    color: var(--brand-alt) !important;
+    -webkit-text-fill-color: var(--brand-alt) !important;
+  }
+
+  /* Soft pulsing glow for prominent titles */
+  @keyframes text-glow-pulse {
+    0%, 100% {
+      text-shadow:
+        0 0 0 transparent,
+        0 0 0 transparent;
+    }
+    50% {
+      text-shadow:
+        0 0 6px color-mix(in oklab, var(--brand-accent) 70%, transparent),
+        0 0 14px color-mix(in oklab, var(--brand-accent) 55%, transparent);
+    }
+  }
+  .glow-text {
+    animation: text-glow-pulse 2400ms ease-in-out infinite;
+    will-change: text-shadow, filter;
+  }
+  /* Hover-only variant for glow */
+  .glow-text-hover:hover,
+  .glow-text-hover:focus,
+  .glow-text-hover:active {
+    animation: text-glow-pulse 4200ms ease-in-out infinite;
+    will-change: text-shadow, filter;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .animate-marquee,
     .animate-marquee-single,
@@ -256,8 +348,11 @@
     .annc-border-glow,
     .annc-border-glow::after,
     .border-glow,
+    .pulse-border-soft,
     .shimmer-text,
-    .shimmer-text-slow {
+    .shimmer-text-slow,
+    .glow-text,
+    .glow-text-hover {
       animation: none;
       opacity: 1 !important;
       transform: none !important;
@@ -268,4 +363,5 @@
     }
   }
 }
+
 
