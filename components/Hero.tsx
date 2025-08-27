@@ -91,7 +91,7 @@ export default function Hero({ slides, intervalMs = 10000 }: HeroProps) {
                 href={slide.cta.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`mt-8 inline-block rounded-md border border-[var(--brand-primary)] bg-[var(--brand-primary)] px-6 py-2 font-medium text-[var(--brand-primary-contrast)] shadow-sm hover:bg-[color:color-mix(in_oklab,var(--brand-primary)_85%,white_15%)] ${shouldNudge ? 'animate-shake' : ''}`}
+                className={`btn-primary mt-8 px-6 border-glow bg-[linear-gradient(90deg,var(--brand-primary),var(--brand-accent))] transition-transform duration-300 hover:scale-105 hover:shadow-lg ${shouldNudge ? 'animate-shake' : ''}`}
               >
                 {slide.cta.label}
               </Link>
