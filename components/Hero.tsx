@@ -95,9 +95,11 @@ export default function Hero({ slides, intervalMs = 10000 }: HeroProps) {
                 rel="noopener noreferrer"
                 className={`mt-8 inline-flex items-center justify-center gap-2 rounded-full px-7 py-3 font-semibold tracking-wide no-underline
                 bg-[var(--brand-accent)] text-[var(--brand-ink)] ring-2 ring-[color:color-mix(in_oklab,var(--brand-ink)_30%,transparent)] shadow-[0_8px_18px_-6px_color-mix(in_oklab,var(--brand-ink)_40%,transparent)]
-                hover:bg-[color:color-mix(in_oklab,var(--brand-accent)_85%,white_15%)] hover:shadow-[0_12px_26px_-6px_color-mix(in_oklab,var(--brand-ink)_55%,transparent)]
+                /* Preserve current branch's hover effect: scale and stronger shadow */
+                hover:scale-105 hover:shadow-lg
+                /* Keep main's focus and active states */
                 focus:outline-none focus:ring-4 focus:ring-[var(--brand-alt)] focus:ring-offset-2 focus:ring-offset-[var(--brand-ink)]
-                transition-transform hover:scale-105 active:scale-95 ${shouldNudge ? 'animate-shake' : ''}`}
+                transition-transform active:scale-95 ${shouldNudge ? 'animate-shake' : ''}`}
               >
                 {slide.cta.label}
               </Link>
