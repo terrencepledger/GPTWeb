@@ -2,6 +2,10 @@
 
 :root {
   color-scheme: light dark;
+  /* Fallback font variables; next/font will override via classes on <html> */
+  --font-body: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-header: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-button: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
 }
 
 body {
@@ -18,13 +22,22 @@ h2,
 h3,
 h4,
 h5,
-h6,
-header {
+h6 {
   font-family: var(--font-header), serif;
 }
 
-button {
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+[role="button"] {
   font-family: var(--font-button), sans-serif;
+}
+
+/* Ensure header menus use standard font for any buttons/toggles */
+header button,
+header [role="button"] {
+  font-family: var(--font-body), sans-serif;
 }
 
 body::before {
@@ -123,6 +136,11 @@ html {
   --brand-surface-contrast: #FFFFFF; /* white */
   --brand-overlay: color-mix(in oklab, var(--brand-ink) 50%, transparent);
   --brand-overlay-muted: color-mix(in oklab, var(--brand-ink) 30%, transparent);
+
+  /* Font variable fallbacks (overridden by next/font classes on <html>) */
+  --font-body: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-header: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-button: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
 
   /* Layout and component variables (defaults) */
   --layout-max-width: 90vw;
