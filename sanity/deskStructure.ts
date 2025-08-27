@@ -11,4 +11,5 @@ export const structure = (S: any) =>
       S.documentTypeListItem('heroSlide').title('Hero Slides'),
       S.documentTypeListItem('siteSettings').title('Site Settings'),
       S.documentTypeListItem('staff').title('Staff'),
+      S.documentTypeListItem('missionStatement').title('Mission Statement'),
     ])

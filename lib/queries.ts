@@ -142,3 +142,22 @@ export const ministriesAll = () =>
     groq`*[_type == "ministry"] | order(name asc){_id, name, description, "image": image.asset->url}`
   );
 
+export interface MissionStatement {
+  _id: string;
+  headline: string;
+  tagline?: string;
+  backgroundImage?: string;
+  message?: string;
+}
+
+export const missionStatement = () =>
+  sanity.fetch<MissionStatement | null>(
+    groq`*[_type == "missionStatement"][0]{
+      _id,
+      headline,
+      tagline,
+      "backgroundImage": backgroundImage.asset->url,
+      message
+    }`
+  );
+

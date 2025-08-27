@@ -48,7 +48,7 @@ img {
 /* Brand color tokens for light and dark modes */
 :root {
   /* Light mode defaults */
-  --watermark-url: url('/static/favicon.svg');
+  --watermark-url: none;
   --brand-primary: #5C30A6; /* purple */
   --brand-primary-contrast: #FFFFFF;
   --brand-accent: #D6AF36; /* gold */
@@ -84,6 +84,8 @@ img {
     --brand-bg: color-mix(in oklab, var(--brand-primary) 18%, black);
     --brand-surface: color-mix(in oklab, var(--brand-primary) 26%, black);
     --brand-fg: var(--brand-accent);
+    /* Make muted text distinct from main fg in dark mode */
+    --brand-muted: color-mix(in oklab, var(--brand-accent) 60%, var(--brand-ink) 40%);
     --brand-border: var(--brand-accent);
     --brand-overlay-muted: color-mix(in oklab, var(--brand-ink) 60%, transparent);
   }
@@ -92,7 +94,7 @@ img {
 
 /* Fallback for environments mis-parsing :root — define tokens on html as well */
 html {
-  --watermark-url: url('/static/favicon.svg');
+  --watermark-url: none;
   --brand-primary: #5C30A6;
   --brand-primary-contrast: #FFFFFF;
   --brand-accent: #D6AF36;

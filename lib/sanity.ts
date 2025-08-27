@@ -15,6 +15,13 @@ const client = createClient({
   apiVersion: '2025-08-01',
   useCdn,
   token,
+  // Ensure all Sanity requests bypass Next.js fetch caching so fresh data is returned
+  fetch: (url, init) =>
+    fetch(url, {
+      ...init,
+      cache: 'no-store',
+      next: { revalidate: 0 },
+    }),
   // If a read token is configured, allow fetching drafts as well (useful for preview and staging)
   perspective: token ? 'previewDrafts' : 'published',
 });
