@@ -22,11 +22,5 @@ export default defineType({
       title: 'Description',
       type: 'text',
     }),
-    defineField({
-      name: 'sermon',
-      title: 'Sermon',
-      type: 'reference',
-      to: { type: 'sermon' },
-    }),
   ],
 });
