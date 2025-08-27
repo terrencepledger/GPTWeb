@@ -9,7 +9,8 @@ body {
   background-color: var(--brand-bg);
   color: var(--brand-fg);
   position: relative;
-  @apply font-body antialiased transition-colors;
+  font-family: var(--font-body), sans-serif;
+  @apply antialiased transition-colors;
 }
 
 h1,
@@ -17,12 +18,13 @@ h2,
 h3,
 h4,
 h5,
-h6 {
-  @apply font-header;
+h6,
+header {
+  font-family: var(--font-header), serif;
 }
 
 button {
-  @apply font-button;
+  font-family: var(--font-button), sans-serif;
 }
 
 body::before {

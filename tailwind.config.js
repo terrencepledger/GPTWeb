@@ -28,11 +28,6 @@ module.exports = {
           950: "#404040",
         },
       },
-      fontFamily: {
-        header: ["var(--font-header)", "serif"],
-        body: ["var(--font-body)", "sans-serif"],
-        button: ["var(--font-button)", "sans-serif"],
-      },
       keyframes: {
         marquee: {
           "0%": { transform: "translateX(100%)" },
