@@ -129,17 +129,18 @@ export interface Ministry {
   name: string;
   description: string;
   image?: string;
+  staffImage?: string;
 }
 
 export const ministriesHighlights = (limit: number) =>
   sanity.fetch<Ministry[]>(
-    groq`*[_type == "ministry"] | order(_createdAt desc)[0...$limit]{_id, name, description, "image": image.asset->url}`,
+    groq`*[_type == "ministry"] | order(_createdAt desc)[0...$limit]{_id, name, description, "image": image.asset->url, "staffImage": staffImage.asset->url}`,
     {limit}
   );
 
 export const ministriesAll = () =>
   sanity.fetch<Ministry[]>(
-    groq`*[_type == "ministry"] | order(name asc){_id, name, description, "image": image.asset->url}`
+    groq`*[_type == "ministry"] | order(name asc){_id, name, description, "image": image.asset->url, "staffImage": staffImage.asset->url}`
   );
 
 export interface MissionStatement {

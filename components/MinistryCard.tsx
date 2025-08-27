@@ -6,6 +6,7 @@ export type Ministry = {
   name: string;
   description: string;
   image?: string;
+  staffImage?: string;
   href?: string;
 };
 
@@ -42,7 +43,18 @@ export function MinistryCard({
         />
       )}
       <div className="flex flex-1 flex-col p-4">
-        <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">{ministry.name}</h3>
+        <div className="flex items-center gap-4">
+          {ministry.staffImage && (
+            <Image
+              src={ministry.staffImage}
+              alt=""
+              width={80}
+              height={80}
+              className="h-20 w-20 rounded-full object-cover"
+            />
+          )}
+          <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">{ministry.name}</h3>
+        </div>
         <p className="mt-2 flex-1 text-sm text-[var(--brand-fg)]/90">
           {ministry.description}
         </p>
