@@ -62,7 +62,7 @@ export default function Hero({ slides, intervalMs = 10000 }: HeroProps) {
   };
 
   return (
-    <section className="relative isolate overflow-hidden h-[56vh] min-h-[22rem] md:h-[72vh] border border-[var(--brand-border)] border-glow">
+    <section className="relative isolate overflow-hidden h-[40vh] md:h-[72vh] border border-[var(--brand-border)] border-glow">
       {slides.map((slide, i) => (
         <div
           key={slide._id}
@@ -78,12 +78,12 @@ export default function Hero({ slides, intervalMs = 10000 }: HeroProps) {
               priority={i === index}
               unoptimized
               sizes="100vw"
-              className="object-contain object-center z-0"
+              className="object-cover md:object-contain object-center z-0"
             />
           )}
           <div className="absolute inset-0 bg-[var(--brand-overlay)] z-10" />
           <div className="relative z-20 flex h-full w-full flex-col items-center justify-center px-4 text-center text-[var(--brand-fg)]">
-            <div className="rounded-md bg-[color:color-mix(in_oklab,var(--brand-bg)_60%,transparent)] px-4 py-2">
+            <div className="rounded-md bg-[color:color-mix(in_oklab,var(--brand-bg)_60%,transparent)] px-4 py-2 shadow-xl md:shadow-2xl">
               <h1 className="text-4xl font-bold tracking-tight">{slide.headline}</h1>
               {slide.subline && <p className="mt-2 text-lg">{slide.subline}</p>}
             </div>
@@ -93,7 +93,11 @@ export default function Hero({ slides, intervalMs = 10000 }: HeroProps) {
                 href={slide.cta.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`mt-8 inline-block rounded-md border border-[var(--brand-primary)] bg-[var(--brand-primary)] px-6 py-2 font-medium text-[var(--brand-primary-contrast)] shadow-sm hover:bg-[color:color-mix(in_oklab,var(--brand-primary)_85%,white_15%)] ${shouldNudge ? 'animate-shake' : ''}`}
+                className={`mt-8 inline-flex items-center justify-center gap-2 rounded-full px-7 py-3 font-semibold tracking-wide no-underline
+                bg-[var(--brand-accent)] text-[var(--brand-ink)] ring-2 ring-[color:color-mix(in_oklab,var(--brand-ink)_30%,transparent)] shadow-[0_8px_18px_-6px_color-mix(in_oklab,var(--brand-ink)_40%,transparent)]
+                hover:bg-[color:color-mix(in_oklab,var(--brand-accent)_85%,white_15%)] hover:shadow-[0_12px_26px_-6px_color-mix(in_oklab,var(--brand-ink)_55%,transparent)]
+                focus:outline-none focus:ring-4 focus:ring-[var(--brand-alt)] focus:ring-offset-2 focus:ring-offset-[var(--brand-ink)]
+                transition-transform hover:scale-105 active:scale-95 ${shouldNudge ? 'animate-shake' : ''}`}
               >
                 {slide.cta.label}
               </Link>
