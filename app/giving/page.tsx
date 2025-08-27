@@ -1,4 +1,3 @@
-import LogoSpinner from "@/components/LogoSpinner";
 import type { SVGProps } from "react";
 
 export const metadata = { title: "Giving" };
@@ -37,10 +36,15 @@ function CashIcon(props: SVGProps<SVGSVGElement>) {
       strokeWidth={1.5}
       {...props}
     >
+      {/* Overlapping banknotes icon to represent cash */}
+      <rect x="4.5" y="4" width="17" height="11" rx="2" ry="2" />
+      <rect x="2.5" y="7" width="17" height="11" rx="2" ry="2" />
+      {/* Markings on the front note */}
+      <circle cx="10.5" cy="12.5" r="2.25" />
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M12 8c-2.21 0-4 .89-4 2s1.79 2 4 2 4 .89 4 2-1.79 2-4 2m0-6V6m0 12v-2"
+        d="M17 10.25h2.5M17 14.75h2.5"
       />
     </svg>
   );
@@ -91,19 +95,18 @@ const options: Option[] = [
   {
     title: "Cash App",
     content: "$GPTKCK",
-    href: "https://cash.app/$GPTKCK",
     icon: CashIcon,
   },
   {
     title: "Givelify",
     content: "Greater Pentecostal Temple Church",
-    href: "https://www.givelify.com/donate/greater-pentecostal-temple-church-kansas-city-mo-2j7wy5NTM5NDQ=",
+    href: "https://www.givelify.com/donate/MTUxODY4MQ==/selection",
     icon: HeartIcon,
   },
   {
     title: "Razmobile",
     content: "Give securely online",
-    href: "https://give.razmobile.com/gptkck",
+    href: "https://www.razmobile.com/GPTChurch",
     icon: LinkIcon,
   },
 ];
@@ -140,14 +143,14 @@ function OptionCard({ option, delay }: { option: Option; delay: string }) {
 export default function Page() {
   return (
     <div className="w-full space-y-8">
-      <h1 className="text-2xl font-semibold">Giving</h1>
+      <div className="space-y-2">
+        <h1 className="text-2xl font-semibold">Online Contributions</h1>
+        <p className="text-sm text-[var(--brand-fg)]">Donations are Tax Deductible</p>
+      </div>
       <div className="grid gap-6 sm:grid-cols-2">
         {options.map((opt, idx) => (
           <OptionCard key={opt.title} option={opt} delay={`${idx * 0.1}s`} />
         ))}
-      </div>
-      <div className="opacity-0 animate-fade-in-up" style={{ animationDelay: `${options.length * 0.1}s` }}>
-        <LogoSpinner />
       </div>
     </div>
   );
