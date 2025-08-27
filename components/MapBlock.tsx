@@ -58,8 +58,23 @@ export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
         map.setCenter(loc);
         map.setZoom(${zoom});
         var marker = new google.maps.Marker({ map: map, position: loc, title: ${JSON.stringify(address)} });
-        marker.setAnimation(google.maps.Animation.BOUNCE);
-        setTimeout(function(){ marker.setAnimation(null); }, 1400);
+        function triggerAnimation() {
+          marker.setAnimation(google.maps.Animation.BOUNCE);
+          setTimeout(function(){ marker.setAnimation(null); }, 1400);
+        }
+        if ("IntersectionObserver" in window && container) {
+          var observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+              if (entry.isIntersecting) {
+                triggerAnimation();
+                observer.disconnect();
+              }
+            });
+          });
+          observer.observe(container);
+        } else {
+          triggerAnimation();
+        }
       }
     });
     ` : ``}
