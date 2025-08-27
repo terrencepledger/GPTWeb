@@ -44,7 +44,7 @@ export default async function Page() {
         style={{ animationDelay: '0.3s' }}
       >
         <h2 className="mb-4 text-xl font-semibold text-[var(--brand-accent)]">Ministry Highlights</h2>
-        <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(16rem,1fr))]">
+        <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(22rem,1fr))]">
           {ministries.map((min) => (
             <MinistryCard key={min._id} ministry={min} />
           ))}

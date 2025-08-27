@@ -18,8 +18,8 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'image',
-      title: 'Image',
+      name: 'staffImage',
+      title: 'Staff Image',
       type: 'image',
       options: { hotspot: true },
     }),

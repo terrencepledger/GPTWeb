@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
+import { Playfair_Display, Inter, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 import "./utilities.css";
 import Header from "@/components/Header";
@@ -7,6 +8,20 @@ import Footer from "@/components/Footer";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import BannerAnchor from "@/components/BannerAnchor";
 import { siteSettings, announcementLatest } from "@/lib/queries";
+
+const headerFont = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-header",
+});
+const bodyFont = Inter({
+  subsets: ["latin"],
+  variable: "--font-body",
+});
+const buttonFont = Bebas_Neue({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-button",
+});
 
 export const revalidate = 0;
 
@@ -41,7 +56,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const watermarkUrl = settings?.logo ?? "/static/favicon.svg";
 
   return (
-    <html lang="en">
+    <html
+      lang="en"
+      className={`${headerFont.variable} ${bodyFont.variable} ${buttonFont.variable}`}
+    >
       <body
         className="flex min-h-screen flex-col"
         style={{ "--layout-max-width": maxWidth, "--watermark-url": `url(${watermarkUrl})` } as CSSProperties}
