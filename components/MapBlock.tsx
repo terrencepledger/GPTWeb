@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef } from "react";
 
 type MapBlockProps = {
@@ -12,14 +14,15 @@ export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef<any>();
   const seenRef = useRef(false);
+  const revealDoneRef = useRef(false);
 
   const apiKey = process.env.GOOGLE_MAPS_KEY;
 
   const hasAddress = typeof address === "string" && address.trim().length > 0;
   const addressQuery = hasAddress ? encodeURIComponent(address as string) : "";
 
-  const bounce = () => {
-    if (markerRef.current) {
+  const tryBounce = () => {
+    if (revealDoneRef.current && markerRef.current) {
       markerRef.current.setAnimation(google.maps.Animation.BOUNCE);
       setTimeout(() => markerRef.current?.setAnimation(null), 1400);
     }
@@ -30,7 +33,19 @@ export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
     if (!container) return;
 
     function reveal() {
-      requestAnimationFrame(() => container.classList.remove("opacity-0"));
+      const el = containerRef.current;
+      if (!el) return;
+      let completed = false;
+      const onDone = () => {
+        if (completed) return;
+        completed = true;
+        revealDoneRef.current = true;
+        tryBounce();
+      };
+      el.addEventListener("transitionend", onDone, { once: true });
+      requestAnimationFrame(() => el.classList.remove("opacity-0"));
+      // Fallback in case transitionend doesn't fire (e.g., prefers-reduced-motion)
+      setTimeout(onDone, 700);
     }
 
     const observer = new IntersectionObserver((entries) => {
@@ -38,7 +53,7 @@ export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
         if (entry.isIntersecting) {
           seenRef.current = true;
           reveal();
-          bounce();
+          tryBounce();
           observer.disconnect();
         }
       });
@@ -75,7 +90,7 @@ export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
                 position: loc,
                 title: address as string,
               });
-              if (seenRef.current) bounce();
+              if (seenRef.current) tryBounce();
             }
           }
         );
