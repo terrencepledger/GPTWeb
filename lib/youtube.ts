@@ -14,9 +14,6 @@ export async function getLatestYoutubeVideoId(): Promise<string | null> {
     let latest: { id: string; published: number } | null = null;
 
     for (const [, entry] of entries) {
-      const liveMatch = entry.match(/<yt:liveBroadcast>(.+?)<\/yt:liveBroadcast>/);
-      if (!liveMatch || liveMatch[1] === "none") continue;
-
       const idMatch = entry.match(/<yt:videoId>(.+?)<\/yt:videoId>/);
       const dateMatch = entry.match(/<published>(.+?)<\/published>/);
       if (!idMatch || !dateMatch) continue;
