@@ -42,9 +42,9 @@ export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
         revealDoneRef.current = true;
         tryBounce();
       };
-      el.classList.remove("opacity-0");
+      el.classList.add("animate-spiral-drop");
       el.addEventListener("animationend", onDone, { once: true });
-      el.classList.add("animate-mapblock-bounce-in");
+      el.classList.remove("opacity-0");
       // Fallback in case animationend doesn't fire (e.g., prefers-reduced-motion)
       setTimeout(onDone, 800);
     }
