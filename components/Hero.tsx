@@ -91,7 +91,6 @@ export default function Hero({ slides, intervalMs = 10000 }: HeroProps) {
               <Link
                 ref={ctaRef}
                 href={slide.cta.href}
-                prefetch={false}
                 target="_blank"
                 rel="noopener noreferrer"
                 role="button"

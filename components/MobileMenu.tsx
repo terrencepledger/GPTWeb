@@ -8,7 +8,6 @@ import { usePathname } from "next/navigation";
 interface NavItem {
   href: string;
   label: string;
-  prefetch?: boolean;
 }
 
 export type MobileMenuHandle = {
@@ -113,7 +112,6 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
                         <Disclosure.Panel className="ml-4 mt-2 flex flex-col gap-2">
                           <Link
                             href="/about/staff"
-                            prefetch={false}
                             className={linkClasses(pathname === "/about/staff")}
                             aria-current={pathname === "/about/staff" ? "page" : undefined}
                             onClick={handleClose}
@@ -122,7 +120,6 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
                           </Link>
                           <Link
                             href="/about/mission-statement"
-                            prefetch={false}
                             className={linkClasses(
                               pathname === "/about/mission-statement"
                             )}
@@ -192,7 +189,6 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
                   <Link
                     key={item.href}
                     href={item.href}
-                    prefetch={item.prefetch}
                     className={linkClasses(pathname.startsWith(item.href))}
                     aria-current={pathname.startsWith(item.href) ? "page" : undefined}
                     onClick={handleClose}

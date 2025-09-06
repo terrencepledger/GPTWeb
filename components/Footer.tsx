@@ -52,7 +52,6 @@ export default async function Footer() {
                   <Link
                     className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
                     href="/events"
-                    prefetch={false}
                   >
                     Events
                   </Link>
@@ -61,7 +60,6 @@ export default async function Footer() {
                   <Link
                     className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
                     href="/livestreams"
-                    prefetch={false}
                   >
                     Livestreams
                   </Link>
@@ -70,7 +68,6 @@ export default async function Footer() {
                   <Link
                     className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
                     href="/giving"
-                    prefetch={false}
                   >
                     Giving
                   </Link>
