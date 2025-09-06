@@ -51,6 +51,8 @@ export async function getRecentLivestreams(): Promise<VimeoItem[]> {
   if (!res.ok) return []
   const data = await res.json()
   return (
-    data.data?.map((v: VimeoVideo) => ({ ...v, id: idFromUri(v.uri) })) ?? []
+    data.data
+      ?.slice(1)
+      .map((v: VimeoVideo) => ({ ...v, id: idFromUri(v.uri) })) ?? []
   )
 }

@@ -46,29 +46,13 @@ export default function LivestreamPlayer({
           </span>
         )}
       </div>
-      <div className="relative mb-4 aspect-video w-full max-w-4xl mx-auto overflow-hidden rounded-lg bg-gradient-to-r from-brand-purple to-brand-gold p-[2px]">
+      <div className="relative mb-8 aspect-video w-full max-w-4xl mx-auto overflow-hidden rounded-lg bg-gradient-to-r from-brand-purple to-brand-gold p-[2px]">
         <iframe
           ref={iframeRef}
           src={`https://player.vimeo.com/video/${current.id}`}
           allow="autoplay; fullscreen; picture-in-picture"
           className="h-full w-full rounded-md"
         />
-      </div>
-      <div className="mb-8 flex justify-center gap-4">
-        <button
-          type="button"
-          onClick={() => playerRef.current?.play()}
-          className="rounded bg-[var(--brand-accent)] px-4 py-2 text-sm font-medium text-[var(--brand-ink)]"
-        >
-          Play
-        </button>
-        <button
-          type="button"
-          onClick={() => playerRef.current?.pause()}
-          className="rounded bg-[var(--brand-border)] px-4 py-2 text-sm font-medium text-[var(--brand-fg)]"
-        >
-          Pause
-        </button>
       </div>
       {videos.length > 0 && (
         <div>
