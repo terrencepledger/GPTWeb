@@ -1,5 +1,9 @@
 import EventsSegmentedTabs, { type EventsShow } from "@/components/EventsSegmentedTabs";
+import EventsLayoutSwitcher, {
+  type EventsLayout,
+} from "@/components/EventsLayoutSwitcher";
 import EventGallery from "@/components/EventGallery";
+import EventTimeline from "@/components/EventTimeline";
 import { eventsAll } from "@/lib/queries";
 import type { Event as SanityEvent } from "@/lib/queries";
 
@@ -8,9 +12,10 @@ export const metadata = { title: "Events" };
 export default async function Page({
   searchParams,
 }: {
-  searchParams?: { show?: string };
+  searchParams?: { show?: string; layout?: string };
 }) {
   const show = (searchParams?.show as EventsShow) ?? "upcoming";
+  const layout = (searchParams?.layout as EventsLayout) ?? "gallery";
   const allEvents = await eventsAll();
   const now = new Date();
   const events = allEvents
@@ -37,8 +42,13 @@ export default async function Page({
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Events</h1>
       <EventsSegmentedTabs current={show} />
+      <EventsLayoutSwitcher current={layout} />
       <section className="w-full">
-        <EventGallery events={events} />
+        {layout === "timeline" ? (
+          <EventTimeline events={events} />
+        ) : (
+          <EventGallery events={events} />
+        )}
       </section>
     </div>
   );
