@@ -16,6 +16,7 @@ export default function EventsSegmentedTabs({ current }: { current: EventsShow }
           role="tab"
           aria-selected={current === "upcoming"}
           href="/events?show=upcoming"
+          prefetch={false}
           className={itemBase + (current === "upcoming" ? active : inactive)}
         >
           Upcoming
@@ -24,6 +25,7 @@ export default function EventsSegmentedTabs({ current }: { current: EventsShow }
           role="tab"
           aria-selected={current === "past"}
           href="/events?show=past"
+          prefetch={false}
           className={itemBase + (current === "past" ? active : inactive)}
         >
           Past
@@ -32,6 +34,7 @@ export default function EventsSegmentedTabs({ current }: { current: EventsShow }
           role="tab"
           aria-selected={current === "all"}
           href="/events?show=all"
+          prefetch={false}
           className={itemBase + (current === "all" ? active : inactive)}
         >
           All

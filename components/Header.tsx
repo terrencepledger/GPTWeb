@@ -15,9 +15,9 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
   const givingRef = useRef<HTMLAnchorElement>(null);
   const shouldNudgeGiving = useNudge(givingRef);
 
-  const nav = [
+  const nav: { href: string; label: string; prefetch?: boolean }[] = [
     { href: "/ministries", label: "Ministries" },
-    { href: "/events", label: "Events" },
+    { href: "/events", label: "Events", prefetch: false },
     { href: "/livestreams", label: "Livestreams" },
     { href: "/giving", label: "Giving" },
   ];
@@ -133,6 +133,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={item.prefetch}
               ref={item.href === "/giving" ? givingRef : undefined}
               className={`${linkClasses(pathname.startsWith(item.href))} ${item.href === "/giving" && shouldNudgeGiving ? "animate-shake" : ""}`}
               aria-current={pathname.startsWith(item.href) ? "page" : undefined}
