@@ -17,24 +17,27 @@ export default async function Page() {
   ]);
 
   const address = settings?.address ?? "";
+  const hasEvents = events.length > 0;
 
   return (
     <div className="w-full space-y-12">
       <Hero slides={slides} />
       <VisitorCTA />
+      {hasEvents && (
+        <section
+          className="w-full opacity-0 animate-fade-in-up"
+          style={{ animationDelay: '0.1s' }}
+        >
+          <h2 className="mb-4 text-xl font-semibold text-[var(--brand-accent)]">Upcoming Events</h2>
+          <EventList events={events} />
+        </section>
+      )}
       <section
         className="w-full opacity-0 animate-fade-in-up"
-        style={{ animationDelay: '0.1s' }}
+        style={{ animationDelay: hasEvents ? '0.2s' : '0.1s' }}
       >
-        <h2 className="mb-4 text-xl font-semibold text-[var(--brand-accent)]">Upcoming Events</h2>
-        <EventList events={events} />
+        <SocialCTA />
       </section>
-        <section
-            className="w-full opacity-0 animate-fade-in-up"
-            style={{ animationDelay: '0.2s' }}
-        >
-            <SocialCTA />
-        </section>
       <MapBlock address={address} />
     </div>
   );
