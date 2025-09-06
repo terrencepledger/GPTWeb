@@ -1,5 +1,7 @@
 import Link from "next/link";
+import type { SVGProps } from "react";
 import { siteSettings } from "@/lib/queries";
+import { SocialIcons } from "@/components/SocialIcons";
 
 export default async function Footer() {
   const settings = await siteSettings();
@@ -7,6 +9,17 @@ export default async function Footer() {
   const address = settings?.address ?? "123 Main St, Hometown, ST 12345";
   const serviceTimes = settings?.serviceTimes ?? "Sundays 10:00 AM";
   const year = new Date().getFullYear();
+  const socials = (settings?.socialLinks ?? [])
+    .map(({ icon, href, label }) => {
+      const Icon = SocialIcons[icon];
+      if (!Icon || !href) return null;
+      return { href, label, Icon };
+    })
+    .filter(Boolean) as {
+      href: string;
+      label: string;
+      Icon: (props: SVGProps<SVGSVGElement>) => JSX.Element;
+    }[];
 
   return (
     <footer className="mt-12 border-t border-[var(--brand-border)] bg-[var(--brand-surface)] text-[var(--brand-fg)]">
@@ -79,54 +92,17 @@ export default async function Footer() {
           <div>
             <h4 className="mb-2 font-semibold text-[var(--brand-surface-contrast)]">Connect</h4>
             <ul className="flex justify-center gap-3 md:justify-start">
-              <li>
-                <a
-                  href="#"
-                  aria-label="Facebook"
-                  className="rounded text-[var(--brand-muted)] hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
-                >
-                  <svg
-                    className="h-5 w-5"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
+              {socials.map(({ href, label, Icon }) => (
+                <li key={label}>
+                  <a
+                    href={href}
+                    aria-label={label}
+                    className="rounded text-[var(--brand-muted)] hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
                   >
-                    <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54v-2.89h2.54V9.797c0-2.507 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562v1.875h2.773l-.443 2.89h-2.33V21.88C18.343 21.128 22 16.991 22 12z" />
-                  </svg>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  aria-label="Instagram"
-                  className="rounded text-[var(--brand-muted)] hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
-                >
-                  <svg
-                    className="h-5 w-5"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.17.056 1.97.24 2.43.403a4.92 4.92 0 011.773 1.153 4.92 4.92 0 011.153 1.773c.163.46.347 1.26.403 2.43.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.056 1.17-.24 1.97-.403 2.43a4.92 4.92 0 01-1.153 1.773 4.92 4.92 0 01-1.773 1.153c-.46.163-1.26.347-2.43.403-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.17-.056-1.97-.24-2.43-.403a4.92 4.92 0 01-1.773-1.153 4.92 4.92 0 01-1.153-1.773c-.163-.46-.347-1.26-.403-2.43C2.175 15.584 2.163 15.204 2.163 12s.012-3.584.07-4.85c.056-1.17.24-1.97.403-2.43a4.92 4.92 0 011.153-1.773 4.92 4.92 0 011.773-1.153c.46-.163 1.26-.347 2.43-.403C8.416 2.175 8.796 2.163 12 2.163zm0 1.8c-3.16 0-3.507.012-4.737.068-.99.046-1.524.213-1.877.355-.472.183-.81.4-1.165.755-.355.355-.572.693-.755 1.165-.142.353-.309.887-.355 1.877-.056 1.23-.068 1.576-.068 4.737s.012 3.507.068 4.737c.046.99.213 1.524.355 1.877.183.472.4.81.755 1.165.355.355.693.572 1.165.755.353.142.887.309 1.877.355 1.23.056 1.576.068 4.737.068s3.507-.012 4.737-.068c.99-.046 1.524-.213 1.877-.355.472-.183.81-.4 1.165-.755.355-.355.572-.693.755-1.165.142-.353.309-.887.355-1.877.056-1.23.068-1.576.068-4.737s-.012-3.507-.068-4.737c-.046-.99-.213-1.524-.355-1.877a3.098 3.098 0 00-.755-1.165 3.098 3.098 0 00-1.165-.755c-.353-.142-.887-.309-1.877-.355-1.23-.056-1.576-.068-4.737-.068zm0 3.905a4.095 4.095 0 110 8.19 4.095 4.095 0 010-8.19zm0 6.76a2.665 2.665 0 100-5.33 2.665 2.665 0 000 5.33zm4.271-7.845a.96.96 0 110-1.92.96.96 0 010 1.92z" />
-                  </svg>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  aria-label="YouTube"
-                  className="rounded text-[var(--brand-muted)] hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
-                >
-                  <svg
-                    className="h-5 w-5"
-                    fill="currentColor"
-                    viewBox="0 0 24 24"
-                    aria-hidden="true"
-                  >
-                    <path d="M23.498 6.186a2.958 2.958 0 00-2.08-2.09C19.691 3.5 12 3.5 12 3.5s-7.691 0-9.418.596a2.958 2.958 0 00-2.08 2.09A30.15 30.15 0 000 12a30.15 30.15 0 00.502 5.814 2.958 2.958 0 002.08 2.09C4.309 20.5 12 20.5 12 20.5s7.691 0 9.418-.596a2.958 2.958 0 002.08-2.09A30.15 30.15 0 0024 12a30.15 30.15 0 00-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                  </svg>
-                </a>
-              </li>
+                    <Icon className="h-5 w-5" />
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 
