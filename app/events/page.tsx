@@ -1,5 +1,5 @@
 import EventsSegmentedTabs, { type EventsShow } from "@/components/EventsSegmentedTabs";
-import EventGallery from "@/components/EventGallery";
+import { EventList } from "@/components/EventList";
 import { eventsAll } from "@/lib/queries";
 import type { Event as SanityEvent } from "@/lib/queries";
 
@@ -38,7 +38,7 @@ export default async function Page({
       <h1 className="text-2xl font-semibold">Events</h1>
       <EventsSegmentedTabs current={show} />
       <section className="w-full">
-        <EventGallery events={events} />
+        <EventList events={events} mode="timeline" />
       </section>
     </div>
   );
