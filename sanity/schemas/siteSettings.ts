@@ -4,6 +4,7 @@ export default defineType({
   name: 'siteSettings',
   title: 'Site Settings',
   type: 'document',
+  __experimental_actions: ['update', 'publish'],
   fields: [
     defineField({
       name: 'title',
@@ -18,12 +19,6 @@ export default defineType({
       options: { hotspot: true }
     }),
     defineField({
-      name: 'description',
-      title: 'Description',
-      type: 'text',
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
       name: 'address',
       title: 'Address',
       type: 'string',
@@ -33,6 +28,11 @@ export default defineType({
       title: 'Service Times',
       type: 'string',
       description: 'e.g., Sundays 9am & 11am; Wednesdays 7pm',
+    }),
+    defineField({
+      name: 'youtubeChannelId',
+      title: 'YouTube Channel ID',
+      type: 'string',
     }),
     defineField({
       name: 'socialLinks',
