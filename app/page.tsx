@@ -1,4 +1,5 @@
 import { EventList } from "@/components/EventList";
+import AnimatedEventGrid from "@/components/AnimatedEventGrid";
 import Hero from "@/components/Hero";
 import MapBlock from "@/components/MapBlock";
 import VisitorCTA from "@/components/VisitorCTA";
@@ -8,8 +9,12 @@ import {
   eventsUpcoming,
   siteSettings,
 } from "@/lib/queries";
-
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: { layout?: string };
+}) {
+  const layout = searchParams?.layout === "masonry" ? "masonry" : "grid";
   const [slides, events, settings] = await Promise.all([
     heroSlides(),
     eventsUpcoming(3),
@@ -29,7 +34,11 @@ export default async function Page() {
           style={{ animationDelay: '0.1s' }}
         >
           <h2 className="mb-4 text-xl font-semibold text-[var(--brand-accent)]">Upcoming Events</h2>
-          <EventList events={events} />
+          {layout === "masonry" ? (
+            <AnimatedEventGrid show="upcoming" />
+          ) : (
+            <EventList events={events} />
+          )}
         </section>
       )}
       <section
