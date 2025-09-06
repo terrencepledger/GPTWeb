@@ -20,6 +20,10 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           entry.target.classList.add("opacity-100", "translate-y-0");
+          const dot = entry.target.querySelector(
+            ".timeline-dot"
+          ) as HTMLElement | null;
+          if (dot) dot.classList.add("scale-100");
         }
       });
     }, { threshold: 0.2 });
@@ -45,29 +49,31 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
           key={ev._id}
           ref={(el) => (refs.current[i] = el)}
           className={`relative mb-12 flex w-full opacity-0 translate-y-4 transition-all duration-500 ${
-            i % 2 === 0 ? "justify-start pr-8" : "justify-end pl-8"
+            i % 2 === 0
+              ? "justify-start pr-8 text-right"
+              : "justify-end pl-8 text-left"
           }`}
         >
-          <span className="absolute top-6 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-[var(--brand-primary)]" />
-          <div className="w-full max-w-sm rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)] p-4 shadow">
+          <span className="timeline-dot absolute top-2 left-1/2 -translate-x-1/2 h-3 w-3 rounded-full bg-[var(--brand-primary)] transition-transform duration-500 scale-0" />
+          <div className="w-full max-w-sm space-y-1">
             {ev.image && (
               <Image
                 src={ev.image}
                 alt=""
                 width={600}
                 height={320}
-                className="mb-2 h-40 w-full rounded object-cover"
+                className="mb-2 w-full rounded object-cover"
               />
             )}
             <h3 className="text-base font-semibold text-[var(--brand-fg)]">
               {ev.title}
             </h3>
-            <p className="mt-1 text-xs text-[var(--brand-muted)]">
+            <p className="text-xs text-[var(--brand-muted)]">
               {ev.date}
               {ev.location ? ` • ${ev.location}` : ""}
             </p>
             {ev.description && (
-              <p className="mt-2 text-sm text-[var(--brand-fg)]/90">
+              <p className="text-sm text-[var(--brand-fg)]/90">
                 {ev.description}
               </p>
             )}
