@@ -46,7 +46,7 @@ export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
       el.addEventListener("animationend", onDone, { once: true });
       el.classList.remove("opacity-0");
       // Fallback in case animationend doesn't fire (e.g., prefers-reduced-motion)
-      setTimeout(onDone, 800);
+      setTimeout(onDone, 2000);
     }
 
     const observer = new IntersectionObserver((entries) => {
