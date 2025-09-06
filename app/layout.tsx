@@ -9,6 +9,7 @@ import AnnouncementBanner from "@/components/AnnouncementBanner";
 import BannerAnchor from "@/components/BannerAnchor";
 import { siteSettings, announcementLatest } from "@/lib/queries";
 import AutoRefresh from "@/components/AutoRefresh";
+import Script from "next/script";
 
 const headerFont = Playfair_Display({
   subsets: ["latin"],
@@ -65,6 +66,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         style={{ "--layout-max-width": maxWidth } as CSSProperties}
       >
         <AutoRefresh />
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="ga-init" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');`}
+        </Script>
         <Header initialTitle={headerTitle} />
         {message && (
           <BannerAnchor gap={0}>
