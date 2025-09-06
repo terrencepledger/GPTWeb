@@ -182,15 +182,18 @@
   /* Spiral drop animation for MapBlock container */
   @keyframes spiralDrop {
     0% {
-      transform: translate(-120%, -120%) rotate(-540deg) scale(0.25);
+      transform: translate(-120%, -120%) rotate(-360deg) scale(0.25);
       opacity: 0;
     }
-    40% {
-      transform: translate(12%, 8%) rotate(-324deg) scale(0.55);
+    25% {
+      transform: translate(-90%, 90%) rotate(-270deg) scale(0.5);
       opacity: 1;
     }
-    70% {
-      transform: translate(3%, 2%) rotate(-162deg) scale(0.85);
+    50% {
+      transform: translate(60%, 60%) rotate(-180deg) scale(0.75);
+    }
+    75% {
+      transform: translate(30%, -30%) rotate(-90deg) scale(0.9);
     }
     100% {
       transform: translate(0, 0) rotate(0deg) scale(1);
