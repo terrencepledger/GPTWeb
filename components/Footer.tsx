@@ -96,6 +96,8 @@ export default async function Footer() {
                 <li key={label}>
                   <a
                     href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     aria-label={label}
                     className="rounded text-[var(--brand-muted)] hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
                   >

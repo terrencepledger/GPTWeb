@@ -48,6 +48,8 @@ export function StaffCard({
         {staff.email && (
           <a
             href={`mailto:${staff.email}`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="mt-2 block text-sm font-medium text-[var(--brand-accent)] hover:underline hover:text-[var(--brand-primary-contrast)]"
           >
             {staff.email}
