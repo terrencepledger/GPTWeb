@@ -45,21 +45,6 @@ export const eventsAll = () =>
     groq`*[_type == "event"] | order(date asc){_id, title, date, description, location, "image": image.asset->url}`
   );
 
-export interface Service {
-  _id: string;
-  title: string;
-  date: string;
-  description?: string;
-}
-
-export const serviceNext = () => {
-  const now = new Date().toISOString();
-  return sanity.fetch<Service | null>(
-    groq`*[_type == "service" && date >= $now] | order(date asc)[0]{_id, title, date, description}`,
-    { now }
-  );
-};
-
 export interface Staff {
   _id: string;
   name: string;

@@ -65,7 +65,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
       try {
           const stored = localStorage.getItem(storageKey);
           if (stored === "dismissed") {
-              // setDismissed(true);
+              setDismissed(true);
           }
       } catch {}
   }, [storageKey]);
