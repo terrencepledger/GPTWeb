@@ -1,10 +1,18 @@
 import type { SVGProps } from "react";
 import { getLatestYoutubeVideoId } from "@/lib/youtube";
 
-const socials = [
+type SocialItem = {
+  name: string;
+  href: string;
+  description: string;
+  icon: (props: SVGProps<SVGSVGElement>) => JSX.Element;
+};
+
+const socials: SocialItem[] = [
   {
     name: "Facebook",
     href: "https://www.facebook.com/WGPTTV",
+    description: "Like us on Facebook",
     icon: function FacebookIcon(props: SVGProps<SVGSVGElement>) {
       return (
         <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -16,6 +24,7 @@ const socials = [
   {
     name: "Instagram",
     href: "https://www.instagram.com/WGPTTV",
+    description: "Follow us on Instagram",
     icon: function InstagramIcon(props: SVGProps<SVGSVGElement>) {
       return (
         <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -27,6 +36,7 @@ const socials = [
   {
     name: "TikTok",
     href: "https://www.tiktok.com/@WGPTTV",
+    description: "Follow us on TikTok",
     icon: function TikTokIcon(props: SVGProps<SVGSVGElement>) {
       return (
         <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
@@ -35,24 +45,29 @@ const socials = [
       );
     },
   },
+  {
+    name: "Get Connected",
+    href: "sms:555?&body=Get%20Connected",
+    description: "Text \"Get Connected\" to 555",
+    icon: function SmsIcon(props: SVGProps<SVGSVGElement>) {
+      return (
+        <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+          <path d="M2 3a1 1 0 011-1h18a1 1 0 011 1v14a1 1 0 01-1 1H6l-4 4V3z" />
+        </svg>
+      );
+    },
+  },
 ];
 
-function SocialIcon({
-  href,
-  label,
-  icon: Icon,
-}: {
-  href: string;
-  label: string;
-  icon: (props: SVGProps<SVGSVGElement>) => JSX.Element;
-}) {
+function SocialCard({ href, name, description, icon: Icon }: SocialItem) {
   return (
     <a
       href={href}
-      aria-label={label}
-      className="rounded text-[var(--brand-muted)] hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
+      className="flex flex-col items-center gap-2 rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] p-4 text-center hover:bg-[var(--brand-muted)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
     >
-      <Icon className="h-6 w-6" />
+      <Icon className="h-8 w-8 text-[var(--brand-primary)]" />
+      <h3 className="text-base font-semibold text-[var(--brand-accent)]">{name}</h3>
+      <p className="text-sm text-[var(--brand-muted)]">{description}</p>
     </a>
   );
 }
@@ -66,28 +81,32 @@ export default async function SocialCTA() {
     ? `https://www.youtube.com/embed/live_stream?channel=${channelId}`
     : null;
 
+  const left = socials.slice(0, 2);
+  const right = socials.slice(2);
+
   return (
     <section className="w-full">
-      {embedUrl && (
-        <div className="relative mb-4 aspect-video w-full overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)]">
-          <iframe
-            src={embedUrl}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            className="h-full w-full"
-          />
+      <div className="grid gap-4 md:grid-cols-[1fr_2fr_1fr]">
+        <div className="order-2 flex flex-col gap-4 md:order-1">
+          {left.map((s) => (
+            <SocialCard key={s.name} {...s} />
+          ))}
         </div>
-      )}
-      <a
-        href="sms:555?&body=Get%20Connected"
-        className="mb-4 inline-block rounded bg-[var(--brand-primary)] px-4 py-2 font-medium text-[var(--brand-surface)] hover:bg-[var(--brand-alt)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
-      >
-        Get Connected
-      </a>
-      <div className="mt-4 flex gap-4">
-        {socials.map((s) => (
-          <SocialIcon key={s.name} {...s} />
-        ))}
+        {embedUrl && (
+          <div className="order-1 relative aspect-video w-full overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] md:order-2">
+            <iframe
+              src={embedUrl}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="h-full w-full"
+            />
+          </div>
+        )}
+        <div className="order-3 flex flex-col gap-4 md:order-3">
+          {right.map((s) => (
+            <SocialCard key={s.name} {...s} />
+          ))}
+        </div>
       </div>
     </section>
   );
