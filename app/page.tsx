@@ -33,12 +33,7 @@ export default async function Page() {
         style={{ animationDelay: '0.2s' }}
       >
       </section>
-      <div
-        className="opacity-0 animate-fade-in-up"
-        style={{ animationDelay: '0.3s' }}
-      >
-        <MapBlock address={address} />
-      </div>
+      <MapBlock address={address} />
     </div>
   );
 }

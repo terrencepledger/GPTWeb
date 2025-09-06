@@ -39,13 +39,14 @@ export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
       const onDone = () => {
         if (completed) return;
         completed = true;
+        el.classList.remove("opacity-0");
         revealDoneRef.current = true;
         tryBounce();
       };
-      el.addEventListener("transitionend", onDone, { once: true });
-      requestAnimationFrame(() => el.classList.remove("opacity-0"));
-      // Fallback in case transitionend doesn't fire (e.g., prefers-reduced-motion)
-      setTimeout(onDone, 700);
+      el.addEventListener("animationend", onDone, { once: true });
+      el.classList.add("animate-mapblock-bounce-in");
+      // Fallback in case animationend doesn't fire (e.g., prefers-reduced-motion)
+      setTimeout(onDone, 800);
     }
 
     const observer = new IntersectionObserver((entries) => {
@@ -120,7 +121,7 @@ export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
     <div className="my-6 w-full">
       <div
         ref={containerRef}
-        className="w-full overflow-hidden rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] shadow opacity-0 transition-opacity duration-500"
+        className="w-full overflow-hidden rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] shadow opacity-0"
       >
         <div ref={mapRef} style={{ width: "100%", height: 300 }} />
       </div>
