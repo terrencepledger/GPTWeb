@@ -34,5 +34,35 @@ export default defineType({
       type: 'string',
       description: 'e.g., Sundays 9am & 11am; Wednesdays 7pm',
     }),
+    defineField({
+      name: 'socialLinks',
+      title: 'Social Links',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          name: 'socialLink',
+          fields: [
+            { name: 'label', title: 'Label', type: 'string' },
+            { name: 'href', title: 'URL', type: 'url' },
+            { name: 'description', title: 'Description', type: 'string' },
+            {
+              name: 'icon',
+              title: 'Icon',
+              type: 'string',
+              options: {
+                list: [
+                  { title: 'Facebook', value: 'facebook' },
+                  { title: 'Instagram', value: 'instagram' },
+                  { title: 'TikTok', value: 'tiktok' },
+                  { title: 'SMS', value: 'sms' },
+                  { title: 'YouTube', value: 'youtube' },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    }),
   ],
 });

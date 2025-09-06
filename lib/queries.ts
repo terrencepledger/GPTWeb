@@ -69,6 +69,13 @@ export const announcementLatest = () =>
     groq`*[_type == "announcement"] | order(publishedAt desc)[0]{_id, title, "message": body, publishedAt}`
   );
 
+export interface SocialLink {
+  label: string;
+  href: string;
+  description?: string;
+  icon: string;
+}
+
 export interface SiteSettings {
   _id: string;
   title: string;
@@ -76,11 +83,12 @@ export interface SiteSettings {
   address?: string;
   serviceTimes?: string;
   logo?: string;
+  socialLinks?: SocialLink[];
 }
 
 export const siteSettings = () =>
   sanity.fetch<SiteSettings | null>(
-    groq`*[_type == "siteSettings"] | order(_updatedAt desc)[0]{_id, title, description, address, serviceTimes, "logo": logo.asset->url}`
+    groq`*[_type == "siteSettings"] | order(_updatedAt desc)[0]{_id, title, description, address, serviceTimes, "logo": logo.asset->url, "socialLinks": socialLinks[]{label, href, description, icon}}`
   );
 
 export interface Ministry {
