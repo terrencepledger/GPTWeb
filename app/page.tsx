@@ -2,6 +2,7 @@ import { EventList } from "@/components/EventList";
 import Hero from "@/components/Hero";
 import MapBlock from "@/components/MapBlock";
 import VisitorCTA from "@/components/VisitorCTA";
+import SocialCTA from "@/components/SocialCTA";
 import {
   heroSlides,
   eventsUpcoming,
@@ -28,6 +29,12 @@ export default async function Page() {
         <h2 className="mb-4 text-xl font-semibold text-[var(--brand-accent)]">Upcoming Events</h2>
         <EventList events={events} />
       </section>
+        <section
+            className="w-full opacity-0 animate-fade-in-up"
+            style={{ animationDelay: '0.2s' }}
+        >
+            <SocialCTA />
+        </section>
       <MapBlock address={address} />
     </div>
   );
