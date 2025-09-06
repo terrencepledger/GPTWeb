@@ -58,12 +58,20 @@ export default async function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]" href="/livestreams">
+                  <Link
+                    className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
+                    href="/livestreams"
+                    prefetch={false}
+                  >
                     Livestreams
                   </Link>
                 </li>
                 <li>
-                  <Link className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]" href="/giving">
+                  <Link
+                    className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
+                    href="/giving"
+                    prefetch={false}
+                  >
                     Giving
                   </Link>
                 </li>

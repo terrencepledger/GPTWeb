@@ -58,6 +58,7 @@ export function EventCard({
         {event.href && (
           <Link
             href={event.href}
+            prefetch={false}
             className="relative mt-4 inline-block rounded px-1 py-0.5 text-sm font-medium text-[var(--brand-accent)] transition-colors hover:underline hover:text-[var(--brand-primary-contrast)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] active:bg-[var(--brand-accent)]/20"
           >
             Learn more

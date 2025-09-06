@@ -9,10 +9,14 @@ const token = process.env.SANITY_READ_TOKEN;
 
 const useCdn = false; // Always disable CDN to ensure fresh data
 
-const noStoreFetch: typeof globalThis.fetch = (url: RequestInfo | URL, init?: RequestInit) =>
+// Allow caching within a session but always revalidate on navigation or refresh
+const noCacheFetch: typeof globalThis.fetch = (
+  url: RequestInfo | URL,
+  init?: RequestInit,
+) =>
   fetch(url, {
     ...(init || {}),
-    cache: 'no-store',
+    cache: 'no-cache',
     next: { revalidate: 0 },
   });
 
@@ -22,9 +26,9 @@ const client = createClient({
   apiVersion: '2025-08-01',
   useCdn,
   token,
-  // Ensure all Sanity requests bypass Next.js fetch caching so fresh data is returned
+  // Use a fetch wrapper that revalidates on navigation while allowing session caching
   // Cast to any to avoid Next.js route segment config 'fetch' type collision in type space
-  fetch: noStoreFetch,
+  fetch: noCacheFetch,
   // If a read token is configured, allow fetching drafts as well (useful for preview and staging)
   perspective: token ? 'previewDrafts' : 'published',
 } as any);

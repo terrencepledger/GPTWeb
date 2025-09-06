@@ -2,6 +2,7 @@ import { staffAll } from "@/lib/queries";
 import { StaffCard } from "@/components/StaffCard";
 
 export const metadata = { title: "Staff" };
+export const revalidate = 0;
 
 export default async function Page() {
   const staff = await staffAll();

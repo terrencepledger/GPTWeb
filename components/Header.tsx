@@ -16,10 +16,10 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
   const shouldNudgeGiving = useNudge(givingRef);
 
   const nav: { href: string; label: string; prefetch?: boolean }[] = [
-    { href: "/ministries", label: "Ministries" },
+    { href: "/ministries", label: "Ministries", prefetch: false },
     { href: "/events", label: "Events", prefetch: false },
-    { href: "/livestreams", label: "Livestreams" },
-    { href: "/giving", label: "Giving" },
+    { href: "/livestreams", label: "Livestreams", prefetch: false },
+    { href: "/giving", label: "Giving", prefetch: false },
   ];
 
   const linkClasses = (active: boolean) =>
@@ -68,6 +68,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
             >
               <Link
                 href="/about/staff"
+                prefetch={false}
                 className={`block rounded px-2 py-1 cursor-pointer border border-transparent ${linkClasses(pathname === "/about/staff")} hover:border-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]`}
                 aria-current={pathname === "/about/staff" ? "page" : undefined}
                 role="menuitem"
@@ -77,6 +78,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
               <div className="my-1 border-t border-[var(--brand-border)]" role="separator" />
               <Link
                 href="/about/mission-statement"
+                prefetch={false}
                 className={`block rounded px-2 py-1 cursor-pointer border border-transparent ${linkClasses(pathname === "/about/mission-statement")} hover:border-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]`}
                 aria-current={pathname === "/about/mission-statement" ? "page" : undefined}
                 role="menuitem"

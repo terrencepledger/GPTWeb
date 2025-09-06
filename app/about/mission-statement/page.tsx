@@ -2,6 +2,7 @@ import Image from "next/image";
 import { missionStatement } from "@/lib/queries";
 
 export const metadata = { title: "Mission Statement" };
+export const revalidate = 0;
 
 export default async function Page() {
   const data = await missionStatement();
