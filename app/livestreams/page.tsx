@@ -19,7 +19,8 @@ export default async function Page() {
 
   const featured =
     recent.find((v) => v.live?.status === "streaming") ||
-    videos[0];
+    videos[0] ||
+    recent[0];
 
   const live = featured?.live?.status === "streaming";
 

@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import Player from '@vimeo/player';
+import { useRef, useState } from 'react';
 import Image from 'next/image';
 import type { VimeoItem } from '@/lib/vimeo';
 
@@ -14,23 +13,8 @@ export default function LivestreamPlayer({
   videos: VideoWithDate[];
   initial: VideoWithDate;
 }) {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-  const playerRef = useRef<Player | null>(null);
   const [current, setCurrent] = useState<VideoWithDate>(initial);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (iframeRef.current) {
-      playerRef.current = new Player(iframeRef.current);
-    }
-    return () => {
-      playerRef.current?.destroy();
-    };
-  }, []);
-
-  useEffect(() => {
-    playerRef.current?.loadVideo(current.id);
-  }, [current]);
 
   const scroll = (offset: number) => {
     containerRef.current?.scrollBy({ left: offset, behavior: 'smooth' });
@@ -48,10 +32,10 @@ export default function LivestreamPlayer({
       </div>
       <div className="relative mb-8 aspect-video w-full max-w-4xl mx-auto overflow-hidden rounded-lg bg-gradient-to-r from-brand-purple to-brand-gold p-[2px]">
         <iframe
-          ref={iframeRef}
           src={`https://player.vimeo.com/video/${current.id}`}
           allow="autoplay; fullscreen; picture-in-picture"
           className="h-full w-full rounded-md"
+          title={current.name}
         />
       </div>
       {videos.length > 0 && (
