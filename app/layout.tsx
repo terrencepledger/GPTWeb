@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import BannerAnchor from "@/components/BannerAnchor";
 import { siteSettings, announcementLatest } from "@/lib/queries";
+import AutoRefresh from "@/components/AutoRefresh";
 
 const headerFont = Playfair_Display({
   subsets: ["latin"],
@@ -63,6 +64,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         className="flex min-h-screen flex-col"
         style={{ "--layout-max-width": maxWidth } as CSSProperties}
       >
+        <AutoRefresh />
         <Header initialTitle={headerTitle} />
         {message && (
           <BannerAnchor gap={0}>

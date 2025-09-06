@@ -9,7 +9,7 @@ const token = process.env.SANITY_READ_TOKEN;
 
 const useCdn = false; // Always disable CDN to ensure fresh data
 
-// Allow cached responses but revalidate after five minutes globally
+// Cache responses for up to five minutes, then revalidate in the background
 const revalidateFetch: typeof globalThis.fetch = (
   url: RequestInfo | URL,
   init?: RequestInit,
