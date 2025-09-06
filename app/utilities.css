@@ -155,21 +155,24 @@
     backface-visibility: hidden;
   }
 
-  /* Bounce in from the left once visible */
+  /* Bounce up from below with a couple of vertical bounces */
   @keyframes mapblock-bounce-in {
     0% {
-      transform: translateX(-150%);
+      transform: translateY(150%);
       opacity: 0;
     }
     60% {
-      transform: translateX(10%);
+      transform: translateY(-10%);
       opacity: 1;
     }
-    80% {
-      transform: translateX(-5%);
+    75% {
+      transform: translateY(5%);
+    }
+    90% {
+      transform: translateY(-2%);
     }
     100% {
-      transform: translateX(0);
+      transform: translateY(0);
     }
   }
   .animate-mapblock-bounce-in {

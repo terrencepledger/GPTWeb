@@ -39,10 +39,10 @@ export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
       const onDone = () => {
         if (completed) return;
         completed = true;
-        el.classList.remove("opacity-0");
         revealDoneRef.current = true;
         tryBounce();
       };
+      el.classList.remove("opacity-0");
       el.addEventListener("animationend", onDone, { once: true });
       el.classList.add("animate-mapblock-bounce-in");
       // Fallback in case animationend doesn't fire (e.g., prefers-reduced-motion)
