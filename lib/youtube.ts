@@ -1,4 +1,6 @@
-export async function getLatestYoutubeVideoId(): Promise<string | null> {
+export async function getLatestSundayLivestream(): Promise<
+  { id: string; published: Date } | null
+> {
   const channelId = process.env.YOUTUBE_CHANNEL_ID;
   if (!channelId) return null;
 
@@ -11,7 +13,7 @@ export async function getLatestYoutubeVideoId(): Promise<string | null> {
     const text = await res.text();
 
     const entries = Array.from(text.matchAll(/<entry>([\s\S]*?)<\/entry>/g));
-    let latest: { id: string; published: number } | null = null;
+    let latest: { id: string; published: Date } | null = null;
 
     for (const [, entry] of entries) {
       const idMatch = entry.match(/<yt:videoId>(.+?)<\/yt:videoId>/);
@@ -21,12 +23,12 @@ export async function getLatestYoutubeVideoId(): Promise<string | null> {
       const published = new Date(dateMatch[1]);
       if (isNaN(published.getTime()) || published.getUTCDay() !== 0) continue;
 
-      if (!latest || published.getTime() > latest.published) {
-        latest = { id: idMatch[1], published: published.getTime() };
+      if (!latest || published.getTime() > latest.published.getTime()) {
+        latest = { id: idMatch[1], published };
       }
     }
 
-    return latest?.id ?? null;
+    return latest;
   } catch {
     return null;
   }

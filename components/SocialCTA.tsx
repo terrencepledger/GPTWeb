@@ -1,5 +1,5 @@
 import type { SVGProps } from "react";
-import { getLatestYoutubeVideoId } from "@/lib/youtube";
+import { getLatestSundayLivestream } from "@/lib/youtube";
 
 type SocialItem = {
   label: string;
@@ -73,10 +73,10 @@ function SocialCard({ href, label, description, icon: Icon }: SocialItem) {
 }
 
 export default async function SocialCTA() {
-  const videoId = await getLatestYoutubeVideoId();
+  const latest = await getLatestSundayLivestream();
   const channelId = process.env.YOUTUBE_CHANNEL_ID;
-  const embedUrl = videoId
-    ? `https://www.youtube.com/embed/${videoId}`
+  const embedUrl = latest?.id
+    ? `https://www.youtube.com/embed/${latest.id}`
     : channelId
     ? `https://www.youtube.com/embed/live_stream?channel=${channelId}`
     : null;
@@ -94,9 +94,15 @@ export default async function SocialCTA() {
         </div>
         {embedUrl && (
           <div className="order-1 relative aspect-video w-full overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] md:order-2">
-            <div className="absolute left-2 top-2 rounded bg-[var(--brand-primary)]/80 px-2 py-1 text-sm font-semibold text-[var(--brand-primary-contrast)]">
-              Latest Sunday Livestream
-            </div>
+            {latest && (
+              <div className="absolute left-2 top-2 rounded bg-[var(--brand-primary)]/80 px-2 py-1 text-sm font-semibold text-[var(--brand-primary-contrast)]">
+                {latest.published.toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </div>
+            )}
             <iframe
               src={embedUrl}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
