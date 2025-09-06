@@ -2,7 +2,6 @@ import { MinistryCard } from "@/components/MinistryCard";
 import { ministriesAll, type Ministry } from "@/lib/queries";
 
 export const metadata = { title: "Ministries" };
-export const revalidate = 0;
 
 export default async function Page() {
   const ministries: Ministry[] = await ministriesAll();

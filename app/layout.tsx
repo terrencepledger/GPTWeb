@@ -23,7 +23,7 @@ const buttonFont = Bebas_Neue({
   variable: "--font-button",
 });
 
-export const revalidate = 0;
+export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await siteSettings();
