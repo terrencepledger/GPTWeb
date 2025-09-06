@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
 import type { VimeoItem } from '@/lib/vimeo';
 
@@ -14,11 +14,6 @@ export default function LivestreamPlayer({
   initial: VideoWithDate;
 }) {
   const [current, setCurrent] = useState<VideoWithDate>(initial);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const scroll = (offset: number) => {
-    containerRef.current?.scrollBy({ left: offset, behavior: 'smooth' });
-  };
 
   return (
     <div>
@@ -42,18 +37,7 @@ export default function LivestreamPlayer({
         <div>
           <h2 className="text-xl font-semibold text-[var(--brand-fg)]">Recent</h2>
           <div className="relative mt-4">
-            <button
-              type="button"
-              aria-label="Scroll left"
-              onClick={() => scroll(-300)}
-              className="absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-[var(--brand-bg)]/80 p-2 shadow hover:bg-[var(--brand-bg)]"
-            >
-              ←
-            </button>
-            <div
-              ref={containerRef}
-              className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory"
-            >
+            <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory">
               {videos.map((video) => {
                 const thumb =
                   video.pictures?.sizes?.[video.pictures.sizes.length - 1]?.link;
@@ -83,14 +67,6 @@ export default function LivestreamPlayer({
                 );
               })}
             </div>
-            <button
-              type="button"
-              aria-label="Scroll right"
-              onClick={() => scroll(300)}
-              className="absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-[var(--brand-bg)]/80 p-2 shadow hover:bg-[var(--brand-bg)]"
-            >
-              →
-            </button>
           </div>
         </div>
       )}

@@ -26,9 +26,12 @@ export default async function Page() {
 
   return (
     <div>
+      {live && (
+        <h2 className="mb-4 text-center text-3xl font-bold text-[var(--brand-fg)]">Live Now</h2>
+      )}
       {featured && <LivestreamPlayer videos={videos} initial={featured} />}
       {!live && next && (
-        <div className="mb-8">
+        <div className="fixed top-4 right-4 z-10 rounded bg-[var(--brand-bg)]/80 px-3 py-1 shadow">
           <Countdown target={new Date(next.date)} />
         </div>
       )}
