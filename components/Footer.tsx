@@ -118,7 +118,7 @@ export default async function Footer() {
               />
               <button
                 type="submit"
-                className="cursor-pointer rounded border border-[var(--brand-primary)] bg-[var(--brand-alt)] px-3 py-1 text-sm font-medium text-[var(--brand-primary)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-primary-contrast)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--brand-primary)]"
+                className="cursor-pointer rounded border border-[var(--brand-primary)] bg-[var(--brand-alt)] px-3 py-1 text-sm font-medium text-[var(--brand-primary)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-primary-contrast)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--brand-primary)] dark:bg-[var(--brand-primary)] dark:text-[var(--brand-primary-contrast)] dark:hover:bg-[var(--brand-alt)] dark:hover:text-[var(--brand-primary)]"
               >
                 Subscribe
               </button>
