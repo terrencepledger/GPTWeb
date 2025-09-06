@@ -94,16 +94,16 @@ export interface SocialLink {
 export interface SiteSettings {
   _id: string;
   title: string;
-  description?: string;
   address?: string;
   serviceTimes?: string;
   logo?: string;
   socialLinks?: SocialLink[];
+  youtubeChannelId?: string;
 }
 
 export const siteSettings = () =>
   sanity.fetch<SiteSettings | null>(
-    groq`*[_type == "siteSettings"] | order(_updatedAt desc)[0]{_id, title, description, address, serviceTimes, "logo": logo.asset->url, "socialLinks": socialLinks[]{label, href, description, icon}}`
+    groq`*[_id == "siteSettings"][0]{_id, title, address, serviceTimes, youtubeChannelId, "logo": logo.asset->url, "socialLinks": socialLinks[]{label, href, description, icon}}`
   );
 
 export interface Ministry {

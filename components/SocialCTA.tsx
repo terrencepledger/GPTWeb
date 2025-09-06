@@ -26,12 +26,9 @@ function SocialCard({ href, label, description, Icon }: SocialItem) {
 }
 
 export default async function SocialCTA() {
-  const [latest, settings] = await Promise.all([
-      getLatestSundayLivestream(),
-    siteSettings(),
-  ]);
-
-  const channelId = process.env.YOUTUBE_CHANNEL_ID;
+  const settings = await siteSettings();
+  const channelId = settings?.youtubeChannelId;
+  const latest = channelId ? await getLatestSundayLivestream(channelId) : null;
   const embedUrl = latest?.id
     ? `https://www.youtube.com/embed/${latest.id}`
     : channelId

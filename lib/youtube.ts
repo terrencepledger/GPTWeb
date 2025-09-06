@@ -1,7 +1,6 @@
-export async function getLatestSundayLivestream(): Promise<
-  { id: string; published: Date } | null
-> {
-  const channelId = process.env.YOUTUBE_CHANNEL_ID;
+export async function getLatestSundayLivestream(
+  channelId: string
+): Promise<{ id: string; published: Date } | null> {
   if (!channelId) return null;
 
   try {

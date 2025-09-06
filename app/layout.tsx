@@ -29,7 +29,7 @@ export const revalidate = 300;
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await siteSettings();
   const title = settings?.title ?? "Greater Pentecostal Temple";
-  const description = settings?.description ?? "Greater Pentecostal Temple website";
+  const description = "Greater Pentecostal Temple website";
   const logoUrl = settings?.logo ?? "/static/favicon.ico";
 
   return {
