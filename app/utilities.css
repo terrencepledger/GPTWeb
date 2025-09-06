@@ -102,6 +102,19 @@
     will-change: box-shadow;
   }
 
+  /* Logo loading pulse */
+  @keyframes logo-pulse {
+    0%, 100% {
+      opacity: 0.75;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+  .animate-logo-pulse {
+    animation: logo-pulse 1500ms ease-in-out infinite;
+  }
+
   /* Fade-in animations */
   @keyframes fade-in-up {
     0% {
