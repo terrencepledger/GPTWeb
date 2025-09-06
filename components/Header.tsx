@@ -15,7 +15,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
   const givingRef = useRef<HTMLAnchorElement>(null);
   const shouldNudgeGiving = useNudge(givingRef);
 
-  const nav = [
+  const nav: { href: string; label: string }[] = [
     { href: "/ministries", label: "Ministries" },
     { href: "/events", label: "Events" },
     { href: "/livestreams", label: "Livestreams" },
