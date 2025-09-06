@@ -3,6 +3,8 @@ export type VimeoVideo = {
   name: string
   link: string
   pictures?: { sizes: { link: string }[] }
+  live?: { status?: string }
+  stats?: { viewers?: number }
 }
 
 export type VimeoItem = VimeoVideo & { id: string }
@@ -21,7 +23,7 @@ function idFromUri(uri: string) {
 export async function getCurrentLivestream(): Promise<VimeoItem | null> {
   if (!user || !token) return null
   const res = await fetch(
-    `https://api.vimeo.com/users/${user}/videos?filter=live&per_page=1&sort=date&direction=desc`,
+    `https://api.vimeo.com/users/${user}/videos?filter=live&per_page=1&sort=date&direction=desc&fields=uri,name,link,pictures.sizes.link,live.status,stats.viewers`,
     { headers, next: { revalidate: 60 } }
   )
   if (!res.ok) return null
@@ -34,7 +36,7 @@ export async function getCurrentLivestream(): Promise<VimeoItem | null> {
 export async function getRecentLivestreams(): Promise<VimeoItem[]> {
   if (!user || !token) return []
   const res = await fetch(
-    `https://api.vimeo.com/users/${user}/videos?filter=live&per_page=10&sort=date&direction=desc`,
+    `https://api.vimeo.com/users/${user}/videos?filter=live&per_page=10&sort=date&direction=desc&fields=uri,name,link,pictures.sizes.link`,
     { headers, next: { revalidate: 60 } }
   )
   if (!res.ok) return []
