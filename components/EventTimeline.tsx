@@ -54,7 +54,9 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
       {events.map((ev, i) => (
         <div
           key={ev._id}
-          ref={(el) => (refs.current[i] = el)}
+          ref={(el) => {
+            refs.current[i] = el;
+          }}
           style={{ transitionDelay: `${i * 150}ms` }}
           className={`group relative mb-16 flex w-full opacity-0 translate-y-4 transition-all duration-500 ${
             i % 2 === 0
