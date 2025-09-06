@@ -5,18 +5,17 @@ import { useEffect, useRef } from "react";
 type MapBlockProps = {
   address?: string;
   zoom?: number;
+  apiKey?: string;
 };
 
 declare const google: any;
 
-export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
+export default function MapBlock({ address, zoom = 15, apiKey }: MapBlockProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef<any>();
   const seenRef = useRef(false);
   const revealDoneRef = useRef(false);
-
-  const apiKey = process.env.GOOGLE_MAPS_KEY;
 
   const hasAddress = typeof address === "string" && address.trim().length > 0;
   const addressQuery = hasAddress ? encodeURIComponent(address as string) : "";
@@ -113,7 +112,7 @@ export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
   if (!apiKey)
     return (
       <div style={{ padding: 12 }}>
-        Map unavailable: missing GOOGLE_MAPS_KEY.
+        Map unavailable: missing Google Maps API key.
       </div>
     );
 
