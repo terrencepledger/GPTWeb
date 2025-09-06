@@ -44,7 +44,13 @@ export default defineType({
           name: 'socialLink',
           fields: [
             { name: 'label', title: 'Label', type: 'string' },
-            { name: 'href', title: 'URL', type: 'url' },
+            {
+              name: 'href',
+              title: 'URL',
+              type: 'url',
+              validation: (Rule) =>
+                Rule.uri({ scheme: ['http', 'https', 'mailto', 'tel', 'sms'] }),
+            },
             { name: 'description', title: 'Description', type: 'string' },
             {
               name: 'icon',
