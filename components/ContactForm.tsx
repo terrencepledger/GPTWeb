@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Button from "@/components/Button";
 
 export default function ContactForm() {
   const [submitted, setSubmitted] = useState(false);
@@ -66,9 +67,11 @@ export default function ContactForm() {
               Message
             </label>
           </div>
-          <button
+          <Button
             type="submit"
-            className="btn-outline-cta pulse-border-soft w-full inline-flex items-center justify-center gap-2 px-6 py-4 shadow-md hover:shadow-lg transform transition-transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)] focus:ring-offset-2 focus:ring-offset-[var(--brand-bg)]"
+            variant="outline-cta"
+            glow
+            className="w-full py-4"
           >
             <span>Send Message</span>
             <svg
@@ -78,9 +81,13 @@ export default function ContactForm() {
               aria-hidden="true"
               className="h-5 w-5"
             >
-              <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l5 5a1 1 0 010 1.414l-5 5a1 1 0 11-1.414-1.414L13.586 11H4a1 1 0 110-2h9.586l-3.293-3.293a1 1 0 010-1.414z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M10.293 3.293a1 1 0 011.414 0l5 5a1 1 0 010 1.414l-5 5a1 1 0 11-1.414-1.414L13.586 11H4a1 1 0 110-2h9.586l-3.293-3.293a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              />
             </svg>
-          </button>
+          </Button>
         </form>
       )}
     </div>

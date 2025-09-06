@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { SVGProps } from "react";
 import { siteSettings } from "@/lib/queries";
 import { SocialIcons } from "@/components/SocialIcons";
+import Button from "@/components/Button";
 
 export default async function Footer() {
   const settings = await siteSettings();
@@ -116,12 +117,13 @@ export default async function Footer() {
                 placeholder="Email address"
                 className="flex-1 rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] px-2 py-1 text-[var(--brand-fg)] placeholder-[var(--brand-muted)] focus:border-[var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary)]"
               />
-              <button
+              <Button
                 type="submit"
-                className="cursor-pointer rounded border border-[var(--brand-primary)] bg-[var(--brand-alt)] px-3 py-1 text-sm font-medium text-[var(--brand-primary)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-primary-contrast)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--brand-primary)]"
+                variant="outline-cta"
+                className="px-3 py-1 text-sm"
               >
                 Subscribe
-              </button>
+              </Button>
             </form>
           </div>
         </div>
