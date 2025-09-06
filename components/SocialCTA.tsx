@@ -2,7 +2,7 @@ import type { SVGProps } from "react";
 import { getLatestYoutubeVideoId } from "@/lib/youtube";
 
 type SocialItem = {
-  name: string;
+  label: string;
   href: string;
   description: string;
   icon: (props: SVGProps<SVGSVGElement>) => JSX.Element;
@@ -10,7 +10,7 @@ type SocialItem = {
 
 const socials: SocialItem[] = [
   {
-    name: "Facebook",
+    label: "Facebook",
     href: "https://www.facebook.com/WGPTTV",
     description: "Like us on Facebook",
     icon: function FacebookIcon(props: SVGProps<SVGSVGElement>) {
@@ -22,7 +22,7 @@ const socials: SocialItem[] = [
     },
   },
   {
-    name: "Instagram",
+    label: "Instagram",
     href: "https://www.instagram.com/WGPTTV",
     description: "Follow us on Instagram",
     icon: function InstagramIcon(props: SVGProps<SVGSVGElement>) {
@@ -34,7 +34,7 @@ const socials: SocialItem[] = [
     },
   },
   {
-    name: "TikTok",
+    label: "TikTok",
     href: "https://www.tiktok.com/@WGPTTV",
     description: "Follow us on TikTok",
     icon: function TikTokIcon(props: SVGProps<SVGSVGElement>) {
@@ -46,7 +46,7 @@ const socials: SocialItem[] = [
     },
   },
   {
-    name: "Get Connected",
+    label: "Get Connected",
     href: "sms:555?&body=Get%20Connected",
     description: "Text \"Get Connected\" to 555",
     icon: function SmsIcon(props: SVGProps<SVGSVGElement>) {
@@ -59,14 +59,14 @@ const socials: SocialItem[] = [
   },
 ];
 
-function SocialCard({ href, name, description, icon: Icon }: SocialItem) {
+function SocialCard({ href, label, description, icon: Icon }: SocialItem) {
   return (
     <a
       href={href}
       className="flex flex-col items-center gap-2 rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] p-4 text-center hover:bg-[var(--brand-muted)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
     >
       <Icon className="h-8 w-8 text-[var(--brand-primary)]" />
-      <h3 className="text-base font-semibold text-[var(--brand-accent)]">{name}</h3>
+      <h3 className="text-base font-semibold text-[var(--brand-accent)]">{label}</h3>
       <p className="text-sm text-[var(--brand-muted)]">{description}</p>
     </a>
   );
@@ -89,7 +89,7 @@ export default async function SocialCTA() {
       <div className="grid gap-4 md:grid-cols-[1fr_2fr_1fr]">
         <div className="order-2 flex flex-col gap-4 md:order-1">
           {left.map((s) => (
-            <SocialCard key={s.name} {...s} />
+            <SocialCard key={s.label} {...s} />
           ))}
         </div>
         {embedUrl && (
@@ -104,7 +104,7 @@ export default async function SocialCTA() {
         )}
         <div className="order-3 flex flex-col gap-4 md:order-3">
           {right.map((s) => (
-            <SocialCard key={s.name} {...s} />
+            <SocialCard key={s.label} {...s} />
           ))}
         </div>
       </div>
