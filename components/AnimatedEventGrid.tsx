@@ -22,11 +22,14 @@ export default async function AnimatedEventGrid({ show = "upcoming" }: { show?: 
     }));
 
   return (
-    <div className="w-full columns-1 sm:columns-2 lg:columns-3 gap-6">
+    <div
+      className="w-full columns-1 sm:columns-2 lg:columns-3"
+      style={{ columnGap: '1.5rem' }}
+    >
       {events.map((ev, i) => (
         <article
           key={ev._id}
-          className="mb-6 break-inside-avoid overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)] opacity-0 animate-fade-in-up transition duration-300 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg"
+          className="mb-6 inline-block w-full break-inside-avoid-column overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)] opacity-0 animate-fade-in-up transition duration-300 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-lg"
           style={{ animationDelay: `${i * 0.1}s` }}
         >
           {ev.image && (
