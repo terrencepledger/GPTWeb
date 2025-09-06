@@ -1,6 +1,7 @@
 export async function getLatestYoutubeVideoId(): Promise<string | null> {
   const channelId = process.env.YOUTUBE_CHANNEL_ID;
   if (!channelId) return null;
+
   try {
     const res = await fetch(
       `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`,
@@ -8,8 +9,27 @@ export async function getLatestYoutubeVideoId(): Promise<string | null> {
     );
     if (!res.ok) return null;
     const text = await res.text();
-    const match = text.match(/<yt:videoId>(.+?)<\/yt:videoId>/);
-    return match ? match[1] : null;
+
+    const entries = Array.from(text.matchAll(/<entry>([\s\S]*?)<\/entry>/g));
+    let latest: { id: string; published: number } | null = null;
+
+    for (const [, entry] of entries) {
+      const liveMatch = entry.match(/<yt:liveBroadcast>(.+?)<\/yt:liveBroadcast>/);
+      if (!liveMatch || liveMatch[1] === "none") continue;
+
+      const idMatch = entry.match(/<yt:videoId>(.+?)<\/yt:videoId>/);
+      const dateMatch = entry.match(/<published>(.+?)<\/published>/);
+      if (!idMatch || !dateMatch) continue;
+
+      const published = new Date(dateMatch[1]);
+      if (isNaN(published.getTime()) || published.getUTCDay() !== 0) continue;
+
+      if (!latest || published.getTime() > latest.published) {
+        latest = { id: idMatch[1], published: published.getTime() };
+      }
+    }
+
+    return latest?.id ?? null;
   } catch {
     return null;
   }
