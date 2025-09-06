@@ -53,7 +53,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const headerTitle = settings?.title ?? "Greater Pentecostal Temple";
   const maxWidth = "90vw";
   const message = announcement?.message ?? "";
-  const watermarkUrl = settings?.logo ?? "/static/favicon.svg";
 
   return (
     <html
@@ -62,7 +61,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <body
         className="flex min-h-screen flex-col"
-        style={{ "--layout-max-width": maxWidth, "--watermark-url": `url(${watermarkUrl})` } as CSSProperties}
+        style={{ "--layout-max-width": maxWidth } as CSSProperties}
       >
         <Header initialTitle={headerTitle} />
         {message && (

@@ -7,7 +7,7 @@ export default async function LogoSpinner() {
 
   return (
     <div className="flex items-center justify-center">
-      <Image src={logoUrl} alt="Logo" width={64} height={64} className="animate-spin rounded-full opacity-80" />
+      <Image src={logoUrl} alt="Logo" width={64} height={64} className="animate-logo-pulse rounded-full" />
     </div>
   );
 }

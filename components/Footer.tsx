@@ -28,7 +28,7 @@ export default async function Footer() {
 
           <div>
             <h4 className="mb-2 font-semibold text-[var(--brand-surface-contrast)]">Service Times</h4>
-            <div className="space-y-0.5">
+            <div className="space-y-0.5 text-[var(--brand-accent)] dark:text-[var(--brand-fg)]">
               {serviceTimes
                 .split(/[,;\n|]+/)
                 .map((s) => s.trim())
