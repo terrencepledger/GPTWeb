@@ -63,11 +63,11 @@ function SocialCard({ href, label, description, icon: Icon }: SocialItem) {
   return (
     <a
       href={href}
-      className="flex flex-col items-center gap-2 rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] p-4 text-center hover:bg-[var(--brand-muted)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
+      className="group flex h-full flex-col items-center justify-center gap-2 rounded-full border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 text-center transition-colors hover:bg-[color:color-mix(in_oklab,var(--brand-surface)_85%,white_15%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
     >
-      <Icon className="h-8 w-8 text-[var(--brand-primary)]" />
-      <h3 className="text-base font-semibold text-[var(--brand-accent)]">{label}</h3>
-      <p className="text-sm text-[var(--brand-muted)]">{description}</p>
+      <Icon className="h-8 w-8 text-[var(--brand-accent)] transition-all group-hover:scale-105 group-hover:text-[var(--brand-primary-contrast)]" />
+      <h3 className="text-base font-semibold text-[var(--brand-accent)] group-hover:text-[var(--brand-primary-contrast)]">{label}</h3>
+      <p className="text-sm text-[var(--brand-alt)]/80 group-hover:text-[var(--brand-alt)]">{description}</p>
     </a>
   );
 }
@@ -87,7 +87,7 @@ export default async function SocialCTA() {
   return (
     <section className="w-full">
       <div className="grid gap-4 md:grid-cols-[1fr_2fr_1fr]">
-        <div className="order-2 flex flex-col gap-4 md:order-1">
+        <div className="order-2 grid h-full grid-rows-2 gap-4 md:order-1">
           {left.map((s) => (
             <SocialCard key={s.label} {...s} />
           ))}
@@ -102,7 +102,7 @@ export default async function SocialCTA() {
             />
           </div>
         )}
-        <div className="order-3 flex flex-col gap-4 md:order-3">
+        <div className="order-3 grid h-full grid-rows-2 gap-4 md:order-3">
           {right.map((s) => (
             <SocialCard key={s.label} {...s} />
           ))}
