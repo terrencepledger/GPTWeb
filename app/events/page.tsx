@@ -4,7 +4,6 @@ import { eventsAll } from "@/lib/queries";
 import type { Event as SanityEvent } from "@/lib/queries";
 
 export const metadata = { title: "Events" };
-export const revalidate = 0;
 
 export default async function Page({
   searchParams,

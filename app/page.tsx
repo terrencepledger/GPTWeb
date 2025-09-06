@@ -8,8 +8,6 @@ import {
   siteSettings,
 } from "@/lib/queries";
 
-export const revalidate = 0;
-
 export default async function Page() {
   const [slides, events, settings] = await Promise.all([
     heroSlides(),
