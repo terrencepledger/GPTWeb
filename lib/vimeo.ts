@@ -1,3 +1,5 @@
+import { siteSettings } from "@/lib/queries"
+
 export type VimeoVideo = {
   uri: string
   name: string
@@ -9,11 +11,13 @@ export type VimeoVideo = {
 
 export type VimeoItem = VimeoVideo & { id: string }
 
-const user = process.env.VIMEO_USER_ID
-const token = process.env.VIMEO_ACCESS_TOKEN
-const headers: HeadersInit | undefined = token
-  ? { Authorization: `Bearer ${token}` }
-  : undefined
+async function getConfig() {
+  const settings = await siteSettings()
+  const user = settings?.vimeoUserId
+  const token = settings?.vimeoAccessToken
+  if (!user || !token) return null
+  return { user, headers: { Authorization: `Bearer ${token}` } as HeadersInit }
+}
 
 function idFromUri(uri: string) {
   const parts = uri.split("/")
@@ -21,7 +25,9 @@ function idFromUri(uri: string) {
 }
 
 export async function getCurrentLivestream(): Promise<VimeoItem | null> {
-  if (!user || !token) return null
+  const config = await getConfig()
+  if (!config) return null
+  const { user, headers } = config
   const res = await fetch(
     `https://api.vimeo.com/users/${user}/videos?filter=live&per_page=1&sort=date&direction=desc&fields=uri,name,link,pictures.sizes.link,live.status,stats.viewers`,
     { headers, next: { revalidate: 60 } }
@@ -34,7 +40,9 @@ export async function getCurrentLivestream(): Promise<VimeoItem | null> {
 }
 
 export async function getRecentLivestreams(): Promise<VimeoItem[]> {
-  if (!user || !token) return []
+  const config = await getConfig()
+  if (!config) return []
+  const { user, headers } = config
   const res = await fetch(
     `https://api.vimeo.com/users/${user}/videos?filter=live&per_page=10&sort=date&direction=desc&fields=uri,name,link,pictures.sizes.link`,
     { headers, next: { revalidate: 60 } }
