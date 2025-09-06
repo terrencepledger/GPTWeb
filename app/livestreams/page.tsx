@@ -46,37 +46,67 @@ export default async function Page() {
       {recent.length > 0 && (
         <div>
           <h2 className="text-xl font-semibold text-[var(--brand-fg)]">Recent</h2>
-          <div className="mt-4 flex gap-4 overflow-x-auto pb-4">
-            {recent.map((video) => {
-              const thumb =
-                video.pictures?.sizes?.[video.pictures.sizes.length - 1]?.link;
-              return (
-                <a
-                  key={video.id}
-                  href={video.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-64 flex-shrink-0"
-                >
-                  <div className="relative aspect-video w-full overflow-hidden rounded-md border border-[var(--brand-border)] bg-[var(--brand-bg)]">
-                    {thumb && (
-                      <Image
-                        src={thumb}
-                        alt=""
-                        fill
-                        sizes="256px"
-                        className="object-cover"
-                        unoptimized
-                      />
-                    )}
-                  </div>
-                  <p className="mt-2 text-sm font-medium text-[var(--brand-fg)]">
-                    {video.name}
-                  </p>
-                </a>
-              );
-            })}
+          <div className="relative mt-4">
+            <button
+              id="recent-left"
+              type="button"
+              aria-label="Scroll left"
+              className="absolute left-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-[var(--brand-bg)]/80 p-2 shadow hover:bg-[var(--brand-bg)]"
+            >
+              ←
+            </button>
+            <div
+              id="recent-container"
+              className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory"
+            >
+              {recent.map((video) => {
+                const thumb =
+                  video.pictures?.sizes?.[video.pictures.sizes.length - 1]?.link;
+                return (
+                  <a
+                    key={video.id}
+                    href={video.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-64 flex-shrink-0 snap-start group"
+                  >
+                    <div className="relative aspect-video w-full overflow-hidden rounded-md border border-[var(--brand-border)] bg-[var(--brand-bg)]">
+                      {thumb && (
+                        <Image
+                          src={thumb}
+                          alt=""
+                          fill
+                          sizes="256px"
+                          className="object-cover transition-transform duration-200 group-hover:scale-105"
+                          unoptimized
+                        />
+                      )}
+                    </div>
+                    <p className="mt-2 text-sm font-medium text-[var(--brand-fg)]">
+                      {video.name}
+                    </p>
+                  </a>
+                );
+              })}
+            </div>
+            <button
+              id="recent-right"
+              type="button"
+              aria-label="Scroll right"
+              className="absolute right-0 top-1/2 z-10 -translate-y-1/2 rounded-full bg-[var(--brand-bg)]/80 p-2 shadow hover:bg-[var(--brand-bg)]"
+            >
+              →
+            </button>
           </div>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                const c = document.getElementById('recent-container');
+                document.getElementById('recent-left')?.addEventListener('click', () => c?.scrollBy({ left: -300, behavior: 'smooth' }));
+                document.getElementById('recent-right')?.addEventListener('click', () => c?.scrollBy({ left: 300, behavior: 'smooth' }));
+              `,
+            }}
+          />
         </div>
       )}
     </div>
