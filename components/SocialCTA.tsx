@@ -54,8 +54,11 @@ export default async function SocialCTA() {
     channelId && serviceDays.length > 0
       ? await getLatestLivestream(channelId, serviceDays)
       : null;
+  const origin = process.env.NEXT_PUBLIC_SITE_URL
+    ? `&origin=${encodeURIComponent(process.env.NEXT_PUBLIC_SITE_URL)}`
+    : "";
   const embedUrl = latest
-    ? `https://www.youtube.com/embed/${latest.id}?playsinline=1`
+    ? `https://www.youtube-nocookie.com/embed/${latest.id}?rel=0&playsinline=1${origin}`
     : null;
 
   const socials: SocialItem[] = (settings?.socialLinks ?? [])
@@ -90,10 +93,11 @@ export default async function SocialCTA() {
             )}
             <iframe
               src={embedUrl}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
-              referrerPolicy="origin"
+              referrerPolicy="strict-origin-when-cross-origin"
               className="h-full w-full"
+              title="Latest livestream"
             />
           </div>
         )}

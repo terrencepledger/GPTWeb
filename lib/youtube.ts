@@ -5,39 +5,41 @@ function convertTZ(date: Date, timeZone: string): Date {
 export async function getLatestLivestream(
   channelId: string,
   serviceDays: number[],
-  timeZone = process.env.SERVICE_TIMEZONE || process.env.TZ || "America/New_York",
+  timeZone =
+    process.env.SERVICE_TIMEZONE || process.env.TZ || "America/New_York",
 ): Promise<{ id: string; published: Date } | null> {
-  if (!channelId || serviceDays.length === 0) return null;
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!channelId || serviceDays.length === 0 || !apiKey) return null;
 
   try {
-    const res = await fetch(
-      `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`,
-      { next: { revalidate: 60 } },
-    );
+    const url = new URL("https://www.googleapis.com/youtube/v3/search");
+    url.searchParams.set("key", apiKey);
+    url.searchParams.set("channelId", channelId);
+    url.searchParams.set("part", "snippet");
+    url.searchParams.set("eventType", "completed");
+    url.searchParams.set("type", "video");
+    url.searchParams.set("order", "date");
+    url.searchParams.set("maxResults", "10");
+
+    const res = await fetch(url, { next: { revalidate: 60 } });
     if (!res.ok) return null;
-    const text = await res.text();
+    const data = await res.json();
 
-    const entries = Array.from(text.matchAll(/<entry>([\s\S]*?)<\/entry>/g));
-    let latest: { id: string; published: Date } | null = null;
-
-    for (const [, entry] of entries) {
-      const idMatch = entry.match(/<yt:videoId>(.+?)<\/yt:videoId>/);
-      const dateMatch = entry.match(/<published>(.+?)<\/published>/);
-      if (!idMatch || !dateMatch) continue;
-
-      const published = convertTZ(new Date(dateMatch[1]), timeZone);
+    for (const item of data.items ?? []) {
+      const published = convertTZ(
+        new Date(item?.snippet?.publishedAt ?? 0),
+        timeZone,
+      );
       if (
         isNaN(published.getTime()) ||
         !serviceDays.includes(published.getDay())
       )
         continue;
 
-      if (!latest || published.getTime() > latest.published.getTime()) {
-        latest = { id: idMatch[1], published };
-      }
+      return { id: item.id.videoId, published };
     }
 
-    return latest;
+    return null;
   } catch {
     return null;
   }
