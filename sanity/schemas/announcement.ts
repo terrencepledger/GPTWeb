@@ -35,8 +35,9 @@ export default defineType({
         }),
         defineField({
           name: 'href',
-          title: 'URL',
+          title: 'Link',
           type: 'url',
+          options: { allowRelative: true },
         }),
       ],
     }),
