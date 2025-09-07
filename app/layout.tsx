@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import type { CSSProperties } from "react";
 import { Playfair_Display, Inter, Bebas_Neue } from "next/font/google";
 import "./globals.css";
@@ -26,6 +26,11 @@ const buttonFont = Bebas_Neue({
 });
 
 export const revalidate = 300;
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await siteSettings();
