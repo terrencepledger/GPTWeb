@@ -1,15 +1,18 @@
 "use client";
 
 import {type CSSProperties, useEffect, useMemo, useRef, useState,} from "react";
+import Link from "next/link";
 
 const MARQUEE_SPEED = 80; // px per second
 
 type AnnouncementBannerProps = {
+  id?: string;
   message: string;
+  cta?: { label: string; href: string };
 };
 
-export default function AnnouncementBanner({ message }: AnnouncementBannerProps) {
-  const storageKey = useMemo(() => `announcement:${message}`, [message]);
+export default function AnnouncementBanner({ id, message, cta }: AnnouncementBannerProps) {
+  const storageKey = useMemo(() => `announcement:${id ?? message}`, [id, message]);
   const [dismissed, setDismissed] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -80,7 +83,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
 
     const prefersReduced = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const onceKey = `announcement:intro:${message}`;
+    const onceKey = `announcement:intro:${id ?? message}`;
 
     // Reset per-message flags so a new message can animate once this session
     animatedOnceRef.current = false;
@@ -206,7 +209,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
       if (delayTimer) window.clearTimeout(delayTimer);
       dispatchAnimating(false);
     };
-  }, [message]);
+  }, [id, message]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -271,7 +274,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
       if (roText && textRef.current) roText.disconnect();
       window.removeEventListener("resize", recalcAfterPaint);
     };
-  }, [message]);
+  }, [id, message]);
 
   // After initial intro duration, switch to continuous loop
   useEffect(() => {
@@ -360,7 +363,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
       if (roR && buttonRef.current) roR.disconnect();
       window.removeEventListener('resize', compute);
     };
-  }, [message, hasEntered, leftGutter, rightGutter]);
+  }, [id, message, hasEntered, leftGutter, rightGutter]);
 
   const handleDismiss = () => {
     setDismissed(true);
@@ -372,6 +375,20 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
   };
 
   if (dismissed || !message) return null;
+
+  const content = (
+    <>
+      {message}
+      {cta && (
+        <Link
+          href={cta.href}
+          className="ml-4 inline-block rounded bg-[var(--brand-accent)] px-2 py-1 text-xs font-semibold text-[var(--brand-ink)] hover:bg-[var(--brand-accent)]/90"
+        >
+          {cta.label}
+        </Link>
+      )}
+    </>
+  );
 
   return (
     <div
@@ -423,7 +440,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
                     {...(i !== 0 ? { 'aria-hidden': true } : {})}
                     className="whitespace-nowrap shimmer-text"
                   >
-                    {message}
+                    {content}
                   </span>
                 ))}
               </div>
@@ -431,7 +448,7 @@ export default function AnnouncementBanner({ message }: AnnouncementBannerProps)
           ) : (
             <div className="flex justify-center">
               <span ref={textRef} className="whitespace-nowrap shimmer-text">
-                {message}
+                {content}
               </span>
             </div>
           )}
