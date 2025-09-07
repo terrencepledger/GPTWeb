@@ -135,6 +135,18 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
                     </div>
                   )}
                 </Disclosure>
+                {nav.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={linkClasses(pathname.startsWith(item.href))}
+                    aria-current={pathname.startsWith(item.href) ? "page" : undefined}
+                    onClick={handleClose}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+
                 <Disclosure defaultOpen={pathname.startsWith("/contact")}>
                   {({ open: contactOpen }) => (
                     <div>
@@ -185,17 +197,6 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
                     </div>
                   )}
                 </Disclosure>
-                {nav.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={linkClasses(pathname.startsWith(item.href))}
-                    aria-current={pathname.startsWith(item.href) ? "page" : undefined}
-                    onClick={handleClose}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
               </nav>
             </Dialog.Panel>
           </Transition.Child>
