@@ -5,6 +5,12 @@ module.exports = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    screens: {
+      sm: "640px",
+      md: "1024px",
+      lg: "1280px",
+      xl: "1536px",
+    },
     extend: {
       colors: {
         // Project brand palette. Prefer these colors in components over Tailwind defaults.
