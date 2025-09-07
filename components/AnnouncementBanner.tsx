@@ -2,6 +2,7 @@
 
 import {type CSSProperties, useEffect, useMemo, useRef, useState,} from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const MARQUEE_SPEED = 80; // px per second
 
@@ -36,6 +37,24 @@ export default function AnnouncementBanner({ id, message, cta }: AnnouncementBan
   const readyRef = useRef(false);
   const gap = 50;
   const showContent = hasEntered && measured;
+
+  const pathname = usePathname();
+  // Auto-dismiss live announcement when on the livestreams page or navigating to it
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    // Only apply to the live stream announcement, identified by CTA to /livestreams or id starting with "live:"
+    const isLiveCTA = !!(cta?.href && cta.href.startsWith("/livestreams"));
+    const isLiveId = typeof id === "string" && id.startsWith("live:");
+    if (!(isLiveCTA || isLiveId)) return;
+
+    const p = pathname || window.location?.pathname || "";
+    if (p === "/livestreams" || p.startsWith("/livestreams/")) {
+      setDismissed(true);
+      try {
+        localStorage.setItem(storageKey, "dismissed");
+      } catch {}
+    }
+  }, [pathname, cta?.href, id, storageKey]);
 
   // Align looped marquee start with where the intro ends to avoid a one-time stutter
   const [loopDelaySeconds, setLoopDelaySeconds] = useState(0);
@@ -382,7 +401,8 @@ export default function AnnouncementBanner({ id, message, cta }: AnnouncementBan
       {cta && (
         <Link
           href={cta.href}
-          className="ml-4 inline-block rounded bg-[var(--brand-accent)] px-2 py-1 text-xs font-semibold text-[var(--brand-ink)] hover:bg-[var(--brand-accent)]/90"
+          onClick={handleDismiss}
+          className="ml-4 inline-block rounded-md bg-[var(--brand-accent)] px-2 py-1 text-xs font-semibold text-[var(--brand-ink)] shadow-sm hover:bg-[color:color-mix(in_oklab,var(--brand-accent)_85%,black_15%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary-contrast)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-surface)]"
         >
           {cta.label}
         </Link>
@@ -458,7 +478,7 @@ export default function AnnouncementBanner({ id, message, cta }: AnnouncementBan
           ref={buttonRef}
           type="button"
           aria-label="Dismiss announcement"
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 grid h-7 w-7 place-items-center rounded text-lg leading-none text-[var(--brand-accent)]/80 hover:text-[var(--brand-accent)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] cursor-pointer select-none"
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-10 grid h-7 w-7 place-items-center rounded text-lg leading-none text-[var(--brand-primary-contrast)]/80 hover:text-[var(--brand-primary-contrast)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary-contrast)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-surface)] cursor-pointer select-none"
           onClick={handleDismiss}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

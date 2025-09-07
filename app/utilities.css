@@ -346,6 +346,17 @@
     animation: shimmer-sweep 12s linear infinite;
   }
 
+  /* Ensure interactive elements inside shimmer text render with normal text color */
+  .shimmer-text a,
+  .shimmer-text button,
+  .shimmer-text [role="button"] {
+    background-image: none !important;
+    -webkit-background-clip: border-box !important;
+    background-clip: border-box !important;
+    /* Do not override color here; let utilities (e.g., Tailwind classes) set it */
+    -webkit-text-fill-color: currentColor !important;
+  }
+
   /* Cancel shimmer on hover for opted elements */
   .no-shimmer-on-hover:hover,
   .no-shimmer-on-hover:focus,
