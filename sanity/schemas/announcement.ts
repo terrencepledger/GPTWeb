@@ -37,7 +37,7 @@ export default defineType({
           name: 'href',
           title: 'Link',
           type: 'url',
-          options: { allowRelative: true },
+          validation: (Rule) => Rule.uri({ allowRelative: true, scheme: ['http', 'https'] }),
         }),
       ],
     }),
