@@ -62,11 +62,12 @@ export interface Announcement {
   title: string;
   message: string;
   publishedAt: string;
+  cta?: { label: string; href: string };
 }
 
 export const announcementLatest = () =>
   sanity.fetch<Announcement | null>(
-    groq`*[_type == "announcement"] | order(publishedAt desc)[0]{_id, title, "message": body, publishedAt}`
+    groq`*[_type == "announcement"] | order(publishedAt desc)[0]{_id, title, "message": body, publishedAt, cta{label, href}}`
   );
 
 export interface SocialLink {

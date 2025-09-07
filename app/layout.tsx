@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import BannerAnchor from "@/components/BannerAnchor";
 import { siteSettings, announcementLatest } from "@/lib/queries";
+import { getCurrentLivestream } from "@/lib/vimeo";
 import AutoRefresh from "@/components/AutoRefresh";
 import Script from "next/script";
 
@@ -53,13 +54,28 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [settings, announcement] = await Promise.all([
+  const [settings, announcement, livestream] = await Promise.all([
     siteSettings(),
     announcementLatest(),
+    getCurrentLivestream(),
   ]);
   const headerTitle = settings?.title ?? "Greater Pentecostal Temple";
   const maxWidth = "90vw";
-  const message = announcement?.message ?? "";
+
+  let banner: { id: string; message: string; cta?: { label: string; href: string } } | null = null;
+  if (livestream?.live?.status === "streaming") {
+    banner = {
+      id: `live:${livestream.id}`,
+      message: "We're live now! Join our livestream.",
+      cta: { label: "Watch now", href: "/livestreams" },
+    };
+  } else if (announcement) {
+    banner = {
+      id: announcement._id,
+      message: announcement.message,
+      cta: announcement.cta,
+    };
+  }
 
   return (
     <html
@@ -82,10 +98,10 @@ gtag('js', new Date());
 gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');`}
         </Script>
         <Header initialTitle={headerTitle} />
-        {message && (
+        {banner && (
           <BannerAnchor gap={0}>
             <div className="max-w-site mx-auto w-full px-4">
-              <AnnouncementBanner message={message} />
+              <AnnouncementBanner message={banner.message} id={banner.id} cta={banner.cta} />
             </div>
           </BannerAnchor>
         )}

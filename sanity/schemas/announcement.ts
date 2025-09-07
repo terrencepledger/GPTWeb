@@ -23,5 +23,23 @@ export default defineType({
       type: 'text',
       validation: (Rule) => Rule.required(),
     }),
+    defineField({
+      name: 'cta',
+      title: 'Call To Action',
+      type: 'object',
+      fields: [
+        defineField({
+          name: 'label',
+          title: 'Label',
+          type: 'string',
+        }),
+        defineField({
+          name: 'href',
+          title: 'Link',
+          type: 'url',
+          validation: (Rule) => Rule.uri({ allowRelative: true, scheme: ['http', 'https'] }),
+        }),
+      ],
+    }),
   ],
 });
