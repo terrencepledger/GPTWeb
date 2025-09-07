@@ -1,12 +1,13 @@
-export async function getLatestSundayLivestream(
-  channelId: string
+export async function getLatestLivestream(
+  channelId: string,
+  serviceDays: number[],
 ): Promise<{ id: string; published: Date } | null> {
-  if (!channelId) return null;
+  if (!channelId || serviceDays.length === 0) return null;
 
   try {
     const res = await fetch(
       `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`,
-      { next: { revalidate: 60 } }
+      { next: { revalidate: 60 } },
     );
     if (!res.ok) return null;
     const text = await res.text();
@@ -20,7 +21,11 @@ export async function getLatestSundayLivestream(
       if (!idMatch || !dateMatch) continue;
 
       const published = new Date(dateMatch[1]);
-      if (isNaN(published.getTime()) || published.getUTCDay() !== 0) continue;
+      if (
+        isNaN(published.getTime()) ||
+        !serviceDays.includes(published.getUTCDay())
+      )
+        continue;
 
       if (!latest || published.getTime() > latest.published.getTime()) {
         latest = { id: idMatch[1], published };
