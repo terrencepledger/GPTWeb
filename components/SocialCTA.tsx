@@ -10,21 +10,23 @@ type SocialItem = {
   Icon: (props: SVGProps<SVGSVGElement>) => JSX.Element;
 };
 
-const DAY_MAP: Record<string, number> = {
-  sunday: 0,
-  monday: 1,
-  tuesday: 2,
-  wednesday: 3,
-  thursday: 4,
-  friday: 5,
-  saturday: 6,
+const DAY_ALIASES: Record<number, string[]> = {
+  0: ["sunday", "sun"],
+  1: ["monday", "mon"],
+  2: ["tuesday", "tue"],
+  3: ["wednesday", "wed"],
+  4: ["thursday", "thu"],
+  5: ["friday", "fri"],
+  6: ["saturday", "sat"],
 };
 
 function extractServiceDays(serviceTimes?: string): number[] {
   const lower = (serviceTimes ?? "").toLowerCase();
   const days = new Set<number>();
-  for (const [name, value] of Object.entries(DAY_MAP)) {
-    if (lower.includes(name)) days.add(value);
+  for (const [value, aliases] of Object.entries(DAY_ALIASES)) {
+    if (aliases.some((name) => lower.includes(name))) {
+      days.add(Number(value));
+    }
   }
   return Array.from(days);
 }
@@ -52,11 +54,7 @@ export default async function SocialCTA() {
     channelId && serviceDays.length > 0
       ? await getLatestLivestream(channelId, serviceDays)
       : null;
-  const embedUrl = latest?.id
-    ? `https://www.youtube.com/embed/${latest.id}`
-    : channelId
-    ? `https://www.youtube.com/embed/live_stream?channel=${channelId}`
-    : null;
+  const embedUrl = latest ? `https://www.youtube.com/embed/${latest.id}` : null;
 
   const socials: SocialItem[] = (settings?.socialLinks ?? [])
     .map(({ label, href, description = "", icon }) => {

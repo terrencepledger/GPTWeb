@@ -23,7 +23,7 @@ export async function getLatestLivestream(
       const published = new Date(dateMatch[1]);
       if (
         isNaN(published.getTime()) ||
-        !serviceDays.includes(published.getUTCDay())
+        !serviceDays.includes(published.getDay())
       )
         continue;
 
