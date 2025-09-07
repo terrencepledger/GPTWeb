@@ -1,6 +1,11 @@
+function convertTZ(date: Date, timeZone: string): Date {
+  return new Date(date.toLocaleString("en-US", { timeZone }));
+}
+
 export async function getLatestLivestream(
   channelId: string,
   serviceDays: number[],
+  timeZone = process.env.SERVICE_TIMEZONE || process.env.TZ || "America/New_York",
 ): Promise<{ id: string; published: Date } | null> {
   if (!channelId || serviceDays.length === 0) return null;
 
@@ -20,7 +25,7 @@ export async function getLatestLivestream(
       const dateMatch = entry.match(/<published>(.+?)<\/published>/);
       if (!idMatch || !dateMatch) continue;
 
-      const published = new Date(dateMatch[1]);
+      const published = convertTZ(new Date(dateMatch[1]), timeZone);
       if (
         isNaN(published.getTime()) ||
         !serviceDays.includes(published.getDay())

@@ -54,7 +54,9 @@ export default async function SocialCTA() {
     channelId && serviceDays.length > 0
       ? await getLatestLivestream(channelId, serviceDays)
       : null;
-  const embedUrl = latest ? `https://www.youtube.com/embed/${latest.id}` : null;
+  const embedUrl = latest
+    ? `https://www.youtube.com/embed/${latest.id}?playsinline=1`
+    : null;
 
   const socials: SocialItem[] = (settings?.socialLinks ?? [])
     .map(({ label, href, description = "", icon }) => {
@@ -90,6 +92,7 @@ export default async function SocialCTA() {
               src={embedUrl}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
+              referrerPolicy="origin"
               className="h-full w-full"
             />
           </div>
