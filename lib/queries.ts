@@ -101,11 +101,18 @@ export interface SiteSettings {
   youtubeChannelId?: string;
   vimeoUserId?: string;
   vimeoAccessToken?: string;
+  googleProjectId?: string;
+  googleServiceAccountEmail?: string;
+  googleWorkloadIdentityProvider?: string;
+  googleAdminEmail?: string;
+  googleNewsletterGroup?: string;
+  googleCalendarId?: string;
+  googleMapsKey?: string;
 }
 
 export const siteSettings = () =>
   sanity.fetch<SiteSettings | null>(
-    groq`*[_id == "siteSettings"][0]{_id, title, address, serviceTimes, youtubeChannelId, vimeoUserId, vimeoAccessToken, "logo": logo.asset->url, "socialLinks": socialLinks[]{label, href, description, icon}}`
+    groq`*[_id == "siteSettings"][0]{_id, title, address, serviceTimes, youtubeChannelId, vimeoUserId, vimeoAccessToken, googleProjectId, googleServiceAccountEmail, googleWorkloadIdentityProvider, googleAdminEmail, googleNewsletterGroup, googleCalendarId, googleMapsKey, "logo": logo.asset->url, "socialLinks": socialLinks[]{label, href, description, icon}}`
   );
 
 export interface Ministry {

@@ -45,6 +45,42 @@ export default defineType({
       type: 'string',
     }),
     defineField({
+      name: 'googleProjectId',
+      title: 'Google Cloud Project ID',
+      type: 'string',
+    }),
+    defineField({
+      name: 'googleServiceAccountEmail',
+      title: 'Google Service Account Email',
+      type: 'string',
+    }),
+    defineField({
+      name: 'googleWorkloadIdentityProvider',
+      title: 'Workload Identity Provider',
+      type: 'string',
+      description: 'Full resource name of the Workload Identity Provider',
+    }),
+    defineField({
+      name: 'googleAdminEmail',
+      title: 'Google Workspace Admin Email',
+      type: 'string',
+    }),
+    defineField({
+      name: 'googleNewsletterGroup',
+      title: 'Newsletter Group Email',
+      type: 'string',
+    }),
+    defineField({
+      name: 'googleCalendarId',
+      title: 'Default Calendar ID',
+      type: 'string',
+    }),
+    defineField({
+      name: 'googleMapsKey',
+      title: 'Google Maps API Key',
+      type: 'string',
+    }),
+    defineField({
       name: 'socialLinks',
       title: 'Social Links',
       type: 'array',
