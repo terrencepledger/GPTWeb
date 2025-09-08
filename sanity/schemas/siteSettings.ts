@@ -55,10 +55,11 @@ export default defineType({
       type: 'string',
     }),
     defineField({
-      name: 'googleWorkloadIdentityProvider',
-      title: 'Workload Identity Provider',
-      type: 'string',
-      description: 'Full resource name of the Workload Identity Provider',
+      name: 'googleServiceAccountKey',
+      title: 'Google Service Account Key',
+      type: 'text',
+      rows: 5,
+      description: 'Private key from service account JSON',
     }),
     defineField({
       name: 'googleAdminEmail',
