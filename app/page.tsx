@@ -3,18 +3,27 @@ import Hero from "@/components/Hero";
 import MapBlock from "@/components/MapBlock";
 import VisitorCTA from "@/components/VisitorCTA";
 import SocialCTA from "@/components/SocialCTA";
-import {
-  heroSlides,
-  eventsUpcoming,
-  siteSettings,
-} from "@/lib/queries";
+import { heroSlides, siteSettings } from "@/lib/queries";
+import { getUpcomingEvents } from "@/lib/googleCalendar";
 
 export default async function Page() {
-  const [slides, events, settings] = await Promise.all([
+  const [slides, rawEvents, settings] = await Promise.all([
     heroSlides(),
-    eventsUpcoming(3),
+    getUpcomingEvents(3),
     siteSettings(),
   ]);
+
+  const events = rawEvents.map((ev) => ({
+    _id: ev.id,
+    title: ev.title,
+    date: new Date(ev.start).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }),
+    description: ev.description,
+    location: ev.location,
+  }));
 
   const address = settings?.address ?? "";
   const mapsKey = settings?.googleMapsKey;

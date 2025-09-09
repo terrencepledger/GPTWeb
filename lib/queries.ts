@@ -23,28 +23,6 @@ export const heroSlides = () =>
     }`
   );
 
-export interface Event {
-  _id: string;
-  title: string;
-  date: string;
-  description: string;
-  location?: string;
-  image?: string;
-}
-
-export const eventsUpcoming = (limit: number) => {
-  const now = new Date().toISOString();
-  return sanity.fetch<Event[]>(
-    groq`*[_type == "event" && date >= $now] | order(date asc)[0...$limit]{_id, title, date, description, location, "image": image.asset->url}`,
-    { limit, now }
-  );
-}
-
-export const eventsAll = () =>
-  sanity.fetch<Event[]>(
-    groq`*[_type == "event"] | order(date asc){_id, title, date, description, location, "image": image.asset->url}`
-  );
-
 export interface Staff {
   _id: string;
   name: string;
