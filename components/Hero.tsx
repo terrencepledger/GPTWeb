@@ -115,7 +115,7 @@ export default function Hero({ slides, intervalMs = 10000 }: HeroProps) {
             type="button"
             aria-label="Previous slide"
             onClick={prev}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-[color:color-mix(in_oklab,var(--brand-fg)_40%,transparent)] text-3xl leading-none text-[var(--brand-primary-contrast)] hover:bg-[color:color-mix(in_oklab,var(--brand-fg)_60%,transparent)] ring-1 ring-[color:color-mix(in_oklab,var(--brand-border)_70%,transparent)] shadow-sm"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-[color:color-mix(in_oklab,var(--brand-fg)_40%,transparent)] text-3xl leading-none text-[var(--brand-primary-contrast)] hover:bg-[color:color-mix(in_oklab,var(--brand-fg)_60%,transparent)] ring-1 ring-[color:color-mix(in_oklab,var(--brand-border)_70%,transparent)] shadow-sm cursor-pointer"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
@@ -125,7 +125,7 @@ export default function Hero({ slides, intervalMs = 10000 }: HeroProps) {
             type="button"
             aria-label="Next slide"
             onClick={next}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-[color:color-mix(in_oklab,var(--brand-fg)_40%,transparent)] text-3xl leading-none text-[var(--brand-primary-contrast)] hover:bg-[color:color-mix(in_oklab,var(--brand-fg)_60%,transparent)] ring-1 ring-[color:color-mix(in_oklab,var(--brand-border)_70%,transparent)] shadow-sm"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-[color:color-mix(in_oklab,var(--brand-fg)_40%,transparent)] text-3xl leading-none text-[var(--brand-primary-contrast)] hover:bg-[color:color-mix(in_oklab,var(--brand-fg)_60%,transparent)] ring-1 ring-[color:color-mix(in_oklab,var(--brand-border)_70%,transparent)] shadow-sm cursor-pointer"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="9 18 15 12 9 6" />

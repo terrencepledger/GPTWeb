@@ -86,6 +86,18 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
             </div>
           </div>
 
+          {nav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              ref={item.href === "/giving" ? givingRef : undefined}
+              className={`${linkClasses(pathname.startsWith(item.href))} ${item.href === "/giving" && shouldNudgeGiving ? "animate-shake" : ""}`}
+              aria-current={pathname.startsWith(item.href) ? "page" : undefined}
+            >
+              {item.label}
+            </Link>
+          ))}
+
           <div className="relative group">
             <button
               className={`${pathname.startsWith("/contact") ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)] inline-flex items-center gap-1 cursor-pointer focus:outline-none`}
@@ -128,18 +140,6 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
               </Link>
             </div>
           </div>
-
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              ref={item.href === "/giving" ? givingRef : undefined}
-              className={`${linkClasses(pathname.startsWith(item.href))} ${item.href === "/giving" && shouldNudgeGiving ? "animate-shake" : ""}`}
-              aria-current={pathname.startsWith(item.href) ? "page" : undefined}
-            >
-              {item.label}
-            </Link>
-          ))}
         </nav>
 
         <button

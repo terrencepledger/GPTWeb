@@ -4,7 +4,6 @@ export default defineType({
   name: 'siteSettings',
   title: 'Site Settings',
   type: 'document',
-  __experimental_actions: ['update', 'publish'],
   fields: [
     defineField({
       name: 'title',
@@ -56,10 +55,8 @@ export default defineType({
     }),
     defineField({
       name: 'googleServiceAccountKey',
-      title: 'Google Service Account Key',
+      title: 'Google Service Account Private Key',
       type: 'text',
-      rows: 5,
-      description: 'Private key from service account JSON',
     }),
     defineField({
       name: 'googleAdminEmail',
