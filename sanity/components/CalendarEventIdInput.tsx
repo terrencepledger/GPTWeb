@@ -11,7 +11,9 @@ export default function CalendarEventIdInput(props: any) {
   async function load() {
     setLoading(true);
     try {
-      const res = await fetch("/api/calendar-events");
+      const baseUrl =
+        import.meta.env.SANITY_STUDIO_SITE_URL || "http://localhost:3000";
+      const res = await fetch(`${baseUrl}/api/calendar-events`);
       const data = await res.json();
       setEvents(Array.isArray(data) ? data : []);
     } catch {
