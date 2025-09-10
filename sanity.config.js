@@ -2,6 +2,7 @@
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
+import googleAnalytics from 'sanity-plugin-google-analytics'
 
 // Schemas
 import announcement from './sanity/schemas/announcement'
@@ -29,6 +30,7 @@ export default defineConfig({
             defaultDocumentNode,
         }),
         visionTool(),
+        googleAnalytics,
     ],
     // Hide the Vision tool for non-admin users (e.g., editors)
     // currentUser is available in the context when using a function form of `tools`
