@@ -85,7 +85,7 @@ export default function Hero({ slides, intervalMs = 10000 }: HeroProps) {
           <div className="relative z-20 flex h-full w-full flex-col items-center justify-center px-4 text-center text-[var(--brand-fg)]">
             <div className="rounded-md bg-[color:color-mix(in_oklab,var(--brand-bg)_60%,transparent)] px-4 py-2 shadow-xl md:shadow-2xl">
               <h1 className="text-4xl font-bold tracking-tight">{slide.headline}</h1>
-              {slide.subline && <p className="mt-2 text-lg">{slide.subline}</p>}
+              {slide.subline && <p className="mt-2 text-lg text-[var(--brand-accent)]">{slide.subline}</p>}
             </div>
             {slide.cta && slide.cta.href && slide.cta.label && (
               <Link

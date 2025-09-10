@@ -47,7 +47,7 @@ export function MinistryCard({
         <div className="flex min-w-0 flex-1 p-4">
           <div className="flex w-full flex-col">
             <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">{ministry.name}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-[var(--brand-fg)]/90">
+            <p className="mt-2 text-sm leading-relaxed text-[var(--brand-accent)]">
               {ministry.description}
             </p>
             {ministry.href && (

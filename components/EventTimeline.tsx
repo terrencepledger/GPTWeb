@@ -94,7 +94,7 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
               {ev.location ? ` • ${ev.location}` : ""}
             </p>
             {ev.description && (
-              <p className="text-base text-[var(--brand-fg)]/90">
+              <p className="text-base text-[var(--brand-fg)]">
                 {ev.description}
               </p>
             )}

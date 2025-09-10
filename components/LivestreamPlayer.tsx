@@ -60,7 +60,7 @@ export default function LivestreamPlayer({
                         />
                       )}
                     </div>
-                    <p className="mt-2 text-sm font-medium text-[var(--brand-fg)]">
+                    <p className="mt-2 text-sm font-medium text-[var(--brand-accent)]">
                       {video.name}
                     </p>
                   </button>

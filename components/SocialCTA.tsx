@@ -41,7 +41,7 @@ function SocialCard({ href, label, description, Icon }: SocialItem) {
     >
       <Icon className="h-8 w-8 text-[var(--brand-accent)] transition-all group-hover:scale-105 group-hover:text-[var(--brand-primary-contrast)]" />
       <h3 className="text-base font-semibold text-[var(--brand-accent)] group-hover:text-[var(--brand-primary-contrast)]">{label}</h3>
-      <p className="text-sm text-[var(--brand-alt)]/80 group-hover:text-[var(--brand-alt)]">{description}</p>
+      <p className="text-sm text-[var(--brand-alt)]">{description}</p>
     </a>
   );
 }
@@ -52,7 +52,6 @@ export default async function SocialCTA() {
   const serviceDays = extractServiceDays(settings?.serviceTimes);
 
   try {
-    // eslint-disable-next-line no-console
     console.log('[SocialCTA] settings', {
       channelId,
       serviceTimes: settings?.serviceTimes,

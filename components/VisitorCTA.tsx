@@ -65,7 +65,7 @@ function ActionCard({ action, delay }: { action: typeof actions[number]; delay: 
         <Icon className="h-8 w-8 text-[var(--brand-accent)] transition-transform group-hover:rotate-6" />
         <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">{action.title}</h3>
       </div>
-      <p className="text-[var(--brand-fg)]">{action.description}</p>
+      <p className="text-[var(--brand-accent)]">{action.description}</p>
     </a>
   );
 }

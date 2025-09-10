@@ -46,7 +46,7 @@ export default function EventGallery({ events }: { events: GalleryEvent[] }) {
                 {ev.location ? ` • ${ev.location}` : ""}
               </p>
               {ev.description && (
-                <p className="mt-2 line-clamp-3 text-sm text-[var(--brand-fg)]/90">
+                <p className="mt-2 line-clamp-3 text-sm text-[var(--brand-fg)]">
                   {ev.description}
                 </p>
               )}
