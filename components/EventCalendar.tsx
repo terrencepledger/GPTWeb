@@ -41,7 +41,7 @@ export default function EventCalendar({ events }: { events: CalendarEvent[] }) {
       <div className="flex items-center justify-between">
         <button
           onClick={() => changeMonth(-1)}
-          className="px-2 py-1 text-sm rounded text-[var(--brand-fg)] hover:bg-[var(--brand-border)]"
+          className="px-2 py-1 text-sm rounded cursor-pointer text-[var(--brand-fg)] hover:bg-[var(--brand-border)]"
         >
           Prev
         </button>
@@ -50,7 +50,7 @@ export default function EventCalendar({ events }: { events: CalendarEvent[] }) {
         </h2>
         <button
           onClick={() => changeMonth(1)}
-          className="px-2 py-1 text-sm rounded text-[var(--brand-fg)] hover:bg-[var(--brand-border)]"
+          className="px-2 py-1 text-sm rounded cursor-pointer text-[var(--brand-fg)] hover:bg-[var(--brand-border)]"
         >
           Next
         </button>

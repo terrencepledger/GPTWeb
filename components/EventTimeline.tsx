@@ -76,7 +76,7 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
                 : "right-1/2 w-[calc(50%-2.5rem)] origin-right"
             }`}
           />
-          <div className="w-full max-w-md p-6 space-y-2 rounded-lg border bg-[var(--brand-bg)] transition-transform duration-300 group-hover:scale-105 group-hover:shadow-lg">
+          <div className="w-full max-w-md p-6 space-y-2 rounded-lg border border-[var(--brand-accent)] bg-[var(--brand-bg)] transition-transform duration-300 group-hover:scale-105 group-hover:shadow-lg">
             {ev.image && (
               <Image
                 src={ev.image}
