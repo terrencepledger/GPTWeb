@@ -39,7 +39,7 @@ export default async function Page() {
           style={{ animationDelay: '0.1s' }}
         >
           <h2 className="mb-4 text-xl font-semibold text-[var(--brand-accent)]">Upcoming Events</h2>
-          <EventList events={events} />
+          <EventList events={events} descriptionClassName="text-[var(--brand-accent)]" dateClassName="text-[var(--brand-accent)]" />
         </section>
       )}
       <section

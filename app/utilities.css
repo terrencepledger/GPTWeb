@@ -105,19 +105,19 @@
   /* Logo loading pulse */
   @keyframes logo-pulse {
     0%, 100% {
-      opacity: 0.75;
+      opacity: 1;
       transform: scale(1);
     }
     25% {
-      opacity: 0.6;
+      opacity: 1;
       transform: scale(1.1);
     }
     50% {
-      opacity: 0.5;
+      opacity: 1;
       transform: scale(1);
     }
     75% {
-      opacity: 0.6;
+      opacity: 1;
       transform: scale(0.9);
     }
   }
