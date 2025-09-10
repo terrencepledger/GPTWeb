@@ -14,7 +14,7 @@ export default async function Page() {
   ]);
 
   const events = rawEvents.map((ev) => ({
-    _id: ev.id,
+    id: ev.id,
     title: ev.title,
     date: new Date(ev.start).toLocaleDateString("en-US", {
       month: "long",

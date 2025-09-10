@@ -9,7 +9,7 @@ export default function EventTabs({ events }: { events: CalendarEvent[] }) {
   const [tab, setTab] = useState<"timeline" | "calendar">("timeline");
 
   const timelineEvents = events.map((ev) => ({
-    _id: ev.id,
+    id: ev.id,
     title: ev.title,
     date: new Date(ev.start).toLocaleDateString("en-US", {
       month: "long",

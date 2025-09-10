@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef } from "react";
 
 export type TimelineEvent = {
-  _id: string;
+  id: string;
   title: string;
   date: string;
   location?: string;
@@ -53,7 +53,7 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
     <div className="relative mx-auto w-full max-w-4xl py-8 before:absolute before:top-0 before:bottom-0 before:left-1/2 before:-translate-x-1/2 before:w-px before:bg-[var(--brand-border)]">
       {events.map((ev, i) => (
         <div
-          key={ev._id}
+          key={ev.id}
           ref={(el) => {
             refs.current[i] = el;
           }}

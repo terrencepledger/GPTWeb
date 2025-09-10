@@ -12,7 +12,7 @@ export function EventList({ events }: { events: Event[] }) {
   return (
     <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(16rem,1fr))]">
       {events.map((ev: Event) => (
-        <EventCard key={ev._id} event={ev} />
+        <EventCard key={ev.id} event={ev} />
       ))}
     </div>
   );

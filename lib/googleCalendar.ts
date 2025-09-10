@@ -40,10 +40,18 @@ export async function getCalendarEvents(maxResults?: number): Promise<CalendarEv
   if (!res.ok) return [];
   const data = await res.json();
   const items: any[] = Array.isArray(data?.items) ? data.items : [];
-  return items
+  const events = items
     .map(formatEvent)
     .filter((e): e is CalendarEvent => !!e)
     .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
+
+  // eslint-disable-next-line no-console
+  console.info(
+    `[googleCalendar] fetched ${events.length} events`,
+    events
+  );
+
+  return events;
 }
 
 export async function getUpcomingEvents(limit: number): Promise<CalendarEvent[]> {
