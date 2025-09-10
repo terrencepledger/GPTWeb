@@ -41,26 +41,26 @@ export default function EventCalendar({ events }: { events: CalendarEvent[] }) {
       <div className="flex items-center justify-between">
         <button
           onClick={() => changeMonth(-1)}
-          className="px-2 py-1 text-sm rounded hover:bg-[var(--brand-border)]"
+          className="px-2 py-1 text-sm rounded text-[var(--brand-fg)] hover:bg-[var(--brand-border)]"
         >
           Prev
         </button>
-        <h2 className="font-semibold">
+        <h2 className="font-semibold text-[var(--brand-fg)]">
           {current.toLocaleString("en-US", { month: "long", year: "numeric" })}
         </h2>
         <button
           onClick={() => changeMonth(1)}
-          className="px-2 py-1 text-sm rounded hover:bg-[var(--brand-border)]"
+          className="px-2 py-1 text-sm rounded text-[var(--brand-fg)] hover:bg-[var(--brand-border)]"
         >
           Next
         </button>
       </div>
-      <div className="grid grid-cols-7 text-center text-sm font-medium">
+      <div className="grid grid-cols-7 text-center text-sm font-medium text-[var(--brand-fg)]">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (
           <div key={d}>{d}</div>
         ))}
       </div>
-      <div className="grid grid-cols-7 gap-px bg-[var(--brand-border)]">
+      <div className="grid grid-cols-7 gap-px bg-[var(--brand-border)] text-[var(--brand-fg)]">
         {weeks.flat().map((d, i) => (
           <div
             key={i}
