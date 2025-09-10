@@ -5,12 +5,11 @@ import { useEffect, useRef } from "react";
 type MapBlockProps = {
   address?: string;
   zoom?: number;
+  apiKey?: string;
 };
 
 declare const google: any;
-
-export default function MapBlock({ address, zoom = 15 }: MapBlockProps) {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+export default function MapBlock({ address, zoom = 15, apiKey }: MapBlockProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef<any>();
