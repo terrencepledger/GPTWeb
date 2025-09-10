@@ -34,7 +34,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
         >
           {siteTitle}
         </Link>
-        <nav className="absolute left-1/2 -translate-x-1/2 hidden items-center gap-6 text-sm font-medium md:flex">
+        <nav className="absolute left-1/2 -translate-x-1/2 hidden items-center gap-6 text-sm font-medium lg:flex">
           <Link
             href="/"
             className={linkClasses(pathname === "/")}
@@ -143,7 +143,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
         </nav>
 
         <button
-          className="ml-auto text-[var(--brand-accent)] hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)] md:hidden"
+          className="ml-auto text-[var(--brand-accent)] hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)] lg:hidden"
           aria-label="Open menu"
           onClick={() => mobileMenuRef.current?.open()}
         >

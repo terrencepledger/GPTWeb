@@ -37,7 +37,7 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
 
   return (
     <Transition show={open} as={Fragment}>
-      <Dialog as="div" className="md:hidden" onClose={handleClose}>
+      <Dialog as="div" className="lg:hidden" onClose={handleClose}>
         <Transition.Child
           as={Fragment}
           enter="transition-opacity ease-linear duration-200"
