@@ -26,7 +26,7 @@ export default async function Page() {
   }));
 
   const address = settings?.address ?? "";
-  const mapsKey = settings?.googleMapsKey;
+  const mapKey = process.env.GOOGLE_MAPS_API_KEY;
   const hasEvents = events.length > 0;
 
   return (
@@ -48,7 +48,7 @@ export default async function Page() {
       >
         <SocialCTA />
       </section>
-      <MapBlock address={address} apiKey={mapsKey} />
+      <MapBlock address={address} apiKey={mapKey} />
     </div>
   );
 }
