@@ -3,7 +3,7 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 
 export type Event = {
-  _id: string;
+  id: string;
   title: string;
   date: string;
   location?: string;
@@ -51,7 +51,7 @@ export function EventCard({
           {event.location ? ` • ${event.location}` : ""}
         </p>
         {event.description && (
-          <p className="mt-2 flex-1 text-sm text-[var(--brand-fg)]/90">
+          <p className="mt-2 flex-1 text-sm text-[var(--brand-fg)]">
             {event.description}
           </p>
         )}

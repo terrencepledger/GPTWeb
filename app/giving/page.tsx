@@ -134,7 +134,7 @@ function OptionCard({ option, delay }: { option: Option; delay: string }) {
           {option.content}
         </a>
       ) : (
-        <p className="text-[var(--brand-fg)]">{option.content}</p>
+        <p className="text-[var(--brand-accent)]">{option.content}</p>
       )}
     </div>
   );
@@ -144,8 +144,8 @@ export default function Page() {
   return (
     <div className="w-full space-y-8">
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold">Online Contributions</h1>
-        <p className="text-sm text-[var(--brand-fg)]">Donations are Tax Deductible</p>
+        <h1 className="text-2xl font-semibold text-[var(--brand-primary-contrast)]">Online Contributions</h1>
+        <p className="text-sm text-[var(--brand-accent)]">Donations are Tax Deductible</p>
       </div>
       <div className="grid gap-6 sm:grid-cols-2">
         {options.map((opt, idx) => (

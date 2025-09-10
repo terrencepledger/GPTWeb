@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 export type GalleryEvent = {
-  _id: string;
+  id: string;
   title: string;
   date: string;
   location?: string;
@@ -27,7 +27,7 @@ export default function EventGallery({ events }: { events: GalleryEvent[] }) {
       <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(16rem,1fr))]">
         {events.map((ev) => (
           <article
-            key={ev._id}
+            key={ev.id}
             className="group relative overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)] transform transition duration-300 ease-out hover:-translate-y-1 hover:-rotate-1 hover:scale-[1.02] hover:shadow-lg focus-within:-translate-y-1 focus-within:-rotate-1 focus-within:scale-[1.02] focus-within:shadow-lg"
           >
             {ev.image && (
@@ -46,7 +46,7 @@ export default function EventGallery({ events }: { events: GalleryEvent[] }) {
                 {ev.location ? ` • ${ev.location}` : ""}
               </p>
               {ev.description && (
-                <p className="mt-2 line-clamp-3 text-sm text-[var(--brand-fg)]/90">
+                <p className="mt-2 line-clamp-3 text-sm text-[var(--brand-fg)]">
                   {ev.description}
                 </p>
               )}

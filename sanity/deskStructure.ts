@@ -4,7 +4,6 @@ export const structure = (S: any) =>
     .title('Content')
     .items([
       S.documentTypeListItem('announcement').title('Announcements'),
-      S.documentTypeListItem('event').title('Events'),
       S.documentTypeListItem('ministry').title('Ministries'),
       S.documentTypeListItem('heroSlide').title('Hero Slides'),
       S.listItem()
