@@ -1,10 +1,18 @@
 import EventTabs from "@/components/EventTabs";
 import { getCalendarEvents } from "@/lib/googleCalendar";
+import { eventDetailLinks } from "@/lib/queries";
 
 export const metadata = { title: "Events" };
 
 export default async function Page() {
-  const events = await getCalendarEvents();
+  const [rawEvents, detailLinks] = await Promise.all([
+    getCalendarEvents(),
+    eventDetailLinks(),
+  ]);
+  const events = rawEvents.map((ev) => {
+    const link = detailLinks.find((d) => d.calendarEventId === ev.id);
+    return link ? { ...ev, href: `/events/${link.slug}` } : ev;
+  });
 
   return (
     <div className="space-y-6">

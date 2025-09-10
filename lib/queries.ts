@@ -109,3 +109,31 @@ export const missionStatement = () =>
     }`
   );
 
+export interface EventDetailLink {
+  calendarEventId: string;
+  slug: string;
+}
+
+export const eventDetailLinks = () =>
+  sanity.fetch<EventDetailLink[]>(
+    groq`*[_type == "eventDetail"]{calendarEventId, "slug": slug.current}`
+  );
+
+export interface EventDetail {
+  _id: string;
+  title: string;
+  calendarEventId: string;
+  body?: any;
+}
+
+export const eventDetailBySlug = (slug: string) =>
+  sanity.fetch<EventDetail | null>(
+    groq`*[_type == "eventDetail" && slug.current == $slug][0]{
+      _id,
+      title,
+      calendarEventId,
+      body
+    }`,
+    { slug }
+  );
+

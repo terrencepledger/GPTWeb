@@ -5,6 +5,7 @@ export interface CalendarEvent {
   end?: string;
   description?: string;
   location?: string;
+  href?: string;
 }
 
 function formatEvent(ev: any): CalendarEvent | null {
