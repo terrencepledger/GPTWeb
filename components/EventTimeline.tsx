@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef } from "react";
 
 export type TimelineEvent = {
-  _id: string;
+  id: string;
   title: string;
   date: string;
   location?: string;
@@ -53,7 +53,7 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
     <div className="relative mx-auto w-full max-w-4xl py-8 before:absolute before:top-0 before:bottom-0 before:left-1/2 before:-translate-x-1/2 before:w-px before:bg-[var(--brand-border)]">
       {events.map((ev, i) => (
         <div
-          key={ev._id}
+          key={ev.id}
           ref={(el) => {
             refs.current[i] = el;
           }}
@@ -66,17 +66,17 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
         >
           <span
             style={{ transitionDelay: `${i * 150}ms` }}
-            className="timeline-dot absolute top-4 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-[var(--brand-primary)] transition-transform duration-500 scale-0 group-hover:scale-125"
+            className="timeline-dot absolute top-4 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-[var(--brand-accent)] transition-transform duration-500 scale-0 group-hover:scale-125"
           />
           <span
             style={{ transitionDelay: `${i * 150}ms` }}
-            className={`timeline-connector absolute top-6 h-px bg-[var(--brand-border)] transition-transform duration-500 scale-x-0 ${
+            className={`timeline-connector absolute top-6 h-px bg-[var(--brand-accent)] transition-transform duration-500 scale-x-0 ${
               i % 2 === 0
                 ? "left-1/2 w-[calc(50%-2.5rem)] origin-left"
                 : "right-1/2 w-[calc(50%-2.5rem)] origin-right"
             }`}
           />
-          <div className="w-full max-w-md p-6 space-y-2 rounded-lg border bg-[var(--brand-bg)] transition-transform duration-300 group-hover:scale-105 group-hover:shadow-lg">
+          <div className="w-full max-w-md p-6 space-y-2 rounded-lg border border-[var(--brand-accent)] bg-[var(--brand-bg)] transition-transform duration-300 group-hover:scale-105 group-hover:shadow-lg">
             {ev.image && (
               <Image
                 src={ev.image}
@@ -94,7 +94,7 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
               {ev.location ? ` • ${ev.location}` : ""}
             </p>
             {ev.description && (
-              <p className="text-base text-[var(--brand-fg)]/90">
+              <p className="text-base text-[var(--brand-fg)]">
                 {ev.description}
               </p>
             )}

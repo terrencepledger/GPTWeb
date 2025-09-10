@@ -1,6 +1,6 @@
 import { Event, EventCard } from "./EventCard";
 
-export function EventList({ events }: { events: Event[] }) {
+export function EventList({ events, descriptionClassName, dateClassName }: { events: Event[]; descriptionClassName?: string; dateClassName?: string }) {
   if (events.length === 0) {
     return (
       <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(16rem,1fr))]">
@@ -12,7 +12,7 @@ export function EventList({ events }: { events: Event[] }) {
   return (
     <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(16rem,1fr))]">
       {events.map((ev: Event) => (
-        <EventCard key={ev._id} event={ev} />
+        <EventCard key={ev.id} event={ev} descriptionClassName={descriptionClassName} dateClassName={dateClassName} />
       ))}
     </div>
   );

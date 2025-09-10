@@ -31,7 +31,7 @@ export async function getCurrentLivestream(): Promise<VimeoItem | null> {
   const { user, headers } = config
   const res = await fetch(
     `https://api.vimeo.com/users/${user}/videos?filter=live&per_page=1&sort=date&direction=desc&fields=uri,name,link,pictures.sizes.link,live.status,stats.viewers`,
-    { headers, next: { revalidate: 60 } }
+    { headers, next: { revalidate: 300 } }
   )
   if (!res.ok) return null
   const data = await res.json()
@@ -46,13 +46,12 @@ export async function getRecentLivestreams(): Promise<VimeoItem[]> {
   const { user, headers } = config
   const res = await fetch(
     `https://api.vimeo.com/users/${user}/videos?filter=live&per_page=10&sort=date&direction=desc&fields=uri,name,link,pictures.sizes.link,live.status,created_time`,
-    { headers, next: { revalidate: 60 } }
+    { headers, next: { revalidate: 300 } }
   )
   if (!res.ok) return []
   const data = await res.json()
   return (
     data.data
-      ?.slice(1)
-      .map((v: VimeoVideo) => ({ ...v, id: idFromUri(v.uri) })) ?? []
+      ?.map((v: VimeoVideo) => ({ ...v, id: idFromUri(v.uri) })) ?? []
   )
 }

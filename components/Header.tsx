@@ -34,7 +34,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
         >
           {siteTitle}
         </Link>
-        <nav className="absolute left-1/2 -translate-x-1/2 hidden items-center gap-6 text-sm font-medium md:flex">
+        <nav className="absolute left-1/2 -translate-x-1/2 hidden items-center gap-6 text-sm font-medium lg:flex">
           <Link
             href="/"
             className={linkClasses(pathname === "/")}
@@ -86,6 +86,18 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
             </div>
           </div>
 
+          {nav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              ref={item.href === "/giving" ? givingRef : undefined}
+              className={`${linkClasses(pathname.startsWith(item.href))} ${item.href === "/giving" && shouldNudgeGiving ? "animate-shake" : ""}`}
+              aria-current={pathname.startsWith(item.href) ? "page" : undefined}
+            >
+              {item.label}
+            </Link>
+          ))}
+
           <div className="relative group">
             <button
               className={`${pathname.startsWith("/contact") ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)] inline-flex items-center gap-1 cursor-pointer focus:outline-none`}
@@ -128,22 +140,10 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
               </Link>
             </div>
           </div>
-
-          {nav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              ref={item.href === "/giving" ? givingRef : undefined}
-              className={`${linkClasses(pathname.startsWith(item.href))} ${item.href === "/giving" && shouldNudgeGiving ? "animate-shake" : ""}`}
-              aria-current={pathname.startsWith(item.href) ? "page" : undefined}
-            >
-              {item.label}
-            </Link>
-          ))}
         </nav>
 
         <button
-          className="ml-auto text-[var(--brand-accent)] hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)] md:hidden"
+          className="ml-auto text-[var(--brand-accent)] hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)] lg:hidden"
           aria-label="Open menu"
           onClick={() => mobileMenuRef.current?.open()}
         >

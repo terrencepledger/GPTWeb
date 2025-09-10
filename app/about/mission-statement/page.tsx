@@ -20,22 +20,22 @@ export default async function Page() {
             fill
             className="object-cover"
           />
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-[var(--brand-overlay)] text-center text-[var(--brand-alt)] px-4">
-            <h1 className="text-3xl font-bold tracking-tight">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-[var(--brand-overlay)] text-center px-4">
+            <h1 className="text-3xl font-bold tracking-tight text-[var(--brand-alt)]">
               {data.headline}
             </h1>
             {data.tagline && (
-              <p className="mt-2 text-lg max-w-2xl">{data.tagline}</p>
+              <p className="mt-2 text-lg max-w-2xl text-[var(--brand-accent)]">{data.tagline}</p>
             )}
           </div>
         </div>
       ) : (
-        <h1 className="text-3xl font-bold text-center text-[var(--brand-accent)]">{data.headline}</h1>
+        <h1 className="text-3xl font-bold text-center">{data.headline}</h1>
       )}
 
       {data.message && (
         <section className="mx-auto max-w-3xl px-4 py-8 text-lg">
-          <p className="whitespace-pre-line text-center">{data.message}</p>
+          <p className="whitespace-pre-line text-center text-[var(--brand-accent)]">{data.message}</p>
         </section>
       )}
     </div>
