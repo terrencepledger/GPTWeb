@@ -9,7 +9,6 @@ type MapBlockProps = {
 };
 
 declare const google: any;
-
 export default function MapBlock({ address, zoom = 15, apiKey }: MapBlockProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
