@@ -124,6 +124,8 @@ export interface EventDetail {
   title: string;
   calendarEventId: string;
   body?: any;
+  galleryType?: string;
+  gallery?: { _key: string; url: string; alt?: string }[];
 }
 
 export const eventDetailBySlug = (slug: string) =>
@@ -132,7 +134,9 @@ export const eventDetailBySlug = (slug: string) =>
       _id,
       title,
       calendarEventId,
-      body
+      body,
+      galleryType,
+      "gallery": gallery[]{_key, "url": asset->url, "alt": coalesce(alt, "")}
     }`,
     { slug }
   );

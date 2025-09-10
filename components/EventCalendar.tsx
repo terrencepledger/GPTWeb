@@ -83,7 +83,15 @@ export default function EventCalendar({ events }: { events: CalendarEvent[] }) {
                       key={ev.id}
                       className="mt-1 rounded bg-[var(--brand-accent)]/20 p-0.5"
                     >
-                      {ev.title}
+                      <div>{ev.title}</div>
+                      {ev.href && (
+                        <a
+                          href={ev.href}
+                          className="text-[0.625rem] text-[var(--brand-accent)] hover:underline"
+                        >
+                          Learn more
+                        </a>
+                      )}
                     </div>
                   ))}
               </div>

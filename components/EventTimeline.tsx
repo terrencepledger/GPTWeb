@@ -10,6 +10,7 @@ export type TimelineEvent = {
   location?: string;
   description?: string;
   image?: string;
+  href?: string;
 };
 
 export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
@@ -97,6 +98,14 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
               <p className="text-base text-[var(--brand-fg)]">
                 {ev.description}
               </p>
+            )}
+            {ev.href && (
+              <a
+                href={ev.href}
+                className="inline-block mt-2 text-sm font-medium text-[var(--brand-accent)] hover:underline"
+              >
+                Learn more
+              </a>
             )}
           </div>
         </div>
