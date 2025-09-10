@@ -45,6 +45,7 @@ export async function getCalendarEvents(maxResults?: number): Promise<CalendarEv
     .filter((e): e is CalendarEvent => !!e)
     .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime());
 
+  // eslint-disable-next-line no-console
   console.info(
     `[googleCalendar] fetched ${events.length} events`,
     events
