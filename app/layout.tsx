@@ -11,6 +11,7 @@ import { siteSettings, announcementLatest } from "@/lib/queries";
 import { getCurrentLivestream } from "@/lib/vimeo";
 import AutoRefresh from "@/components/AutoRefresh";
 import Script from "next/script";
+import GAListener from "@/components/GAListener";
 
 const headerFont = Playfair_Display({
   subsets: ["latin"],
@@ -77,6 +78,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     };
   }
 
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+
   return (
     <html
       lang="en"
@@ -87,16 +90,30 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         style={{ "--layout-max-width": maxWidth } as CSSProperties}
       >
         <AutoRefresh />
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
-          strategy="afterInteractive"
-        />
-        <Script id="ga-init" strategy="afterInteractive">
-          {`window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');`}
-        </Script>
+        {gaId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="beforeInteractive"
+            />
+            <Script id="ga-init" strategy="beforeInteractive">
+              {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);} 
+ gtag('js', new Date());
+ // Ensure hits attribute to production domain even in local/dev
+ (function(){
+   try {
+     var page_path = (typeof location !== 'undefined') ? (location.pathname + (location.search || '')) : '/';
+     gtag('config', '${gaId}', {
+       cookie_domain: 'gptchurch.org',
+       page_location: 'https://gptchurch.org' + page_path
+     });
+   } catch (e) { /* no-op */ }
+ })();`}
+            </Script>
+          </>
+        )}
+        <GAListener />
         <Header initialTitle={headerTitle} />
         {banner && (
           <BannerAnchor gap={0}>

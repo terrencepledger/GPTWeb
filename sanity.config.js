@@ -2,7 +2,7 @@
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
-import googleAnalytics from 'sanity-plugin-google-analytics'
+import {analyticsTool} from './sanity/plugins/analyticsTool'
 
 // Schemas
 import announcement from './sanity/schemas/announcement'
@@ -30,7 +30,11 @@ export default defineConfig({
             defaultDocumentNode,
         }),
         visionTool(),
-        googleAnalytics,
+        // Custom Analytics tool (embeds a GA/Looker Studio dashboard)
+        // Configure URL via SANITY_STUDIO_GA_DASHBOARD_URL
+        analyticsTool({
+            url: (import.meta.env.SANITY_STUDIO_GA_DASHBOARD_URL) || process.env.SANITY_STUDIO_GA_DASHBOARD_URL || process.env.NEXT_PUBLIC_GA_DASHBOARD_URL,
+        }),
     ],
     // Hide the Vision tool for non-admin users (e.g., editors)
     // currentUser is available in the context when using a function form of `tools`
