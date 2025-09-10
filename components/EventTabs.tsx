@@ -24,20 +24,20 @@ export default function EventTabs({ events }: { events: CalendarEvent[] }) {
     <div className="space-y-4">
       <div className="flex justify-center gap-4">
         <button
-          className={`px-3 py-1 rounded ${
+          className={`px-3 py-1 rounded cursor-pointer ${
             tab === "timeline"
               ? "bg-[var(--brand-accent)] text-[var(--brand-ink)]"
-              : "bg-[var(--brand-border)] text-[var(--brand-fg)]"
+              : "border border-[var(--brand-border)] bg-[var(--brand-surface)] text-[var(--brand-fg)]"
           }`}
           onClick={() => setTab("timeline")}
         >
           Timeline
         </button>
         <button
-          className={`px-3 py-1 rounded ${
+          className={`px-3 py-1 rounded cursor-pointer ${
             tab === "calendar"
               ? "bg-[var(--brand-accent)] text-[var(--brand-ink)]"
-              : "bg-[var(--brand-border)] text-[var(--brand-fg)]"
+              : "border border-[var(--brand-border)] bg-[var(--brand-surface)] text-[var(--brand-fg)]"
           }`}
           onClick={() => setTab("calendar")}
         >
