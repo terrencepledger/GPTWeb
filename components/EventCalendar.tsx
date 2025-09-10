@@ -11,6 +11,9 @@ export default function EventCalendar({ events }: { events: CalendarEvent[] }) {
 
   const year = current.getFullYear();
   const month = current.getMonth();
+  const today = new Date();
+  const isCurrentMonth =
+    year === today.getFullYear() && month === today.getMonth();
 
   const monthEvents = events.filter((ev) => {
     const d = new Date(ev.start);
@@ -36,24 +39,38 @@ export default function EventCalendar({ events }: { events: CalendarEvent[] }) {
     setCurrent(new Date(year, month + offset, 1));
   }
 
+  function goToToday() {
+    setCurrent(new Date(today.getFullYear(), today.getMonth(), 1));
+  }
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <button
           onClick={() => changeMonth(-1)}
-          className="px-2 py-1 text-sm rounded cursor-pointer text-[var(--brand-fg)] hover:bg-[var(--brand-border)]"
+          className="px-2 py-1 text-sm rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] cursor-pointer text-[var(--brand-fg)] hover:bg-[var(--brand-border)]"
         >
           Prev
         </button>
         <h2 className="font-semibold text-[var(--brand-fg)]">
           {current.toLocaleString("en-US", { month: "long", year: "numeric" })}
         </h2>
-        <button
-          onClick={() => changeMonth(1)}
-          className="px-2 py-1 text-sm rounded cursor-pointer text-[var(--brand-fg)] hover:bg-[var(--brand-border)]"
-        >
-          Next
-        </button>
+        <div className="flex gap-2">
+          {!isCurrentMonth && (
+            <button
+              onClick={goToToday}
+              className="px-2 py-1 text-sm rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] cursor-pointer text-[var(--brand-fg)] hover:bg-[var(--brand-border)]"
+            >
+              Today
+            </button>
+          )}
+          <button
+            onClick={() => changeMonth(1)}
+            className="px-2 py-1 text-sm rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] cursor-pointer text-[var(--brand-fg)] hover:bg-[var(--brand-border)]"
+          >
+            Next
+          </button>
+        </div>
       </div>
       <div className="grid grid-cols-7 text-center text-sm font-medium text-[var(--brand-fg)]">
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d) => (

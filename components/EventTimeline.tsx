@@ -66,11 +66,11 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
         >
           <span
             style={{ transitionDelay: `${i * 150}ms` }}
-            className="timeline-dot absolute top-4 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-[var(--brand-primary)] transition-transform duration-500 scale-0 group-hover:scale-125"
+            className="timeline-dot absolute top-4 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-[var(--brand-accent)] transition-transform duration-500 scale-0 group-hover:scale-125"
           />
           <span
             style={{ transitionDelay: `${i * 150}ms` }}
-            className={`timeline-connector absolute top-6 h-px bg-[var(--brand-border)] transition-transform duration-500 scale-x-0 ${
+            className={`timeline-connector absolute top-6 h-px bg-[var(--brand-accent)] transition-transform duration-500 scale-x-0 ${
               i % 2 === 0
                 ? "left-1/2 w-[calc(50%-2.5rem)] origin-left"
                 : "right-1/2 w-[calc(50%-2.5rem)] origin-right"
