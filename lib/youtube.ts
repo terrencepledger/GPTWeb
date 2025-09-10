@@ -42,7 +42,7 @@ export async function getLatestLivestream(
       });
     } catch {}
 
-    const res = await fetch(searchUrl, { next: { revalidate: 60 } });
+    const res = await fetch(searchUrl, { next: { revalidate: 300 } });
     if (!res.ok) {
       try {
         // eslint-disable-next-line no-console
@@ -89,7 +89,7 @@ export async function getLatestLivestream(
       });
     } catch {}
 
-    const vidsRes = await fetch(vidsUrl, { next: { revalidate: 60 } });
+    const vidsRes = await fetch(vidsUrl, { next: { revalidate: 300 } });
     if (!vidsRes.ok) {
       try {
         // eslint-disable-next-line no-console
