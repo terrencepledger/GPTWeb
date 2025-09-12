@@ -1,4 +1,4 @@
-import Iframe from 'sanity-plugin-iframe-pane';
+import { Iframe } from 'sanity-plugin-iframe-pane';
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
