@@ -1,6 +1,13 @@
 import { defineField, defineType } from 'sanity';
 import CalendarEventIdInput from '../components/CalendarEventIdInput';
 
+const colorOptions = [
+  { title: 'Purple', value: 'purple' },
+  { title: 'Gold', value: 'gold' },
+  { title: 'Ink', value: 'ink' },
+  { title: 'White', value: 'white' },
+];
+
 export default defineType({
   name: 'eventDetail',
   title: 'Event Detail',
@@ -27,28 +34,38 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'palette',
+      title: 'Color Palette',
+      type: 'object',
+      fields: [
+        defineField({ name: 'primary', title: 'Primary', type: 'string', options: { list: colorOptions } }),
+        defineField({ name: 'accent', title: 'Accent', type: 'string', options: { list: colorOptions } }),
+        defineField({ name: 'contrast', title: 'Contrast', type: 'string', options: { list: colorOptions } }),
+      ],
+    }),
+    defineField({
+      name: 'eventLogo',
+      title: 'Event Logo',
+      type: 'image',
+      options: { hotspot: true },
+    }),
+    defineField({
       name: 'body',
       title: 'Body',
       type: 'array',
       of: [{ type: 'block' }],
     }),
     defineField({
-      name: 'galleryType',
-      title: 'Gallery Layout',
-      type: 'string',
-      options: {
-        list: [
-          { title: 'Grid', value: 'grid' },
-          { title: 'Carousel', value: 'carousel' },
-        ],
-        layout: 'radio',
-      },
-    }),
-    defineField({
-      name: 'gallery',
-      title: 'Gallery Images',
+      name: 'sections',
+      title: 'Sections',
       type: 'array',
-      of: [{ type: 'image', options: { hotspot: true } }],
+      of: [
+        { type: 'heroSection' },
+        { type: 'gallerySection' },
+        { type: 'calendarSection' },
+        { type: 'mapSection' },
+        { type: 'registrationSection' },
+      ],
     }),
   ],
 });
