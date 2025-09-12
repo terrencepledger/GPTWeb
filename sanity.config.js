@@ -51,5 +51,8 @@ export default defineConfig({
                 'next/image': path.resolve(process.cwd(), 'sanity/components/NextImage.tsx'),
             },
         },
+        define: {
+            'process.env': {},
+        },
     },
 })
