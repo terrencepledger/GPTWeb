@@ -11,6 +11,7 @@ import { siteSettings, announcementLatest } from "@/lib/queries";
 import { getCurrentLivestream } from "@/lib/vimeo";
 import AutoRefresh from "@/components/AutoRefresh";
 import Script from "next/script";
+import { cookies } from "next/headers";
 
 const headerFont = Playfair_Display({
   subsets: ["latin"],
@@ -61,6 +62,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   ]);
   const headerTitle = settings?.title ?? "Greater Pentecostal Temple";
   const maxWidth = "90vw";
+  const theme = cookies().get("preview-theme")?.value || "light";
 
   let banner: { id: string; message: string; cta?: { label: string; href: string } } | null = null;
   if (livestream?.live?.status === "streaming") {
@@ -80,6 +82,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html
       lang="en"
+      data-theme={theme}
       className={`${headerFont.variable} ${bodyFont.variable} ${buttonFont.variable}`}
     >
       <body

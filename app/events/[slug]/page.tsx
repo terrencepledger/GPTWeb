@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
-import {
-  eventDetailBySlug
-} from "@/lib/queries";
+import { draftMode } from "next/headers";
+import { eventDetailBySlug } from "@/lib/queries";
 import { getCalendarEvents } from "@/lib/googleCalendar";
 import HeroSection from "@/components/eventDetailSections/HeroSection";
 import GallerySection from "@/components/eventDetailSections/GallerySection";
@@ -10,12 +9,14 @@ import MapSection from "@/components/eventDetailSections/MapSection";
 import RegistrationSection from "@/components/eventDetailSections/RegistrationSection";
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const detail = await eventDetailBySlug(params.slug);
+  const preview = draftMode().isEnabled;
+  const detail = await eventDetailBySlug(params.slug, preview);
   return { title: detail?.title || "Event" };
 }
 
 export default async function Page({ params }: { params: { slug: string } }) {
-  const detail = await eventDetailBySlug(params.slug);
+  const preview = draftMode().isEnabled;
+  const detail = await eventDetailBySlug(params.slug, preview);
   if (!detail) notFound();
 
   const events = await getCalendarEvents();

@@ -135,8 +135,9 @@ export interface EventDetail {
   )[];
 }
 
-export const eventDetailBySlug = (slug: string) =>
-  sanity.fetch<EventDetail | null>(
+export const eventDetailBySlug = (slug: string, preview = false) => {
+  const client = preview ? sanity.withConfig({ fetch: globalThis.fetch }) : sanity;
+  return client.fetch<EventDetail | null>(
     groq`*[_type == "eventDetail" && slug.current == $slug][0]{
       _id,
       title,
@@ -163,4 +164,5 @@ export const eventDetailBySlug = (slug: string) =>
     }`,
     { slug }
   );
+};
 
