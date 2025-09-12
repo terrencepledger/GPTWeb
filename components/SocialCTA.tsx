@@ -37,7 +37,7 @@ function SocialCard({ href, label, description, Icon }: SocialItem) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex h-full flex-col items-center justify-center gap-2 rounded-full border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 text-center transition-colors hover:bg-[color:color-mix(in_oklab,var(--brand-surface)_85%,white_15%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
+      className="group flex h-full flex-col items-center justify-center gap-2 rounded-full border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 text-center transition-colors hover:bg-[color:color-mix(in_oklab,var(--brand-surface)_85%,white_15%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] no-underline hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
     >
       <Icon className="h-8 w-8 text-[var(--brand-accent)] transition-all group-hover:scale-105 group-hover:text-[var(--brand-primary-contrast)]" />
       <h3 className="text-base font-semibold text-[var(--brand-accent)] group-hover:text-[var(--brand-primary-contrast)]">{label}</h3>
@@ -128,7 +128,7 @@ export default async function SocialCTA() {
               href={`https://www.youtube.com/channel/${channelId}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="order-1 relative aspect-video w-full overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)] md:order-2 flex items-center justify-center group transition-colors hover:bg-[color:color-mix(in_oklab,var(--brand-surface)_85%,white_15%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
+              className="order-1 relative aspect-video w-full overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)] md:order-2 flex items-center justify-center group transition-colors hover:bg-[color:color-mix(in_oklab,var(--brand-surface)_85%,white_15%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] no-underline hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
               aria-label="Visit our YouTube channel"
             >
               {settings?.logo && (

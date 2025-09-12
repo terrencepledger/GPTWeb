@@ -58,7 +58,7 @@ function ActionCard({ action, delay }: { action: typeof actions[number]; delay: 
   return (
     <a
       href={action.href}
-      className="group flex flex-col items-start gap-4 rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 opacity-0 animate-fade-in-up transform transition duration-300 hover:-translate-y-1 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)]"
+      className="group flex flex-col items-start gap-4 rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 opacity-0 animate-fade-in-up transform transition duration-300 hover:-translate-y-1 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] no-underline transition-colors hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
       style={{ animationDelay: delay }}
     >
       <div className="flex items-center gap-3">
