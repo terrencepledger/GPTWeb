@@ -2,6 +2,8 @@
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
+import path from 'path'
+import './sanity/sanity.css'
 
 // Schemas
 import announcement from './sanity/schemas/announcement'
@@ -42,5 +44,12 @@ export default defineConfig({
         const roles = context.currentUser?.roles?.map(r => r.name) || [];
         const isAdmin = roles.includes('administrator') || roles.includes('developer');
         return isAdmin ? prev : prev.filter(tool => tool.name !== 'vision');
+    },
+    vite: {
+        resolve: {
+            alias: {
+                'next/image': path.resolve(process.cwd(), 'sanity/components/NextImage.tsx'),
+            },
+        },
     },
 })
