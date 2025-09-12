@@ -6,7 +6,8 @@ export async function GET(req: Request) {
   const slug = searchParams.get('slug') || '/';
   const theme = searchParams.get('theme') || 'light';
   draftMode().enable();
-  const res = NextResponse.redirect(slug);
+  const url = new URL(slug, new URL(req.url).origin);
+  const res = NextResponse.redirect(url);
   res.cookies.set('preview-theme', theme, { path: '/' });
   return res;
 }
