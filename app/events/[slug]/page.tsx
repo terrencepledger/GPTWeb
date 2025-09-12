@@ -8,6 +8,8 @@ import CalendarSection from "@/components/eventDetailSections/CalendarSection";
 import MapSection from "@/components/eventDetailSections/MapSection";
 import RegistrationSection from "@/components/eventDetailSections/RegistrationSection";
 
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const preview = draftMode().isEnabled;
   const detail = await eventDetailBySlug(params.slug, preview);
