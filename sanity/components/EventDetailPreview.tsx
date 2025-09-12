@@ -5,7 +5,10 @@ import CalendarSection from '../../components/eventDetailSections/CalendarSectio
 import MapSection from '../../components/eventDetailSections/MapSection';
 import RegistrationSection from '../../components/eventDetailSections/RegistrationSection';
 
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+// Resolve base URL and map API key from env while avoiding `process` references in the browser
+const env = import.meta.env as any;
+const baseUrl =
+  env.SANITY_STUDIO_SITE_URL || env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 export default function EventDetailPreview(props: any) {
   const { document } = props;
@@ -23,7 +26,7 @@ export default function EventDetailPreview(props: any) {
       .catch(() => setCalendarEvent(undefined));
   }, [detail.calendarEventId]);
 
-  const mapKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const mapKey = env.SANITY_STUDIO_GOOGLE_MAPS_API_KEY || env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
   const colorMap: Record<string, string> = {
     purple: 'rgb(92,48,166)',
