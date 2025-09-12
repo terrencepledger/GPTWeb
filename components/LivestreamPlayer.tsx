@@ -46,7 +46,7 @@ export default function LivestreamPlayer({
                     key={video.id}
                     type="button"
                     onClick={() => setCurrent(video)}
-                    className="w-64 flex-shrink-0 snap-start group text-left"
+                    className="w-64 flex-shrink-0 snap-start group text-left cursor-pointer"
                   >
                     <div className="relative aspect-video w-full overflow-hidden rounded-md border border-[var(--brand-border)] bg-[var(--brand-bg)]">
                       {thumb && (
