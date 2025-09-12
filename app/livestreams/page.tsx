@@ -17,6 +17,8 @@ export default async function Page() {
     videos[0] ||
     recent[0];
 
+  const filteredVideos = videos.filter((v) => v.id !== featured?.id);
+
   const live = featured?.live?.status === "streaming";
 
   return (
@@ -24,7 +26,7 @@ export default async function Page() {
       {live && (
         <h2 className="mb-4 text-center text-3xl font-bold text-[var(--brand-fg)]">Live Now</h2>
       )}
-      {featured && <LivestreamPlayer videos={videos} initial={featured} />}
+      {featured && <LivestreamPlayer videos={filteredVideos} initial={featured} />}
     </div>
   );
 }
