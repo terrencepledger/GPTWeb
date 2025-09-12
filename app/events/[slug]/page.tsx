@@ -31,6 +31,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
     "--brand-bg": detail.palette?.primary ? colorMap[detail.palette.primary] : undefined,
     "--brand-accent": detail.palette?.accent ? colorMap[detail.palette.accent] : undefined,
     "--brand-fg": detail.palette?.contrast ? colorMap[detail.palette.contrast] : undefined,
+    "--brand-border": detail.palette?.accent ? colorMap[detail.palette.accent] : undefined,
   } as React.CSSProperties;
 
   return (
