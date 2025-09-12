@@ -5,7 +5,13 @@ interface CalendarEvent {
   htmlLink?: string;
 }
 
-export default function CalendarSection({ event }: { event?: CalendarEvent }) {
+export default function CalendarSection({
+  event,
+  showSubscribe = true,
+}: {
+  event?: CalendarEvent;
+  showSubscribe?: boolean;
+}) {
   if (!event) return null;
   const date = new Date(event.start).toLocaleDateString('en-US', {
     month: 'long',
@@ -18,7 +24,7 @@ export default function CalendarSection({ event }: { event?: CalendarEvent }) {
         {date}
         {event.location ? ` • ${event.location}` : ''}
       </p>
-      {event.htmlLink && (
+      {event.htmlLink && showSubscribe && (
         <a
           href={event.htmlLink}
           target="_blank"

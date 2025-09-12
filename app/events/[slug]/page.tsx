@@ -53,8 +53,14 @@ export default async function Page({ params }: { params: { slug: string } }) {
                   images={section.images}
                 />
               );
-            case "calendarSection":
-              return <CalendarSection key={idx} event={calendar} />;
+              case "calendarSection":
+                return (
+                  <CalendarSection
+                    key={idx}
+                    event={calendar}
+                    showSubscribe={section.showSubscribe !== false}
+                  />
+                );
             case "mapSection":
               return (
                 <MapSection

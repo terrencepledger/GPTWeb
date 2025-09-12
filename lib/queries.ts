@@ -129,7 +129,7 @@ export interface EventDetail {
   sections?: (
     | { _type: 'heroSection'; headline?: string; subheadline?: string; backgroundImage?: string }
     | { _type: 'gallerySection'; layout?: string; images: { _key: string; url: string; alt?: string }[] }
-    | { _type: 'calendarSection' }
+    | { _type: 'calendarSection'; showSubscribe?: boolean }
     | { _type: 'mapSection'; address?: string; mapType?: string }
     | { _type: 'registrationSection'; formUrl?: string }
   )[];
@@ -156,7 +156,7 @@ export const eventDetailBySlug = (slug: string) =>
           layout,
           "images": images[]{ _key, "url": asset->url, "alt": coalesce(alt, "") }
         },
-        _type == 'calendarSection' => { _type },
+        _type == 'calendarSection' => { _type, showSubscribe },
         _type == 'mapSection' => { _type, address, mapType },
         _type == 'registrationSection' => { _type, formUrl }
       }
