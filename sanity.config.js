@@ -11,6 +11,11 @@ import ministry from './sanity/schemas/ministry'
 import heroSlide from './sanity/schemas/heroSlide'
 import missionStatement from './sanity/schemas/missionStatement'
 import eventDetail from './sanity/schemas/eventDetail'
+import heroSection from './sanity/schemas/sections/heroSection'
+import gallerySection from './sanity/schemas/sections/gallerySection'
+import calendarSection from './sanity/schemas/sections/calendarSection'
+import mapSection from './sanity/schemas/sections/mapSection'
+import registrationSection from './sanity/schemas/sections/registrationSection'
 
 // Desk structure
 import {structure} from './sanity/deskStructure'
@@ -22,7 +27,7 @@ export default defineConfig({
     projectId: import.meta.env.SANITY_STUDIO_PROJECT_ID,
     dataset: import.meta.env.SANITY_STUDIO_DATASET,
     schema: {
-        types: [announcement, siteSettings, staff, ministry, heroSlide, missionStatement, eventDetail],
+        types: [announcement, siteSettings, staff, ministry, heroSlide, missionStatement, eventDetail, heroSection, gallerySection, calendarSection, mapSection, registrationSection],
     },
     plugins: [
         structureTool({

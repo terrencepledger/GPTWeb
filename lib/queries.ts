@@ -82,7 +82,7 @@ export interface Ministry {
 export const ministriesHighlights = (limit: number) =>
   sanity.fetch<Ministry[]>(
     groq`*[_type == "ministry"] | order(_createdAt desc)[0...$limit]{_id, name, description, "staffImage": staffImage.asset->url}`,
-    {limit}
+    {limit},
   );
 
 export const ministriesAll = () =>
@@ -124,8 +124,15 @@ export interface EventDetail {
   title: string;
   calendarEventId: string;
   body?: any;
-  galleryType?: string;
-  gallery?: { _key: string; url: string; alt?: string }[];
+  palette?: { primary?: string; accent?: string; contrast?: string };
+  eventLogo?: { url: string; alt?: string };
+  sections?: (
+    | { _type: 'heroSection'; headline?: string; subheadline?: string; backgroundImage?: string }
+    | { _type: 'gallerySection'; layout?: string; images: { _key: string; url: string; alt?: string }[] }
+    | { _type: 'calendarSection' }
+    | { _type: 'mapSection'; address?: string; mapType?: string }
+    | { _type: 'registrationSection'; formUrl?: string }
+  )[];
 }
 
 export const eventDetailBySlug = (slug: string) =>
@@ -135,8 +142,24 @@ export const eventDetailBySlug = (slug: string) =>
       title,
       calendarEventId,
       body,
-      galleryType,
-      "gallery": gallery[]{_key, "url": asset->url, "alt": coalesce(alt, "")}
+      palette{primary, accent, contrast},
+      "eventLogo": eventLogo{ "url": asset->url, "alt": coalesce(alt, "") },
+      sections[]{
+        _type == 'heroSection' => {
+          _type,
+          headline,
+          subheadline,
+          "backgroundImage": backgroundImage.asset->url
+        },
+        _type == 'gallerySection' => {
+          _type,
+          layout,
+          "images": images[]{ _key, "url": asset->url, "alt": coalesce(alt, "") }
+        },
+        _type == 'calendarSection' => { _type },
+        _type == 'mapSection' => { _type, address, mapType },
+        _type == 'registrationSection' => { _type, formUrl }
+      }
     }`,
     { slug }
   );

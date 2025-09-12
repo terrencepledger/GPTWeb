@@ -1,8 +1,13 @@
 import { notFound } from "next/navigation";
-import { eventDetailBySlug } from "@/lib/queries";
+import {
+  eventDetailBySlug
+} from "@/lib/queries";
 import { getCalendarEvents } from "@/lib/googleCalendar";
-import { PortableText } from "@portabletext/react";
-import Image from "next/image";
+import HeroSection from "@/components/eventDetailSections/HeroSection";
+import GallerySection from "@/components/eventDetailSections/GallerySection";
+import CalendarSection from "@/components/eventDetailSections/CalendarSection";
+import MapSection from "@/components/eventDetailSections/MapSection";
+import RegistrationSection from "@/components/eventDetailSections/RegistrationSection";
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const detail = await eventDetailBySlug(params.slug);
@@ -15,67 +20,63 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
   const events = await getCalendarEvents();
   const calendar = events.find((ev) => ev.id === detail.calendarEventId);
+  const mapKey = process.env.GOOGLE_MAPS_API_KEY;
+
+  const colorMap: Record<string, string> = { purple: 'rgb(92,48,166)', gold: 'rgb(214,175,54)', ink: 'rgb(18,18,18)', white: 'rgb(255,255,255)' };
+  const style: React.CSSProperties = {
+    "--brand-primary": detail.palette?.primary ? colorMap[detail.palette.primary] : undefined,
+    "--brand-bg": detail.palette?.primary ? colorMap[detail.palette.primary] : undefined,
+    "--brand-accent": detail.palette?.accent ? colorMap[detail.palette.accent] : undefined,
+    "--brand-fg": detail.palette?.contrast ? colorMap[detail.palette.contrast] : undefined,
+  } as React.CSSProperties;
 
   return (
-    <article className="space-y-8">
-      <header className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold text-[var(--brand-accent)]">
-          {detail.title}
-        </h1>
-        {calendar && (
-          <p className="text-[var(--brand-fg)]">
-            {new Date(calendar.start).toLocaleDateString("en-US", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })}
-            {calendar.location ? ` • ${calendar.location}` : ""}
-          </p>
-        )}
-        {calendar?.htmlLink && (
-          <a
-            href={calendar.htmlLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block mt-2 rounded bg-[var(--brand-accent)] px-4 py-2 text-[var(--brand-ink)] hover:bg-[var(--brand-accent)]/90"
-          >
-            Subscribe
-          </a>
-        )}
-      </header>
-      {detail.body && (
-        <div className="prose prose-invert max-w-none">
-          <PortableText value={detail.body} />
-        </div>
-      )}
-      {detail.gallery && detail.gallery.length > 0 && (
-        detail.galleryType === "carousel" ? (
-          <div className="flex gap-4 overflow-x-auto py-4">
-            {detail.gallery.map((img) => (
-              <Image
-                key={img._key}
-                src={img.url}
-                alt={img.alt || ""}
-                width={600}
-                height={400}
-                className="h-60 w-auto rounded border border-[var(--brand-border)] object-cover"
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
-            {detail.gallery.map((img) => (
-              <Image
-                key={img._key}
-                src={img.url}
-                alt={img.alt || ""}
-                width={600}
-                height={400}
-                className="h-48 w-full rounded border border-[var(--brand-border)] object-cover"
-              />
-            ))}
-          </div>
-        )
+    <article className="space-y-8" style={style}>
+      {detail.sections && detail.sections.length > 0 ? (
+        detail.sections.map((section, idx) => {
+          switch (section._type) {
+            case "heroSection":
+              return (
+                <HeroSection
+                  key={idx}
+                  title={detail.title}
+                  eventLogo={detail.eventLogo}
+                  section={section}
+                  body={detail.body}
+                />
+              );
+            case "gallerySection":
+              return (
+                <GallerySection
+                  key={idx}
+                  layout={section.layout}
+                  images={section.images}
+                />
+              );
+            case "calendarSection":
+              return <CalendarSection key={idx} event={calendar} />;
+            case "mapSection":
+              return (
+                <MapSection
+                  key={idx}
+                  address={section.address || calendar?.location}
+                  mapType={section.mapType}
+                  apiKey={mapKey}
+                />
+              );
+            case "registrationSection":
+              return <RegistrationSection key={idx} formUrl={section.formUrl} />;
+            default:
+              return null;
+          }
+        })
+      ) : (
+        <HeroSection
+          title={detail.title}
+          eventLogo={detail.eventLogo}
+          section={{}}
+          body={detail.body}
+        />
       )}
     </article>
   );
