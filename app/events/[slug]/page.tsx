@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { draftMode, headers } from "next/headers";
+import { headers } from "next/headers";
 import { eventDetailBySlug } from "@/lib/queries";
 import { getCalendarEvents } from "@/lib/googleCalendar";
 import HeroSection from "@/components/eventDetailSections/HeroSection";
@@ -10,8 +10,16 @@ import RegistrationSection from "@/components/eventDetailSections/RegistrationSe
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
-  const preview = draftMode().isEnabled;
+export async function generateMetadata(
+  { params, searchParams }: { params: { slug: string }, searchParams?: { [key: string]: string | string[] | undefined } }
+) {
+  const draftParam =
+    typeof searchParams?.draft === 'string'
+      ? searchParams.draft
+      : Array.isArray(searchParams?.draft)
+      ? searchParams.draft[0]
+      : undefined;
+  const preview = draftParam === '1';
   const detail = await eventDetailBySlug(params.slug, preview);
   return { title: detail?.title || "Event" };
 }
@@ -36,7 +44,7 @@ export default async function Page({ params, searchParams }: { params: { slug: s
     // Force preview when the request comes from Studio and draft=1 is present, regardless of Sec-Fetch-Dest
     forcePreview = isFromStudio && draftParam === '1';
   } catch {}
-  const preview = draftMode().isEnabled || forcePreview;
+  const preview = forcePreview;
   const detail = await eventDetailBySlug(params.slug, preview);
   if (!detail) notFound();
 
@@ -56,8 +64,8 @@ export default async function Page({ params, searchParams }: { params: { slug: s
     ink: 'rgb(18,18,18)',
     white: 'rgb(255,255,255)',
     black: 'rgb(0,0,0)',
-    gray: '#111827',
-    darkred: '#7f1d1d',
+    gray: 'rgb(17,24,39)',
+    darkred: 'rgb(127,29,29)',
   };
 
   type Mode = 'light' | 'dark';

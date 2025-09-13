@@ -83,16 +83,16 @@ export default function EventPreviewPane({document}: Props) {
 
   return (
     <div style={{display:'flex', flexDirection:'column', height:'100%', minHeight:0, width:'100%'}}>
-      <div style={{display:'flex', justifyContent:'flex-end', gap:8, padding:8, borderBottom:'1px solid #e5e7eb'}}>
+      <div style={{display:'flex', justifyContent:'flex-end', gap:8, padding:8, borderBottom:'1px solid rgb(229,231,235)'}}>
         <button
           type="button"
           onClick={() => setTheme('light')}
           aria-pressed={theme === 'light'}
           style={{
-            border:'1px solid #d1d5db',
+            border:'1px solid rgb(209,213,219)',
             borderRadius:4,
             padding:'4px 8px',
-            backgroundColor: theme === 'light' ? '#e5e7eb' : 'transparent',
+            backgroundColor: theme === 'light' ? 'rgb(229,231,235)' : 'transparent',
             cursor:'pointer'
           }}
         >
@@ -103,10 +103,10 @@ export default function EventPreviewPane({document}: Props) {
           onClick={() => setTheme('dark')}
           aria-pressed={theme === 'dark'}
           style={{
-            border:'1px solid #d1d5db',
+            border:'1px solid rgb(209,213,219)',
             borderRadius:4,
             padding:'4px 8px',
-            backgroundColor: theme === 'dark' ? '#e5e7eb' : 'transparent',
+            backgroundColor: theme === 'dark' ? 'rgb(229,231,235)' : 'transparent',
             cursor:'pointer'
           }}
         >
