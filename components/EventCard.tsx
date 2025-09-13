@@ -38,7 +38,7 @@ export function EventCard({
     return (
       <Link
         href={event.href}
-        className="group card relative flex h-full transform flex-col overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)] transition duration-300 ease-out hover:-translate-y-1 hover:-rotate-1 hover:scale-[1.02] hover:shadow-lg focus-visible:-translate-y-1 focus-visible:-rotate-1 focus-visible:scale-[1.02] focus-visible:shadow-lg transition-colors hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)] no-underline"
+        className="group card relative flex h-full transform flex-col overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)] transition duration-300 ease-out hover:-translate-y-1 hover:-rotate-1 hover:scale-[1.02] hover:shadow-lg focus-visible:-translate-y-1 focus-visible:-rotate-1 focus-visible:scale-[1.02] focus-visible:shadow-lg transition-colors hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)] no-underline hover:no-underline focus:no-underline focus-visible:no-underline"
         style={style}
       >
         {event.image && (

@@ -80,7 +80,7 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
           {ev.href ? (
             <a
               href={ev.href}
-              className="no-underline w-full max-w-md p-6 space-y-2 rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] transition-transform transition-colors duration-300 group-hover:scale-105 group-hover:shadow-lg hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
+              className="no-underline hover:no-underline focus:no-underline focus-visible:no-underline w-full max-w-md p-6 space-y-2 rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] transition-transform transition-colors duration-300 group-hover:scale-105 group-hover:shadow-lg hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
             >
               {ev.image && (
                 <Image

@@ -83,7 +83,7 @@ export default function EventCalendar({ events }: { events: CalendarEvent[] }) {
                       <a
                         key={ev.id}
                         href={ev.href}
-                        className="group block mt-1 rounded border border-[var(--brand-border)] bg-[var(--brand-accent)]/20 p-0.5 no-underline transition-colors hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
+                        className="group block mt-1 rounded border border-[var(--brand-border)] bg-[var(--brand-accent)]/20 p-0.5 no-underline hover:no-underline focus:no-underline focus-visible:no-underline transition-colors hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
                       >
                         <div>{ev.title}</div>
                         <span className="text-[0.625rem] text-[var(--brand-accent)] group-hover:underline">Learn more</span>
