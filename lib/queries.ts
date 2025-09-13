@@ -124,7 +124,15 @@ export interface EventDetail {
   title: string;
   calendarEventId: string;
   body?: any;
-  palette?: { primary?: string; accent?: string; contrast?: string };
+  palette?: {
+    // New structured per-mode palette
+    light?: { primary?: string; accent?: string; contrast?: string };
+    dark?: { primary?: string; accent?: string; contrast?: string };
+    // Legacy flat palette (for backward compatibility)
+    primary?: string;
+    accent?: string;
+    contrast?: string;
+  };
   eventLogo?: { url: string; alt?: string };
   sections?: (
     | { _type: 'heroSection'; headline?: string; subheadline?: string; backgroundImage?: string }
@@ -138,11 +146,12 @@ export interface EventDetail {
 export const eventDetailBySlug = (slug: string, preview = false) => {
   const client = preview
     ? sanity.withConfig({
-        fetch: globalThis.fetch,
         useCdn: false,
         perspective: 'previewDrafts',
-        token: process.env.SANITY_READ_TOKEN,
-      })
+        token: process.env.SANITY_READ_TOKEN || process.env.SANITY_API_TOKEN,
+        // Ensure no caching in preview so drafts reflect immediately
+        fetch: (url: any, init?: RequestInit) => fetch(url, { ...(init || {}), cache: 'no-store' }),
+      } as any)
     : sanity;
   return client.fetch<EventDetail | null>(
     groq`*[_type == "eventDetail" && slug.current == $slug][0]{
@@ -150,7 +159,13 @@ export const eventDetailBySlug = (slug: string, preview = false) => {
       title,
       calendarEventId,
       body,
-      palette{primary, accent, contrast},
+      palette{
+        // legacy flat fields
+        primary, accent, contrast,
+        // new per-mode fields
+        light{primary, accent, contrast},
+        dark{primary, accent, contrast}
+      },
       "eventLogo": eventLogo{ "url": asset->url, "alt": coalesce(alt, "") },
       sections[]{
         _type == 'heroSection' => {

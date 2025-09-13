@@ -1,9 +1,4 @@
-interface CalendarEvent {
-  start: string;
-  end: string;
-  location?: string;
-  htmlLink?: string;
-}
+import type { CalendarEvent } from "@/lib/googleCalendar";
 
 export default function CalendarSection({
   event,

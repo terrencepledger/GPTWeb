@@ -9,6 +9,10 @@ export async function GET(req: Request) {
   draftMode().enable();
   const url = new URL(slug, new URL(req.url).origin);
   if (rev) url.searchParams.set('rev', rev);
+  // Also pass theme via query param so pages can react immediately even if cookies are blocked
+  if (theme) url.searchParams.set('theme', theme);
+  // Preserve draft=1 flag so the page can use previewDrafts even if cookies are blocked
+  url.searchParams.set('draft', '1');
   const res = NextResponse.redirect(url);
   res.cookies.set('preview-theme', theme, { path: '/' });
   return res;

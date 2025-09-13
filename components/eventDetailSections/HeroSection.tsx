@@ -38,7 +38,7 @@ export default function HeroSection({ title, eventLogo, section, body }: HeroSec
         <p className="text-lg text-[var(--brand-fg)]">{section.subheadline}</p>
       )}
       {body && (
-        <div className="prose prose-invert mx-auto max-w-prose">
+        <div className="mx-auto max-w-prose" style={{ color: 'var(--brand-fg)' }}>
           <PortableText value={body} />
         </div>
       )}

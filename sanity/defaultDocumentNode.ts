@@ -1,10 +1,5 @@
 import EventPreviewPane from './components/EventPreviewPane';
 
-const baseUrl =
-  import.meta.env.SANITY_STUDIO_SITE_URL ||
-  import.meta.env.NEXT_PUBLIC_SITE_URL ||
-  'http://localhost:3000';
-
 export const defaultDocumentNode = (
   S: any,
   {schemaType}: {schemaType: string}
