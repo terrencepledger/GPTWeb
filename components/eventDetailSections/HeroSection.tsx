@@ -43,21 +43,24 @@ export default function HeroSection({
               <Image src={eventLogo.url} alt={eventLogo.alt || ''} fill className="object-contain" />
             </div>
           )}
-          <h1 className="text-3xl font-bold text-[var(--brand-accent)]">{heading}</h1>
+          <div>
+            <h1 className="text-3xl font-bold text-[var(--brand-accent)]">{heading}</h1>
+            {!subscribeUrl && date && heading && (
+              <p className="text-[var(--brand-fg)]">{date}</p>
+            )}
+          </div>
         </div>
-        {(date || subscribeUrl) && (
+        {subscribeUrl && (
           <div className="flex items-center gap-4 text-right">
             {date && <p className="text-[var(--brand-fg)]">{date}</p>}
-            {subscribeUrl && (
-              <a
-                href={subscribeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded bg-[var(--brand-accent)] px-4 py-2 text-[var(--brand-ink)] hover:bg-[var(--brand-accent)]/90"
-              >
-                Subscribe
-              </a>
-            )}
+            <a
+              href={subscribeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded bg-[var(--brand-accent)] px-4 py-2 text-[var(--brand-ink)] hover:bg-[var(--brand-accent)]/90"
+            >
+              Subscribe
+            </a>
           </div>
         )}
       </div>
