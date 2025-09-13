@@ -1,19 +1,35 @@
-import { draftMode } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { cookies, draftMode } from 'next/headers';
 
-export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const slug = searchParams.get('slug') || '/';
-  const theme = searchParams.get('theme') || 'light';
-  const rev = searchParams.get('rev');
-  draftMode().enable();
-  const url = new URL(slug, new URL(req.url).origin);
-  if (rev) url.searchParams.set('rev', rev);
-  // Also pass theme via query param so pages can react immediately even if cookies are blocked
-  if (theme) url.searchParams.set('theme', theme);
-  // Preserve draft=1 flag so the page can use previewDrafts even if cookies are blocked
-  url.searchParams.set('draft', '1');
-  const res = NextResponse.redirect(url);
-  res.cookies.set('preview-theme', theme, { path: '/' });
-  return res;
+// /api/preview?secret=...&redirect=/events/slug&theme=light|dark
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const secret = searchParams.get('secret') || '';
+    const expected = process.env.SANITY_PREVIEW_SECRET || process.env.NEXT_PREVIEW_SECRET || '';
+    const redirectTo = searchParams.get('redirect') || '/';
+    const theme = searchParams.get('theme');
+
+    // If a secret is configured, require it to match.
+    if (expected && secret !== expected) {
+      return new NextResponse('Invalid preview secret', { status: 401 });
+    }
+
+    // Enable Next.js draft mode cookies.
+    draftMode().enable();
+
+    // Optional: store a theme hint for embedded previews.
+    if (theme === 'light' || theme === 'dark') {
+      cookies().set('preview-theme', theme, {
+        httpOnly: false,
+        sameSite: 'lax',
+        path: '/',
+      });
+    }
+
+    // Redirect back to the provided path to see preview content.
+    return NextResponse.redirect(new URL(redirectTo, request.url));
+  } catch (err) {
+    return new NextResponse('Failed to enable preview', { status: 500 });
+  }
 }
