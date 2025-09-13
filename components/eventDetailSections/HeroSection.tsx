@@ -11,9 +11,17 @@ interface HeroSectionProps {
   };
   body?: any;
   subscribeUrl?: string;
+  date?: string;
 }
 
-export default function HeroSection({ title, eventLogo, section, body, subscribeUrl }: HeroSectionProps) {
+export default function HeroSection({
+  title,
+  eventLogo,
+  section,
+  body,
+  subscribeUrl,
+  date,
+}: HeroSectionProps) {
   const heading = section.headline || title;
   return (
     <section className="space-y-4">
@@ -35,17 +43,25 @@ export default function HeroSection({ title, eventLogo, section, body, subscribe
               <Image src={eventLogo.url} alt={eventLogo.alt || ''} fill className="object-contain" />
             </div>
           )}
-          <h1 className="text-3xl font-bold text-[var(--brand-accent)]">{heading}</h1>
+          <div>
+            <h1 className="text-3xl font-bold text-[var(--brand-accent)]">{heading}</h1>
+            {!subscribeUrl && date && heading && (
+              <p className="text-[var(--brand-fg)]">{date}</p>
+            )}
+          </div>
         </div>
         {subscribeUrl && (
-          <a
-            href={subscribeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded bg-[var(--brand-accent)] px-4 py-2 text-[var(--brand-ink)] hover:bg-[var(--brand-accent)]/90"
-          >
-            Subscribe
-          </a>
+          <div className="flex items-center gap-4 text-right">
+            {date && <p className="text-[var(--brand-fg)]">{date}</p>}
+            <a
+              href={subscribeUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded bg-[var(--brand-accent)] px-4 py-2 text-[var(--brand-ink)] hover:bg-[var(--brand-accent)]/90"
+            >
+              Subscribe
+            </a>
+          </div>
         )}
       </div>
       {section.subheadline && (

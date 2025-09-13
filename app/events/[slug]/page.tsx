@@ -20,6 +20,13 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
   const events = await getCalendarEvents();
   const calendar = events.find((ev) => ev.id === detail.calendarEventId);
+  const eventDate = calendar
+    ? new Date(calendar.start).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : undefined;
   const mapKey = process.env.GOOGLE_MAPS_API_KEY;
 
   const colorMap: Record<string, string> = {
@@ -81,6 +88,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
             section={{}}
             body={detail.body}
             subscribeUrl={subscribeUrl}
+            date={eventDate}
           />
         )}
         {detail.sections &&
@@ -96,6 +104,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
                     section={section}
                     body={detail.body}
                     subscribeUrl={subscribeUrl}
+                    date={eventDate}
                   />
                 );
               case "gallerySection":
