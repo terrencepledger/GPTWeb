@@ -4,11 +4,32 @@ import {
   shouldEscalate,
   sendEscalationEmail,
   generateChatbotReply,
-  Message,
 } from '@/lib/chatbot';
+import type { ChatMessage, EscalationInfo } from '@/types/chat';
+
+function sanitizeMessages(input: unknown): ChatMessage[] {
+  if (!Array.isArray(input)) return [];
+  const msgs: ChatMessage[] = [];
+  for (const it of input) {
+    const role = (it as any)?.role;
+    const content = (it as any)?.content;
+    if (typeof content !== 'string') continue;
+    if (role === 'user' || role === 'assistant') {
+      msgs.push({ role, content });
+    } else if (role === 'bot') {
+      // Backward-compat: normalize old 'bot' role to 'assistant'
+      msgs.push({ role: 'assistant', content });
+    }
+  }
+  return msgs;
+}
 
 export async function POST(req: Request) {
-  const { messages = [], escalate, info } = await req.json();
+  const body = await req.json();
+  const incoming = (body && Array.isArray(body.messages)) ? body.messages : [];
+  const messages: ChatMessage[] = sanitizeMessages(incoming);
+  const escalate = Boolean(body?.escalate);
+  const info = body?.info as EscalationInfo | undefined;
 
   if (escalate && info) {
     await sendEscalationEmail(info);
@@ -16,8 +37,8 @@ export async function POST(req: Request) {
   }
 
   const tone = await getChatbotTone();
-  const { reply, confidence } = await generateChatbotReply(messages as Message[], tone);
-  const updatedMessages = [...(messages as Message[]), { role: 'assistant', content: reply, confidence }];
+  const { reply, confidence } = await generateChatbotReply(messages, tone);
+  const updatedMessages: ChatMessage[] = [...messages, { role: 'assistant', content: reply, confidence }];
 
   if (shouldEscalate(updatedMessages)) {
     return NextResponse.json({ escalate: true, reply, confidence });

@@ -17,6 +17,7 @@ import gallerySection from './sanity/schemas/sections/gallerySection'
 import subscriptionSection from './sanity/schemas/sections/subscriptionSection'
 import mapSection from './sanity/schemas/sections/mapSection'
 import linkSection from './sanity/schemas/sections/linkSection'
+import chatbot from './sanity/schemas/chatbot'
 
 // Desk structure
 import {structure} from './sanity/deskStructure'
@@ -39,7 +40,7 @@ export default defineConfig({
     projectId,
     dataset,
     schema: {
-        types: [announcement, siteSettings, staff, ministry, heroSlide, missionStatement, eventDetail, heroSection, gallerySection, subscriptionSection, mapSection, linkSection],
+        types: [announcement, siteSettings, staff, ministry, heroSlide, missionStatement, eventDetail, heroSection, gallerySection, subscriptionSection, mapSection, linkSection, chatbot],
     },
     plugins: [
         structureTool({

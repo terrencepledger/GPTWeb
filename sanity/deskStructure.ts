@@ -12,6 +12,11 @@ export const structure = (S: any) =>
         .child(
           S.document().schemaType('siteSettings').documentId('siteSettings')
         ),
+      S.listItem()
+        .title('Chatbot Settings')
+        .child(
+          S.document().schemaType('chatbotSettings').documentId('chatbotSettings')
+        ),
       S.documentTypeListItem('staff').title('Staff'),
       S.documentTypeListItem('missionStatement').title('Mission Statement'),
     ])

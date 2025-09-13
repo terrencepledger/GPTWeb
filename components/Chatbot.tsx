@@ -1,15 +1,11 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
-
-interface Message {
-  role: 'user' | 'bot';
-  content: string;
-}
+import type { ChatMessage } from '@/types/chat';
 
 export default function Chatbot() {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'bot', content: 'Hi! How can I help you today?' },
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { role: 'assistant', content: 'Hi! How can I help you today?' },
   ]);
   const [input, setInput] = useState('');
   const [collectInfo, setCollectInfo] = useState(false);
@@ -17,19 +13,19 @@ export default function Chatbot() {
 
   async function sendMessage(e: FormEvent) {
     e.preventDefault();
-    const newMessages = [...messages, { role: 'user', content: input }];
-    setMessages(newMessages);
+    const outgoing: ChatMessage[] = [...messages, { role: 'user', content: input }];
+    setMessages(outgoing);
     setInput('');
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: newMessages }),
+      body: JSON.stringify({ messages: outgoing }),
     });
     const data = await res.json();
     if (data.escalate) {
       setCollectInfo(true);
     } else {
-      setMessages([...newMessages, { role: 'bot', content: data.reply }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
     }
   }
 
@@ -41,7 +37,7 @@ export default function Chatbot() {
       body: JSON.stringify({ escalate: true, info }),
     });
     setCollectInfo(false);
-    setMessages([...messages, { role: 'bot', content: 'Thanks! We will get back to you soon.' }]);
+    setMessages((prev) => [...prev, { role: 'assistant', content: 'Thanks! We will get back to you soon.' }]);
   }
 
   return (
@@ -49,7 +45,7 @@ export default function Chatbot() {
       <div role="log" aria-label="Chat messages" className="mb-2 max-h-60 overflow-y-auto">
         {messages.map((m, i) => (
           <div key={i} className="mb-1">
-            <span className="font-bold">{m.role === 'bot' ? 'Bot' : 'You'}:</span> {m.content}
+            <span className="font-bold">{m.role === 'assistant' ? 'Bot' : 'You'}:</span> {m.content}
           </div>
         ))}
       </div>

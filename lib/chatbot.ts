@@ -7,11 +7,21 @@ export async function getChatbotTone(): Promise<string> {
   return tone || 'friendly';
 }
 
-export interface Message {
-  role: string;
-  content: string;
-  confidence?: number;
+export async function getEscalationAddresses(): Promise<{ from: string; to: string }> {
+  const result = await sanity.fetch(groq`*[_type == "chatbotSettings"][0]{
+    "from": escalationFrom,
+    "to": escalationTo,
+  }`);
+  const from = result?.from?.trim();
+  const to = result?.to?.trim();
+  if (!from || !to) {
+    throw new Error('Chatbot escalation email settings are missing in Sanity (escalationFrom/escalationTo)');
+  }
+  return { from, to };
 }
+
+import type { ChatMessage, EscalationInfo as SharedEscalationInfo } from '@/types/chat';
+export type Message = ChatMessage;
 
 import OpenAI from 'openai';
 
@@ -68,31 +78,51 @@ export function shouldEscalate(messages: Message[]): boolean {
   return rephraseCount || lowConfidence;
 }
 
-interface EscalationInfo {
-  name: string;
-  contact: string;
-  email: string;
-  details: string;
-}
+export type EscalationInfo = SharedEscalationInfo;
 
 export async function sendEscalationEmail(info: EscalationInfo) {
-  const auth = new google.auth.OAuth2(
-    process.env.GMAIL_CLIENT_ID,
-    process.env.GMAIL_CLIENT_SECRET,
-    process.env.GMAIL_REDIRECT_URI,
-  );
-  auth.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
+  // Require server-to-server auth via a Google Workspace Service Account with
+  // domain-wide delegation, impersonating a fixed sender account sourced from Sanity.
+  const svcEmail = process.env.GMAIL_SERVICE_ACCOUNT_EMAIL;
+  const svcKeyRaw = process.env.GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY;
+  if (!svcEmail || !svcKeyRaw) {
+    throw new Error('GMAIL_SERVICE_ACCOUNT_EMAIL and GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY must be set');
+  }
+
+  // Get sender and recipient from Sanity
+  const { from, to } = await getEscalationAddresses();
+
+  // Normalize private key: support both literal newlines and escaped \n
+  const svcKey = svcKeyRaw.includes('\\n') ? svcKeyRaw.replace(/\\n/g, '\n') : svcKeyRaw;
+  const auth = new google.auth.JWT({
+    email: svcEmail,
+    key: svcKey,
+    scopes: ['https://www.googleapis.com/auth/gmail.send'],
+    subject: from, // act as this user
+  } as any);
+  await auth.authorize();
+
   const gmail = google.gmail({ version: 'v1', auth });
-  const message = [
-    `To: ${process.env.ESCALATION_EMAIL}`,
+
+  const headers = [
+    `To: ${to}`,
     'Subject: Chatbot escalation',
+    `From: ${from}`,
+  ];
+
+  const message = [
+    ...headers,
     '',
     `Name: ${info.name}`,
     `Contact Number: ${info.contact}`,
     `Email: ${info.email}`,
     `Details: ${info.details}`,
   ].join('\n');
-  const encodedMessage = Buffer.from(message).toString('base64');
+
+  // Gmail API expects base64url encoding (RFC 4648 §5)
+  const base64 = Buffer.from(message).toString('base64');
+  const encodedMessage = base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
   await gmail.users.messages.send({
     userId: 'me',
     requestBody: { raw: encodedMessage },

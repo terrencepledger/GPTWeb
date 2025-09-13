@@ -29,21 +29,6 @@ export default defineType({
       description: 'e.g., Sundays 9am & 11am; Wednesdays 7pm',
     }),
     defineField({
-      name: 'youtubeChannelId',
-      title: 'YouTube Channel ID',
-      type: 'string',
-    }),
-    defineField({
-      name: 'vimeoUserId',
-      title: 'Vimeo User ID',
-      type: 'string',
-    }),
-    defineField({
-      name: 'vimeoAccessToken',
-      title: 'Vimeo Access Token',
-      type: 'string',
-    }),
-    defineField({
       name: 'socialLinks',
       title: 'Social Links',
       type: 'array',
