@@ -63,10 +63,6 @@ export default defineType({
       title: 'Color Palette',
       type: 'object',
       fields: [
-        // Legacy flat fields (kept for backward compatibility on older docs)
-        defineField({ name: 'primary', title: 'Primary (Legacy)', type: 'string', options: { list: [...lightPrimaryOptions, ...darkPrimaryOptions] } }),
-        defineField({ name: 'accent', title: 'Accent (Legacy)', type: 'string', options: { list: [...lightAccentOptions, ...darkAccentOptions] } }),
-        defineField({ name: 'contrast', title: 'Contrast (Legacy)', type: 'string', options: { list: [...lightContrastOptions, ...darkContrastOptions] } }),
         // New structured per-mode fields
         defineField({
           name: 'light',

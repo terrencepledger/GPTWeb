@@ -29,21 +29,24 @@ const colorMap: Record<string, string> = {
 function pickPalette(palette: any, mode: 'light' | 'dark') {
   const src = mode === 'dark' ? palette?.dark || {} : palette?.light || {}
   return {
-    primary: src.primary ?? palette?.primary,
-    accent: src.accent ?? palette?.accent,
-    contrast: src.contrast ?? palette?.contrast,
+    primary: src.primary,
+    accent: src.accent,
+    contrast: src.contrast,
   } as { primary?: string; accent?: string; contrast?: string }
 }
 
 export default function EventPreviewPane({document}: Props) {
-  const client = useClient({ apiVersion: '2025-08-01' } as any)
+  const client = useClient({ apiVersion: '2025-08-01', perspective: 'previewDrafts' } as any)
   const slug = document?.displayed?.slug?.current
   const [data, setData] = useState<EventDetail | null>(null)
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
 
   useEffect(() => {
     if (!slug) return
-    const query = `*[_type=="eventDetail" && slug.current==$slug][0]{
+    const query = `coalesce(
+      *[_type=="eventDetail" && slug.current==$slug && _id in path("drafts.**")][0],
+      *[_type=="eventDetail" && slug.current==$slug][0]
+    ){
       title,
       body,
       palette,
@@ -77,8 +80,20 @@ export default function EventPreviewPane({document}: Props) {
   const primary = sel.primary ? colorMap[sel.primary] : undefined
   const accent = sel.accent ? colorMap[sel.accent] : undefined
   const contrast = sel.contrast ? colorMap[sel.contrast] : undefined
-  const bg = primary ? (theme === 'dark' ? `color-mix(in oklab, ${primary} 18%, black)` : primary) : undefined
-  const surface = primary ? (theme === 'dark' ? `color-mix(in oklab, ${primary} 26%, black)` : `color-mix(in oklab, ${primary} 85%, black)`) : undefined
+  const bg = primary
+    ? (theme === 'dark'
+        ? (sel.primary === 'darkred'
+            ? `color-mix(in oklab, ${primary} 35%, black)`
+            : `color-mix(in oklab, ${primary} 18%, black)`)
+        : primary)
+    : undefined
+  const surface = primary
+    ? (theme === 'dark'
+        ? (sel.primary === 'darkred'
+            ? `color-mix(in oklab, ${primary} 45%, black)`
+            : `color-mix(in oklab, ${primary} 26%, black)`)
+        : `color-mix(in oklab, ${primary} 85%, black)`)
+    : undefined
 
   const style: React.CSSProperties = {
     '--brand-primary': primary,
@@ -167,7 +182,47 @@ export default function EventPreviewPane({document}: Props) {
               case 'mapSection':
                 return (
                   <section key={idx} style={{marginBottom:32}}>
-                    <p style={{color:'var(--brand-fg)'}}>Map preview unavailable in studio.</p>
+                    {(() => {
+                      const isFull = section.mapType === 'full';
+                      const containerStyle: React.CSSProperties = {
+                        width: isFull ? '100%' : 'min(100%, 720px)',
+                        margin: '0 auto',
+                        border: '2px dashed var(--brand-accent)',
+                        borderRadius: 6,
+                        padding: 8,
+                        background: 'transparent',
+                      };
+                      const mapBoxStyle: React.CSSProperties = {
+                        height: 240,
+                        borderRadius: 4,
+                        background:
+                          'repeating-linear-gradient(45deg, rgba(255,255,255,0.08), rgba(255,255,255,0.08) 10px, rgba(0,0,0,0.06) 10px, rgba(0,0,0,0.06) 20px)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--brand-fg)',
+                        position: 'relative',
+                      };
+                      const label = `${isFull ? 'Full width' : 'Compact'} map preview`;
+                      return (
+                        <div style={containerStyle}>
+                          <div style={mapBoxStyle}>
+                            <div style={{
+                              position: 'absolute',
+                              top: 8,
+                              right: 12,
+                              fontSize: 12,
+                              opacity: 0.8,
+                              color: 'var(--brand-accent)'
+                            }}>{label}</div>
+                            <div style={{textAlign:'center'}}>
+                              <strong style={{display:'block'}}>{section.address || 'Address not set'}</strong>
+                              <span style={{fontSize:12, opacity:0.8}}>Map boundaries shown for {isFull ? 'full width' : 'compact'} layout</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </section>
                 )
               case 'registrationSection':

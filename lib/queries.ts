@@ -125,13 +125,8 @@ export interface EventDetail {
   calendarEventId: string;
   body?: any;
   palette?: {
-    // New structured per-mode palette
     light?: { primary?: string; accent?: string; contrast?: string };
     dark?: { primary?: string; accent?: string; contrast?: string };
-    // Legacy flat palette (for backward compatibility)
-    primary?: string;
-    accent?: string;
-    contrast?: string;
   };
   eventLogo?: { url: string; alt?: string };
   sections?: (
@@ -160,9 +155,6 @@ export const eventDetailBySlug = (slug: string, preview = false) => {
       calendarEventId,
       body,
       palette{
-        // legacy flat fields
-        primary, accent, contrast,
-        // new per-mode fields
         light{primary, accent, contrast},
         dark{primary, accent, contrast}
       },
