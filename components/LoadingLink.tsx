@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState, ComponentProps, MouseEvent } from "react";
+import LogoSpinner from "./LogoSpinner";
 
 export default function LoadingLink({
   onClick,
@@ -25,13 +25,7 @@ export default function LoadingLink({
       </Link>
       {loading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--brand-bg)]">
-          <Image
-            src="/static/favicon.svg"
-            alt="Loading"
-            width={64}
-            height={64}
-            className="animate-logo-pulse rounded-full"
-          />
+          <LogoSpinner />
         </div>
       )}
     </>
