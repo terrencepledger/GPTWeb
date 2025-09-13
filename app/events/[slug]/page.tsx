@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import { eventDetailBySlug } from "@/lib/queries";
+import type { EventDetail } from "@/lib/queries";
 import { getCalendarEvents } from "@/lib/googleCalendar";
 import HeroSection from "@/components/eventDetailSections/HeroSection";
 import GallerySection from "@/components/eventDetailSections/GallerySection";
-import CalendarSection from "@/components/eventDetailSections/CalendarSection";
+import SubscriptionSection from "@/components/eventDetailSections/SubscriptionSection";
 import MapSection from "@/components/eventDetailSections/MapSection";
-import RegistrationSection from "@/components/eventDetailSections/RegistrationSection";
+import LinkSection from "@/components/eventDetailSections/LinkSection";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,19 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
   const events = await getCalendarEvents();
   const calendar = events.find((ev) => ev.id === detail.calendarEventId);
+  const eventDate = detail.eventDate
+    ? new Date(detail.eventDate).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : calendar
+    ? new Date(calendar.start).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : undefined;
   const mapKey = process.env.GOOGLE_MAPS_API_KEY;
 
   const colorMap: Record<string, string> = {
@@ -67,6 +81,13 @@ export default async function Page({ params }: { params: { slug: string } }) {
     Array.isArray(detail.sections) &&
     detail.sections.some((s: any) => s._type === "heroSection");
 
+  type Section = NonNullable<EventDetail["sections"]>[number];
+  const isSubscriptionSection = (s: Section | undefined): s is Extract<Section, { _type: "subscriptionSection" }> =>
+    !!s && s._type === "subscriptionSection";
+
+  const subscription = detail.sections?.find(isSubscriptionSection);
+  const subscribeUrl = subscription?.showSubscribe !== false ? calendar?.htmlLink : undefined;
+
   return (
     <>
       {liveStyleEl}
@@ -77,6 +98,8 @@ export default async function Page({ params }: { params: { slug: string } }) {
             eventLogo={detail.eventLogo}
             section={{}}
             body={detail.body}
+            subscribeUrl={subscribeUrl}
+            date={eventDate}
           />
         )}
         {detail.sections &&
@@ -91,6 +114,8 @@ export default async function Page({ params }: { params: { slug: string } }) {
                     eventLogo={detail.eventLogo}
                     section={section}
                     body={detail.body}
+                    subscribeUrl={subscribeUrl}
+                    date={eventDate}
                   />
                 );
               case "gallerySection":
@@ -101,14 +126,8 @@ export default async function Page({ params }: { params: { slug: string } }) {
                     images={section.images}
                   />
                 );
-              case "calendarSection":
-                return (
-                  <CalendarSection
-                    key={idx}
-                    event={calendar}
-                    showSubscribe={section.showSubscribe !== false}
-                  />
-                );
+              case "subscriptionSection":
+                return <SubscriptionSection key={idx} event={calendar} />;
               case "mapSection":
                 return (
                   <MapSection
@@ -118,10 +137,8 @@ export default async function Page({ params }: { params: { slug: string } }) {
                     apiKey={mapKey}
                   />
                 );
-              case "registrationSection":
-                return (
-                  <RegistrationSection key={idx} formUrl={section.formUrl} />
-                );
+              case "linkSection":
+                return <LinkSection key={idx} text={section.linkText} url={section.url} />;
               default:
                 return null;
             }

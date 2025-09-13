@@ -123,6 +123,7 @@ export interface EventDetail {
   _id: string;
   title: string;
   calendarEventId: string;
+  eventDate?: string;
   body?: any;
   palette?: {
     light?: { primary?: string; accent?: string; contrast?: string };
@@ -132,9 +133,9 @@ export interface EventDetail {
   sections?: (
     | { _type: 'heroSection'; headline?: string; subheadline?: string; backgroundImage?: string }
     | { _type: 'gallerySection'; layout?: string; images: { _key: string; url: string; alt?: string }[] }
-    | { _type: 'calendarSection'; showSubscribe?: boolean }
+    | { _type: 'subscriptionSection'; showSubscribe?: boolean }
     | { _type: 'mapSection'; address?: string; mapType?: string }
-    | { _type: 'registrationSection'; formUrl?: string }
+    | { _type: 'linkSection'; linkText?: string; url?: string }
   )[];
 }
 
@@ -153,6 +154,7 @@ export const eventDetailBySlug = (slug: string, preview = false) => {
       _id,
       title,
       calendarEventId,
+      eventDate,
       body,
       palette{
         light{primary, accent, contrast},
@@ -171,9 +173,9 @@ export const eventDetailBySlug = (slug: string, preview = false) => {
           layout,
           "images": images[]{ _key, "url": asset->url, "alt": coalesce(alt, "") }
         },
-        _type == 'calendarSection' => { _type, showSubscribe },
+        _type == 'subscriptionSection' => { _type, showSubscribe },
         _type == 'mapSection' => { _type, address, mapType },
-        _type == 'registrationSection' => { _type, formUrl }
+        _type == 'linkSection' => { _type, linkText, url }
       }
     }`,
     { slug }
