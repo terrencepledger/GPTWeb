@@ -20,7 +20,13 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
   const events = await getCalendarEvents();
   const calendar = events.find((ev) => ev.id === detail.calendarEventId);
-  const eventDate = calendar
+  const eventDate = detail.eventDate
+    ? new Date(detail.eventDate).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      })
+    : calendar
     ? new Date(calendar.start).toLocaleDateString("en-US", {
         month: "long",
         day: "numeric",

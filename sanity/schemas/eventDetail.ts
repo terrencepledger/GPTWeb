@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity';
+import CalendarEventIdInput from '../components/CalendarEventIdInput';
 
 export default defineType({
   name: 'eventDetail',
@@ -21,8 +22,15 @@ export default defineType({
     }),
     defineField({
       name: 'calendarEventId',
-      title: 'Calendar Event ID',
+      title: 'Calendar Event',
       type: 'string',
+      components: { input: CalendarEventIdInput },
+    }),
+    defineField({
+      name: 'eventDate',
+      title: 'Event Date',
+      type: 'datetime',
+      readOnly: true,
     }),
     defineField({
       name: 'palette',
