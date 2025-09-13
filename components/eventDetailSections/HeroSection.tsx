@@ -10,11 +10,13 @@ interface HeroSectionProps {
     backgroundImage?: string;
   };
   body?: any;
+  subscribeUrl?: string;
 }
 
-export default function HeroSection({ title, eventLogo, section, body }: HeroSectionProps) {
+export default function HeroSection({ title, eventLogo, section, body, subscribeUrl }: HeroSectionProps) {
+  const heading = section.headline || title;
   return (
-    <section className="space-y-4 text-center">
+    <section className="space-y-4">
       {section.backgroundImage && (
         <div className="relative h-64 w-full overflow-hidden rounded">
           <Image
@@ -26,14 +28,26 @@ export default function HeroSection({ title, eventLogo, section, body }: HeroSec
           />
         </div>
       )}
-      {eventLogo && (
-        <div className="mx-auto h-24 w-24 relative">
-          <Image src={eventLogo.url} alt={eventLogo.alt || ''} fill className="object-contain" />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          {eventLogo && (
+            <div className="relative h-24 w-24">
+              <Image src={eventLogo.url} alt={eventLogo.alt || ''} fill className="object-contain" />
+            </div>
+          )}
+          <h1 className="text-3xl font-bold text-[var(--brand-accent)]">{heading}</h1>
         </div>
-      )}
-      <h1 className="text-3xl font-bold text-[var(--brand-accent)]">
-        {section.headline || title}
-      </h1>
+        {subscribeUrl && (
+          <a
+            href={subscribeUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded bg-[var(--brand-accent)] px-4 py-2 text-[var(--brand-ink)] hover:bg-[var(--brand-accent)]/90"
+          >
+            Subscribe
+          </a>
+        )}
+      </div>
       {section.subheadline && (
         <p className="text-lg text-[var(--brand-fg)]">{section.subheadline}</p>
       )}
