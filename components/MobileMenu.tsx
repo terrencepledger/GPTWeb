@@ -1,7 +1,7 @@
 "use client";
 
 import { Dialog, Disclosure, Transition } from "@headlessui/react";
-import Link from "next/link";
+import LoadingLink from "./LoadingLink";
 import React, { Fragment, forwardRef, useImperativeHandle, useState } from "react";
 import { usePathname } from "next/navigation";
 
@@ -77,14 +77,14 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
                 </svg>
               </button>
               <nav className="flex flex-col gap-4 text-base font-medium">
-                <Link
+                <LoadingLink
                   href="/"
                   className={linkClasses(pathname === "/")}
                   aria-current={pathname === "/" ? "page" : undefined}
                   onClick={handleClose}
                 >
                   Home
-                </Link>
+                </LoadingLink>
                 <Disclosure defaultOpen={pathname.startsWith("/about")}>
                   {({ open: aboutOpen }) => (
                     <div>
@@ -110,15 +110,15 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
                         leaveTo="transform scale-y-0 opacity-0"
                       >
                         <Disclosure.Panel className="ml-4 mt-2 flex flex-col gap-2">
-                          <Link
+                          <LoadingLink
                             href="/about/staff"
                             className={linkClasses(pathname === "/about/staff")}
                             aria-current={pathname === "/about/staff" ? "page" : undefined}
                             onClick={handleClose}
                           >
                             Staff
-                          </Link>
-                          <Link
+                          </LoadingLink>
+                          <LoadingLink
                             href="/about/mission-statement"
                             className={linkClasses(
                               pathname === "/about/mission-statement"
@@ -129,14 +129,14 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
                             onClick={handleClose}
                           >
                             Mission Statement
-                          </Link>
+                          </LoadingLink>
                         </Disclosure.Panel>
                       </Transition>
                     </div>
                   )}
                 </Disclosure>
                 {nav.map((item) => (
-                  <Link
+                  <LoadingLink
                     key={item.href}
                     href={item.href}
                     className={linkClasses(pathname.startsWith(item.href))}
@@ -144,7 +144,7 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
                     onClick={handleClose}
                   >
                     {item.label}
-                  </Link>
+                  </LoadingLink>
                 ))}
 
                 <Disclosure defaultOpen={pathname.startsWith("/contact")}>
@@ -172,15 +172,15 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
                         leaveTo="transform scale-y-0 opacity-0"
                       >
                         <Disclosure.Panel className="ml-4 mt-2 flex flex-col gap-2">
-                          <Link
+                          <LoadingLink
                             href="/contact"
                             className={linkClasses(pathname === "/contact")}
                             aria-current={pathname === "/contact" ? "page" : undefined}
                             onClick={handleClose}
                           >
                             Contact Form
-                          </Link>
-                          <Link
+                          </LoadingLink>
+                          <LoadingLink
                             href="/contact/prayer-requests"
                             className={linkClasses(
                               pathname === "/contact/prayer-requests"
@@ -191,7 +191,7 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
                             onClick={handleClose}
                           >
                             Prayer Requests
-                          </Link>
+                          </LoadingLink>
                         </Disclosure.Panel>
                       </Transition>
                     </div>

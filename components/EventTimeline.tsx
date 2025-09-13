@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef } from "react";
+import LoadingLink from "./LoadingLink";
 
 export type TimelineEvent = {
   id: string;
@@ -78,7 +79,7 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
             }`}
           />
           {ev.href ? (
-            <a
+            <LoadingLink
               href={ev.href}
               className="no-underline w-full max-w-md p-6 space-y-2 rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] transition-transform transition-colors duration-300 group-hover:scale-105 group-hover:shadow-lg hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
             >
@@ -106,7 +107,7 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
               <span className="inline-block mt-2 text-sm font-medium text-[var(--brand-accent)] group-hover:underline">
                 Learn more
               </span>
-            </a>
+            </LoadingLink>
           ) : (
             <div className="w-full max-w-md p-6 space-y-2 rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] transition-transform duration-300 group-hover:scale-105 group-hover:shadow-lg">
               {ev.image && (

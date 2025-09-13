@@ -1,6 +1,8 @@
+"use client";
+
 import Image from "next/image";
-import Link from "next/link";
 import type { CSSProperties } from "react";
+import LoadingLink from "./LoadingLink";
 
 export type Ministry = {
   name: string;
@@ -51,12 +53,12 @@ export function MinistryCard({
               {ministry.description}
             </p>
             {ministry.href && (
-              <Link
+              <LoadingLink
                 href={ministry.href}
                 className="relative mt-4 inline-block self-start rounded px-1 py-0.5 text-sm font-medium text-[var(--brand-accent)] transition-colors hover:underline hover:text-[var(--brand-primary-contrast)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] active:bg-[var(--brand-accent)]/20"
               >
                 Learn more
-              </Link>
+              </LoadingLink>
             )}
           </div>
         </div>

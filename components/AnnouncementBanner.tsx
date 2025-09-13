@@ -1,7 +1,7 @@
 "use client";
 
 import {type CSSProperties, useEffect, useMemo, useRef, useState,} from "react";
-import Link from "next/link";
+import LoadingLink from "./LoadingLink";
 import { usePathname } from "next/navigation";
 import useNudge from "@/lib/useNudge";
 
@@ -403,13 +403,13 @@ export default function AnnouncementBanner({ id, message, cta }: AnnouncementBan
     <>
       {message}
       {cta && (
-        <Link
+        <LoadingLink
           href={cta.href}
           onClick={handleDismiss}
           className={`ml-4 inline-block rounded-md bg-[var(--brand-accent)] px-2 py-1 text-xs font-semibold text-[var(--brand-ink)] shadow-sm hover:bg-[color:color-mix(in_oklab,var(--brand-accent)_85%,black_15%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary-contrast)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-surface)] ${shouldNudgeCTA ? 'animate-shake' : ''}`}
         >
           {cta.label}
-        </Link>
+        </LoadingLink>
       )}
     </>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import LoadingLink from "./LoadingLink";
 import { usePathname } from "next/navigation";
 import { useRef, useState } from "react";
 import MobileMenu, { MobileMenuHandle } from "./MobileMenu";
@@ -28,20 +28,20 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--brand-border)] bg-[var(--brand-surface)]">
       <div className="max-w-site relative flex h-16 items-center px-4">
-        <Link
+        <LoadingLink
           href="/"
           className="font-bold inline-block shimmer-text-slow glow-text-hover no-shimmer-on-hover transition-transform duration-200 hover:no-underline focus:no-underline hover:scale-110 focus:scale-110"
         >
           {siteTitle}
-        </Link>
+        </LoadingLink>
         <nav className="absolute left-1/2 -translate-x-1/2 hidden items-center gap-6 text-sm font-medium lg:flex">
-          <Link
+          <LoadingLink
             href="/"
             className={linkClasses(pathname === "/")}
             aria-current={pathname === "/" ? "page" : undefined}
           >
             Home
-          </Link>
+          </LoadingLink>
 
           <div className="relative group">
             <button
@@ -66,28 +66,28 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
                          group-focus-within:visible group-focus-within:opacity-100 group-focus-within:translate-y-0"
               role="menu"
             >
-              <Link
+              <LoadingLink
                 href="/about/staff"
                 className={`block rounded px-2 py-1 cursor-pointer border border-transparent ${linkClasses(pathname === "/about/staff")} hover:border-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]`}
                 aria-current={pathname === "/about/staff" ? "page" : undefined}
                 role="menuitem"
               >
                 Staff
-              </Link>
+              </LoadingLink>
               <div className="my-1 border-t border-[var(--brand-border)]" role="separator" />
-              <Link
+              <LoadingLink
                 href="/about/mission-statement"
                 className={`block rounded px-2 py-1 cursor-pointer border border-transparent ${linkClasses(pathname === "/about/mission-statement")} hover:border-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]`}
                 aria-current={pathname === "/about/mission-statement" ? "page" : undefined}
                 role="menuitem"
               >
                 Mission Statement
-              </Link>
+              </LoadingLink>
             </div>
           </div>
 
           {nav.map((item) => (
-            <Link
+            <LoadingLink
               key={item.href}
               href={item.href}
               ref={item.href === "/giving" ? givingRef : undefined}
@@ -95,7 +95,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
               aria-current={pathname.startsWith(item.href) ? "page" : undefined}
             >
               {item.label}
-            </Link>
+            </LoadingLink>
           ))}
 
           <div className="relative group">
@@ -121,23 +121,23 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
                          group-focus-within:visible group-focus-within:opacity-100 group-focus-within:translate-y-0"
               role="menu"
             >
-              <Link
+              <LoadingLink
                 href="/contact"
                 className={`block rounded px-2 py-1 cursor-pointer border border-transparent ${linkClasses(pathname === "/contact")} hover:border-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]`}
                 aria-current={pathname === "/contact" ? "page" : undefined}
                 role="menuitem"
               >
                 Contact Form
-              </Link>
+              </LoadingLink>
               <div className="my-1 border-t border-[var(--brand-border)]" role="separator" />
-              <Link
+              <LoadingLink
                 href="/contact/prayer-requests"
                 className={`block rounded px-2 py-1 cursor-pointer border border-transparent ${linkClasses(pathname === "/contact/prayer-requests")} hover:border-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]`}
                 aria-current={pathname === "/contact/prayer-requests" ? "page" : undefined}
                 role="menuitem"
               >
                 Prayer Requests
-              </Link>
+              </LoadingLink>
             </div>
           </div>
         </nav>

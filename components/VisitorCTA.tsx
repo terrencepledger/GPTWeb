@@ -1,4 +1,5 @@
 import type { SVGProps } from "react";
+import LoadingLink from "./LoadingLink";
 
 const actions = [
   {
@@ -56,7 +57,7 @@ const actions = [
 function ActionCard({ action, delay }: { action: typeof actions[number]; delay: string }) {
   const Icon = action.icon;
   return (
-    <a
+    <LoadingLink
       href={action.href}
       className="group flex flex-col items-start gap-4 rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 opacity-0 animate-fade-in-up transform transition duration-300 hover:-translate-y-1 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] no-underline transition-colors hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
       style={{ animationDelay: delay }}
@@ -66,7 +67,7 @@ function ActionCard({ action, delay }: { action: typeof actions[number]; delay: 
         <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">{action.title}</h3>
       </div>
       <p className="text-[var(--brand-accent)]">{action.description}</p>
-    </a>
+    </LoadingLink>
   );
 }
 

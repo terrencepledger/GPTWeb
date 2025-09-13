@@ -1,4 +1,4 @@
-import Link from "next/link";
+import LoadingLink from "@/components/LoadingLink";
 
 export default function NotFound() {
   return (
@@ -6,12 +6,12 @@ export default function NotFound() {
       <h1 className="text-2xl font-semibold">Page Not Found</h1>
       <p>We couldn&apos;t find the page you&apos;re looking for.</p>
       <div className="flex justify-center space-x-4">
-        <Link className="underline" href="/">
+        <LoadingLink className="underline" href="/">
           Home
-        </Link>
-        <Link className="underline" href="/contact">
+        </LoadingLink>
+        <LoadingLink className="underline" href="/contact">
           Contact
-        </Link>
+        </LoadingLink>
       </div>
     </section>
   );

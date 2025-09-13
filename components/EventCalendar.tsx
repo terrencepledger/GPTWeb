@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { CalendarEvent } from "@/lib/googleCalendar";
+import LoadingLink from "./LoadingLink";
 
 export default function EventCalendar({ events }: { events: CalendarEvent[] }) {
   const [current, setCurrent] = useState(() => {
@@ -80,14 +81,14 @@ export default function EventCalendar({ events }: { events: CalendarEvent[] }) {
                   .filter((ev) => new Date(ev.start).getDate() === d)
                   .map((ev) => (
                     ev.href ? (
-                      <a
+                      <LoadingLink
                         key={ev.id}
                         href={ev.href}
                         className="group block mt-1 rounded border border-[var(--brand-border)] bg-[var(--brand-accent)]/20 p-0.5 no-underline transition-colors hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
                       >
                         <div>{ev.title}</div>
                         <span className="text-[0.625rem] text-[var(--brand-accent)] group-hover:underline">Learn more</span>
-                      </a>
+                      </LoadingLink>
                     ) : (
                       <div
                         key={ev.id}

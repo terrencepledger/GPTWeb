@@ -1,4 +1,4 @@
-import Link from "next/link";
+import LoadingLink from "./LoadingLink";
 import type { SVGProps } from "react";
 import { siteSettings } from "@/lib/queries";
 import { SocialIcons } from "@/components/SocialIcons";
@@ -57,33 +57,33 @@ export default async function Footer() {
               <h4 className="mb-2 font-semibold text-[var(--brand-surface-contrast)]">Quick Links</h4>
               <ul className="grid grid-cols-2 justify-items-center gap-x-6 gap-y-1">
                 <li>
-                  <Link className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]" href="/visit">
+                  <LoadingLink className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]" href="/visit">
                     Visit
-                  </Link>
+                  </LoadingLink>
                 </li>
                 <li>
-                  <Link
+                  <LoadingLink
                     className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
                     href="/events"
                   >
                     Events
-                  </Link>
+                  </LoadingLink>
                 </li>
                 <li>
-                  <Link
+                  <LoadingLink
                     className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
                     href="/livestreams"
                   >
                     Livestreams
-                  </Link>
+                  </LoadingLink>
                 </li>
                 <li>
-                  <Link
+                  <LoadingLink
                     className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
                     href="/giving"
                   >
                     Giving
-                  </Link>
+                  </LoadingLink>
                 </li>
               </ul>
             </div>
@@ -128,12 +128,12 @@ export default async function Footer() {
         <div className="mt-4 flex flex-col items-center justify-between gap-2 border-t border-[var(--brand-border)] pt-3 text-sm text-[var(--brand-muted)] md:flex-row md:justify-center md:gap-8">
           <div>© {year} {title}</div>
           <div className="flex gap-3 md:gap-8">
-            <Link className="text-[var(--brand-accent)] no-underline hover:underline hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded" href="/privacy">
+            <LoadingLink className="text-[var(--brand-accent)] no-underline hover:underline hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded" href="/privacy">
               Privacy
-            </Link>
-            <Link className="text-[var(--brand-accent)] no-underline hover:underline hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded" href="/terms">
+            </LoadingLink>
+            <LoadingLink className="text-[var(--brand-accent)] no-underline hover:underline hover:text-[var(--brand-alt)] focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)] rounded" href="/terms">
               Terms
-            </Link>
+            </LoadingLink>
           </div>
         </div>
       </div>
