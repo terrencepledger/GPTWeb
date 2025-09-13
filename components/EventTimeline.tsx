@@ -10,6 +10,7 @@ export type TimelineEvent = {
   location?: string;
   description?: string;
   image?: string;
+  href?: string;
 };
 
 export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
@@ -76,29 +77,62 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
                 : "right-1/2 w-[calc(50%-2.5rem)] origin-right"
             }`}
           />
-          <div className="w-full max-w-md p-6 space-y-2 rounded-lg border border-[var(--brand-accent)] bg-[var(--brand-bg)] transition-transform duration-300 group-hover:scale-105 group-hover:shadow-lg">
-            {ev.image && (
-              <Image
-                src={ev.image}
-                alt=""
-                width={600}
-                height={320}
-                className="mb-4 w-full rounded object-cover"
-              />
-            )}
-            <h3 className="text-lg font-semibold text-[var(--brand-fg)]">
-              {ev.title}
-            </h3>
-            <p className="text-sm text-[var(--brand-muted)]">
-              {ev.date}
-              {ev.location ? ` • ${ev.location}` : ""}
-            </p>
-            {ev.description && (
-              <p className="text-base text-[var(--brand-fg)]">
-                {ev.description}
+          {ev.href ? (
+            <a
+              href={ev.href}
+              className="no-underline hover:no-underline focus:no-underline focus-visible:no-underline visited:no-underline active:no-underline w-full max-w-md p-6 space-y-2 rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] transition-transform transition-colors duration-300 group-hover:scale-105 group-hover:shadow-lg hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
+              style={{ textDecoration: 'none' }}
+            >
+              {ev.image && (
+                <Image
+                  src={ev.image}
+                  alt=""
+                  width={600}
+                  height={320}
+                  className="mb-4 w-full rounded object-cover"
+                />
+              )}
+              <h3 className="text-lg font-semibold text-[var(--brand-fg)]">
+                {ev.title}
+              </h3>
+              <p className="text-sm text-[var(--brand-muted)]">
+                {ev.date}
+                {ev.location ? ` • ${ev.location}` : ""}
               </p>
-            )}
-          </div>
+              {ev.description && (
+                <p className="text-base text-[var(--brand-fg)]">
+                  {ev.description}
+                </p>
+              )}
+              <span className="inline-block mt-2 text-sm font-medium text-[var(--brand-accent)] underline">
+                Learn more
+              </span>
+            </a>
+          ) : (
+            <div className="w-full max-w-md p-6 space-y-2 rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] transition-transform duration-300 group-hover:scale-105 group-hover:shadow-lg">
+              {ev.image && (
+                <Image
+                  src={ev.image}
+                  alt=""
+                  width={600}
+                  height={320}
+                  className="mb-4 w-full rounded object-cover"
+                />
+              )}
+              <h3 className="text-lg font-semibold text-[var(--brand-fg)]">
+                {ev.title}
+              </h3>
+              <p className="text-sm text-[var(--brand-muted)]">
+                {ev.date}
+                {ev.location ? ` • ${ev.location}` : ""}
+              </p>
+              {ev.description && (
+                <p className="text-base text-[var(--brand-fg)]">
+                  {ev.description}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       ))}
     </div>

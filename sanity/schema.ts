@@ -4,6 +4,13 @@ import siteSettings from './schemas/siteSettings';
 import ministry from './schemas/ministry';
 import heroSlide from './schemas/heroSlide';
 import chatbot from './schemas/chatbot';
+import missionStatement from './schemas/missionStatement';
+import eventDetail from './schemas/eventDetail';
+import heroSection from './schemas/sections/heroSection';
+import gallerySection from './schemas/sections/gallerySection';
+import subscriptionSection from './schemas/sections/subscriptionSection';
+import mapSection from './schemas/sections/mapSection';
+import linkSection from './schemas/sections/linkSection';
 
 export const schemaTypes = [
   announcement,
@@ -11,5 +18,12 @@ export const schemaTypes = [
   siteSettings,
   ministry,
   heroSlide,
+  missionStatement,
+  eventDetail,
+  heroSection,
+  gallerySection,
+  subscriptionSection,
+  mapSection,
+  linkSection,
   chatbot,
 ];

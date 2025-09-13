@@ -2,14 +2,18 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <section className="space-y-4 text-center">
-      <h1 className="text-2xl font-semibold">Page Not Found</h1>
-      <p>We couldn&apos;t find the page you&apos;re looking for.</p>
-      <div className="flex justify-center space-x-4">
-        <Link className="underline" href="/">
+    <section className="mx-auto grid h-full place-content-center gap-6 text-center">
+      <h1 className="shimmer-text text-6xl font-bold tracking-tight text-[var(--brand-accent)]">
+        404
+      </h1>
+      <p className="text-lg text-[var(--brand-muted)]">
+        We couldn&apos;t find the page you&apos;re looking for.
+      </p>
+      <div className="flex justify-center gap-4">
+        <Link className="btn-primary" href="/">
           Home
         </Link>
-        <Link className="underline" href="/contact">
+        <Link className="btn-outline" href="/contact">
           Contact
         </Link>
       </div>

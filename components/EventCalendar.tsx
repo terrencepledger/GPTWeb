@@ -79,12 +79,24 @@ export default function EventCalendar({ events }: { events: CalendarEvent[] }) {
                 {monthEvents
                   .filter((ev) => new Date(ev.start).getDate() === d)
                   .map((ev) => (
-                    <div
-                      key={ev.id}
-                      className="mt-1 rounded bg-[var(--brand-accent)]/20 p-0.5"
-                    >
-                      {ev.title}
-                    </div>
+                    ev.href ? (
+                      <a
+                        key={ev.id}
+                        href={ev.href}
+                        className="group block mt-1 rounded border border-[var(--brand-border)] bg-[var(--brand-accent)]/20 p-0.5 no-underline hover:no-underline focus:no-underline focus-visible:no-underline visited:no-underline active:no-underline transition-colors hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <div>{ev.title}</div>
+                        <span className="text-[0.625rem] text-[var(--brand-accent)] underline">Learn more</span>
+                      </a>
+                    ) : (
+                      <div
+                        key={ev.id}
+                        className="mt-1 rounded border border-[var(--brand-border)] bg-[var(--brand-accent)]/20 p-0.5"
+                      >
+                        <div>{ev.title}</div>
+                      </div>
+                    )
                   ))}
               </div>
             )}

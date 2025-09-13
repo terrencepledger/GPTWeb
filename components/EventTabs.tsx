@@ -18,6 +18,7 @@ export default function EventTabs({ events }: { events: CalendarEvent[] }) {
     }),
     description: ev.description,
     location: ev.location,
+    href: ev.href,
   }));
 
   return (

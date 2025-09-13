@@ -82,7 +82,7 @@ export interface Ministry {
 export const ministriesHighlights = (limit: number) =>
   sanity.fetch<Ministry[]>(
     groq`*[_type == "ministry"] | order(_createdAt desc)[0...$limit]{_id, name, description, "staffImage": staffImage.asset->url}`,
-    {limit}
+    {limit},
   );
 
 export const ministriesAll = () =>
@@ -108,4 +108,77 @@ export const missionStatement = () =>
       message
     }`
   );
+
+export interface EventDetailLink {
+  calendarEventId: string;
+  slug: string;
+}
+
+export const eventDetailLinks = () =>
+  sanity.fetch<EventDetailLink[]>(
+    groq`*[_type == "eventDetail"]{calendarEventId, "slug": slug.current}`
+  );
+
+export interface EventDetail {
+  _id: string;
+  title: string;
+  calendarEventId: string;
+  eventDate?: string;
+  body?: any;
+  palette?: {
+    light?: { primary?: string; accent?: string; contrast?: string };
+    dark?: { primary?: string; accent?: string; contrast?: string };
+  };
+  eventLogo?: { url: string; alt?: string };
+  sections?: (
+    | { _type: 'heroSection'; headline?: string; subheadline?: string; backgroundImage?: string }
+    | { _type: 'gallerySection'; layout?: string; images: { _key: string; url: string; alt?: string }[] }
+    | { _type: 'subscriptionSection'; showSubscribe?: boolean }
+    | { _type: 'mapSection'; address?: string; mapType?: string }
+    | { _type: 'linkSection'; linkText?: string; url?: string }
+  )[];
+}
+
+export const eventDetailBySlug = (slug: string, preview = false) => {
+  const client = preview
+    ? sanity.withConfig({
+        useCdn: false,
+        perspective: 'previewDrafts',
+        token: process.env.SANITY_READ_TOKEN || process.env.SANITY_API_TOKEN,
+        // Ensure no caching in preview so drafts reflect immediately
+        fetch: (url: any, init?: RequestInit) => fetch(url, { ...(init || {}), cache: 'no-store' }),
+      } as any)
+    : sanity;
+  return client.fetch<EventDetail | null>(
+    groq`*[_type == "eventDetail" && slug.current == $slug][0]{
+      _id,
+      title,
+      calendarEventId,
+      eventDate,
+      body,
+      palette{
+        light{primary, accent, contrast},
+        dark{primary, accent, contrast}
+      },
+      "eventLogo": eventLogo{ "url": asset->url, "alt": coalesce(alt, "") },
+      sections[]{
+        _type == 'heroSection' => {
+          _type,
+          headline,
+          subheadline,
+          "backgroundImage": backgroundImage.asset->url
+        },
+        _type == 'gallerySection' => {
+          _type,
+          layout,
+          "images": images[]{ _key, "url": asset->url, "alt": coalesce(alt, "") }
+        },
+        _type == 'subscriptionSection' => { _type, showSubscribe },
+        _type == 'mapSection' => { _type, address, mapType },
+        _type == 'linkSection' => { _type, linkText, url }
+      }
+    }`,
+    { slug }
+  );
+};
 

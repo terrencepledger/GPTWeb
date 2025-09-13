@@ -5,7 +5,8 @@ const projectId = process.env.SANITY_STUDIO_PROJECT_ID;
 const dataset = process.env.SANITY_STUDIO_DATASET;
 
 // Optional read token (single canonical name)
-const token = process.env.SANITY_READ_TOKEN;
+// Fall back to SANITY_API_TOKEN for compatibility with existing envs
+const token = process.env.SANITY_READ_TOKEN || process.env.SANITY_API_TOKEN;
 
 const useCdn = false; // Always disable CDN to ensure fresh data
 
@@ -29,8 +30,8 @@ const client = createClient({
   // Use a fetch wrapper that caches for five minutes before revalidating
   // Cast to any to avoid Next.js route segment config 'fetch' type collision in type space
   fetch: revalidateFetch,
-  // If a read token is configured, allow fetching drafts as well (useful for preview and staging)
-  perspective: token ? 'previewDrafts' : 'published',
+  // Always use published content for the base client; preview routes configure previewDrafts explicitly
+  perspective: 'published',
 } as any);
 
 // One-time init log to aid debugging env issues

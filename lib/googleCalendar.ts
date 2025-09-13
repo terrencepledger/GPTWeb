@@ -5,6 +5,8 @@ export interface CalendarEvent {
   end?: string;
   description?: string;
   location?: string;
+  href?: string;
+  htmlLink?: string;
 }
 
 function formatEvent(ev: any): CalendarEvent | null {
@@ -19,6 +21,7 @@ function formatEvent(ev: any): CalendarEvent | null {
     end: ev.end?.dateTime || ev.end?.date || undefined,
     description: ev.description || undefined,
     location: ev.location || undefined,
+    htmlLink: ev.htmlLink || undefined,
   };
 }
 

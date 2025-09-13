@@ -12,6 +12,7 @@ import { siteSettings, announcementLatest } from "@/lib/queries";
 import { getCurrentLivestream } from "@/lib/vimeo";
 import AutoRefresh from "@/components/AutoRefresh";
 import Script from "next/script";
+import { cookies, headers } from "next/headers";
 
 const headerFont = Playfair_Display({
   subsets: ["latin"],
@@ -62,6 +63,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   ]);
   const headerTitle = settings?.title ?? "Greater Pentecostal Temple";
   const maxWidth = "90vw";
+  const hdrs = headers();
+  const secFetchDest = hdrs.get("sec-fetch-dest");
+  const referer = hdrs.get("referer") || "";
+  let isEmbedded = secFetchDest === "iframe";
+  try {
+    const allowedOrigin = new URL(process.env.SANITY_STUDIO_SITE_URL || "http://localhost:3333").origin;
+    const refOrigin = new URL(referer).origin;
+    if (refOrigin === allowedOrigin) {
+      isEmbedded = true;
+    }
+  } catch {}
+  const themeAttr = isEmbedded ? (cookies().get("preview-theme")?.value || "light") : undefined;
 
   let banner: { id: string; message: string; cta?: { label: string; href: string } } | null = null;
   if (livestream?.live?.status === "streaming") {
@@ -81,25 +94,30 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html
       lang="en"
+      data-theme={themeAttr}
       className={`${headerFont.variable} ${bodyFont.variable} ${buttonFont.variable}`}
     >
       <body
         className="flex min-h-screen flex-col"
         style={{ "--layout-max-width": maxWidth } as CSSProperties}
       >
-        <AutoRefresh />
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
-          strategy="afterInteractive"
-        />
-        <Script id="ga-init" strategy="afterInteractive">
-          {`window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
+        {!isEmbedded && <AutoRefresh />}
+        {!isEmbedded && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga-init" strategy="afterInteractive">
+              {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);} 
 gtag('js', new Date());
 gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');`}
-        </Script>
-        <Header initialTitle={headerTitle} />
-        {banner && (
+            </Script>
+          </>
+        )}
+        {!isEmbedded && <Header initialTitle={headerTitle} />}
+        {!isEmbedded && banner && (
           <BannerAnchor gap={0}>
             <div className="max-w-site mx-auto w-full px-4">
               <AnnouncementBanner message={banner.message} id={banner.id} cta={banner.cta} />
@@ -107,7 +125,7 @@ gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');`}
           </BannerAnchor>
         )}
         <main className="max-w-site flex-1 px-4 py-8">{children}</main>
-        <Footer />
+        {!isEmbedded && <Footer />}
         <Chatbot />
       </body>
     </html>
