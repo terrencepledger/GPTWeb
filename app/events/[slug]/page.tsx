@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { eventDetailBySlug } from "@/lib/queries";
+import type { EventDetail } from "@/lib/queries";
 import { getCalendarEvents } from "@/lib/googleCalendar";
 import HeroSection from "@/components/eventDetailSections/HeroSection";
 import GallerySection from "@/components/eventDetailSections/GallerySection";
@@ -80,7 +81,11 @@ export default async function Page({ params }: { params: { slug: string } }) {
     Array.isArray(detail.sections) &&
     detail.sections.some((s: any) => s._type === "heroSection");
 
-  const subscription = detail.sections?.find((s: any) => s._type === "subscriptionSection");
+  type Section = NonNullable<EventDetail["sections"]>[number];
+  const isSubscriptionSection = (s: Section | undefined): s is Extract<Section, { _type: "subscriptionSection" }> =>
+    !!s && s._type === "subscriptionSection";
+
+  const subscription = detail.sections?.find(isSubscriptionSection);
   const subscribeUrl = subscription?.showSubscribe !== false ? calendar?.htmlLink : undefined;
 
   return (
