@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { set, unset } from "sanity";
+import { PatchEvent, set, unset } from "sanity";
 
 type CalendarEvent = { id: string; title: string; start: string };
 
@@ -29,7 +29,13 @@ export default function CalendarEventIdInput(props: any) {
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const v = e.target.value;
-    onChange(v ? set(v) : unset());
+    const selected = events.find((ev) => ev.id === v);
+    onChange(
+      PatchEvent.from([
+        v ? set(v) : unset(),
+        selected ? set(selected.start, ["eventDate"]) : unset(["eventDate"]),
+      ])
+    );
   }
 
   return (

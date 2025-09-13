@@ -123,6 +123,7 @@ export interface EventDetail {
   _id: string;
   title: string;
   calendarEventId: string;
+  eventDate?: string;
   body?: any;
   palette?: {
     light?: { primary?: string; accent?: string; contrast?: string };
@@ -153,6 +154,7 @@ export const eventDetailBySlug = (slug: string, preview = false) => {
       _id,
       title,
       calendarEventId,
+      eventDate,
       body,
       palette{
         light{primary, accent, contrast},
