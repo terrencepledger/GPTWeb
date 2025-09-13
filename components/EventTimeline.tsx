@@ -86,15 +86,15 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
                 className="mb-4 w-full rounded object-cover"
               />
             )}
-            <h3 className="text-lg font-semibold text-[var(--brand-fg)]">
+            <h3 className="text-lg font-semibold no-underline text-[var(--brand-fg)]">
               {ev.title}
             </h3>
-            <p className="text-sm text-[var(--brand-muted)]">
+            <p className="text-sm no-underline text-[var(--brand-muted)]">
               {ev.date}
               {ev.location ? ` • ${ev.location}` : ""}
             </p>
             {ev.description && (
-              <p className="text-base text-[var(--brand-fg)]">
+              <p className="text-base no-underline text-[var(--brand-fg)]">
                 {ev.description}
               </p>
             )}

@@ -81,7 +81,7 @@ export default function EventCalendar({ events }: { events: CalendarEvent[] }) {
                   .map((ev) => (
                     <div
                       key={ev.id}
-                      className="mt-1 rounded bg-[var(--brand-accent)]/20 p-0.5"
+                      className="mt-1 rounded bg-[var(--brand-accent)]/20 p-0.5 no-underline"
                     >
                       {ev.title}
                     </div>

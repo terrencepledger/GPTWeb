@@ -49,20 +49,30 @@ export function EventCard({
         />
       )}
       <div className="flex flex-1 flex-col p-4">
-        <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">{event.title}</h3>
-        <p className={`mt-1 text-sm ${dateClassName ?? 'text-[var(--brand-muted)]'}`}>
+        <h3 className="text-lg font-semibold no-underline text-[var(--brand-surface-contrast)]">
+          {event.title}
+        </h3>
+        <p
+          className={`mt-1 text-sm no-underline ${
+            dateClassName ?? "text-[var(--brand-muted)]"
+          }`}
+        >
           {event.date}
           {event.location ? ` • ${event.location}` : ""}
         </p>
         {event.description && (
-          <p className={`mt-2 flex-1 text-sm ${descriptionClassName ?? 'text-[var(--brand-fg)]'}`}>
+          <p
+            className={`mt-2 flex-1 text-sm no-underline ${
+              descriptionClassName ?? "text-[var(--brand-fg)]"
+            }`}
+          >
             {event.description}
           </p>
         )}
         {event.href && (
           <Link
             href={event.href}
-            className="relative mt-4 inline-block rounded px-1 py-0.5 text-sm font-medium text-[var(--brand-accent)] transition-colors hover:underline hover:text-[var(--brand-primary-contrast)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] active:bg-[var(--brand-accent)]/20"
+            className="relative mt-4 inline-block rounded px-1 py-0.5 text-sm font-medium text-[var(--brand-accent)] underline transition-colors hover:text-[var(--brand-primary-contrast)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] active:bg-[var(--brand-accent)]/20"
           >
             Learn more
           </Link>
