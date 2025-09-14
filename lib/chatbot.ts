@@ -1,6 +1,8 @@
 import { sanity } from './sanity';
 import groq from 'groq';
 import { google } from 'googleapis';
+import fs from 'fs';
+import path from 'path';
 
 export async function getChatbotTone(): Promise<string> {
   const tone = await sanity.fetch(groq`*[_type == "chatbotSettings"][0].tone`);
@@ -83,32 +85,104 @@ export type EscalationInfo = SharedEscalationInfo;
 export async function sendEscalationEmail(info: EscalationInfo) {
   // Require server-to-server auth via a Google Workspace Service Account with
   // domain-wide delegation, impersonating a fixed sender account sourced from Sanity.
-  const svcEmail = process.env.GMAIL_SERVICE_ACCOUNT_EMAIL;
-  const svcKeyRaw = process.env.GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY;
+  // Allow disabling email sending only via an explicit flag.
+  const emailsDisabled = String(process.env.DISABLE_ESCALATION_EMAILS || '').toLowerCase() === 'true';
+
+  let svcEmail = '';
+  let svcKeyRaw = '';
+  let credsSource: 'file' | 'env' | 'env-json' | 'env-pem' | 'unknown' = 'unknown';
+
+  // Prefer file-based credentials first
+  const defaultKeyPath = path.join(process.cwd(), 'config', 'gmail-service-account.json');
+  const keyFilePath = process.env.GMAIL_SERVICE_ACCOUNT_KEY_FILE || defaultKeyPath;
+  const keyFileExists = fs.existsSync(keyFilePath);
+  if (keyFileExists) {
+    try {
+      const fileContents = fs.readFileSync(keyFilePath, 'utf8');
+      const creds = JSON.parse(fileContents);
+      if (typeof creds.client_email === 'string') {
+        svcEmail = creds.client_email;
+      }
+      if (typeof creds.private_key === 'string') {
+        svcKeyRaw = creds.private_key;
+      }
+      credsSource = 'file';
+    } catch (e: any) {
+      throw new Error(`Failed to read or parse Gmail service account file at ${keyFilePath}: ${e?.message || e}`);
+    }
+  }
+
+  // Fallback to environment variables (supports PEM or full JSON blob)
+  if (!svcEmail) svcEmail = process.env.GMAIL_SERVICE_ACCOUNT_EMAIL || '';
+  if (!svcKeyRaw) {
+    const envRaw = process.env.GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY || '';
+    if (envRaw.trim().startsWith('{')) {
+      try {
+        const creds = JSON.parse(envRaw);
+        if (!svcEmail && typeof creds.client_email === 'string') {
+          svcEmail = creds.client_email;
+        }
+        if (typeof creds.private_key === 'string') {
+          svcKeyRaw = creds.private_key;
+        }
+        credsSource = 'env-json';
+      } catch (e: any) {
+        // ignore parse error; will fail below if unusable
+      }
+    } else if (envRaw) {
+      svcKeyRaw = envRaw;
+      credsSource = 'env-pem';
+    }
+  } else if (!credsSource || credsSource === 'unknown') {
+    credsSource = 'env';
+  }
+
   if (!svcEmail || !svcKeyRaw) {
-    throw new Error('GMAIL_SERVICE_ACCOUNT_EMAIL and GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY must be set');
+    if (emailsDisabled) {
+      return;
+    }
+    throw new Error('Missing Gmail service account credentials. Provide JSON at config/gmail-service-account.json (or set GMAIL_SERVICE_ACCOUNT_KEY_FILE), or set GMAIL_SERVICE_ACCOUNT_EMAIL and GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY (PEM or JSON).');
   }
 
   // Get sender and recipient from Sanity
   const { from, to } = await getEscalationAddresses();
 
-  // Normalize private key: support both literal newlines and escaped \n
+  // If emails are disabled by flag, skip sending.
+  if (emailsDisabled) {
+    return;
+  }
+
+
+  // Validate key format before attempting to sign
+  const looksPlaceholder = /\.\.\.snip\.\.\.|<your[-\s_]?private[-\s_]?key>|REDACTED|PLACEHOLDER/i.test(svcKeyRaw);
+  const hasPemHeader = /BEGIN [A-Z ]*PRIVATE KEY/.test(svcKeyRaw);
+  if (looksPlaceholder || !hasPemHeader) {
+    throw new Error('Gmail service account private key appears invalid or placeholder. Place a valid credentials file at config/gmail-service-account.json (or set GMAIL_SERVICE_ACCOUNT_KEY_FILE), or provide GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY with a real PEM.');
+  }
+
+  // Normalize private key: support both literal newlines and escaped \\n
   const svcKey = svcKeyRaw.includes('\\n') ? svcKeyRaw.replace(/\\n/g, '\n') : svcKeyRaw;
+
   const auth = new google.auth.JWT({
     email: svcEmail,
     key: svcKey,
-    scopes: ['https://www.googleapis.com/auth/gmail.send'],
+    scopes: ['https://www.googleapis.com/auth/gmail.send','https://mail.google.com/'],
     subject: from, // act as this user
   } as any);
   await auth.authorize();
 
   const gmail = google.gmail({ version: 'v1', auth });
 
+
   const headers = [
     `To: ${to}`,
     'Subject: Chatbot escalation',
     `From: ${from}`,
+    `Date: ${new Date().toUTCString()}`,
   ];
+  if (info.email) {
+    headers.push(`Reply-To: ${info.email}`);
+  }
 
   const message = [
     ...headers,
