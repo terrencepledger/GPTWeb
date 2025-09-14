@@ -29,7 +29,13 @@ const fakeClient = {
 
 (async () => {
   const { reply, confidence, similarityCount } = await generateChatbotReply(
-    [{ role: 'user', content: 'Hi' }],
+    [
+      {
+        role: 'user',
+        content: 'Hi',
+        timestamp: new Date().toISOString(),
+      },
+    ],
     'friendly',
     fakeClient as any,
   );

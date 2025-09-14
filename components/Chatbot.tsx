@@ -1,21 +1,36 @@
 'use client';
 
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect, useRef } from 'react';
 import type { ChatMessage } from '@/types/chat';
 
 export default function Chatbot() {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'assistant', content: 'Hi! How can I help you today?' },
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [
+    {
+      role: 'assistant',
+      content: 'Hi! I\'m the GPT Assistant for Greater Pentecostal Temple. How can I help you today?',
+      timestamp: new Date().toISOString(),
+    },
   ]);
   const [input, setInput] = useState('');
   const [collectInfo, setCollectInfo] = useState(false);
   const [info, setInfo] = useState({ name: '', contact: '', email: '', details: '' });
   const [thinking, setThinking] = useState(false);
   const [offerHelp, setOfferHelp] = useState(false);
+  const logRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = logRef.current;
+    if (el) {
+      el.scrollTop = el.scrollHeight;
+    }
+  }, [messages, thinking]);
 
   async function sendMessage(e: FormEvent) {
     e.preventDefault();
-    const outgoing: ChatMessage[] = [...messages, { role: 'user', content: input }];
+    const outgoing: ChatMessage[] = [
+      ...messages,
+      { role: 'user', content: input, timestamp: new Date().toISOString() },
+    ];
     setMessages(outgoing);
     setInput('');
     setThinking(true);
@@ -25,7 +40,15 @@ export default function Chatbot() {
       body: JSON.stringify({ messages: outgoing }),
     });
     const data = await res.json();
-    setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: 'assistant',
+        content: data.reply,
+        timestamp: new Date().toISOString(),
+        confidence: data.confidence,
+      },
+    ]);
     if (data.escalate) {
       setCollectInfo(true);
       setOfferHelp(false);
@@ -44,21 +67,44 @@ export default function Chatbot() {
     });
     setCollectInfo(false);
     setOfferHelp(false);
-    setMessages((prev) => [...prev, { role: 'assistant', content: 'Thanks! We will get back to you soon.' }]);
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: 'assistant',
+        content: 'Thanks! We will get back to you soon.',
+        timestamp: new Date().toISOString(),
+      },
+    ]);
   }
 
   return (
     <div className="fixed bottom-4 right-4 w-80 rounded border bg-neutral-100 p-4">
-      <div role="log" aria-label="Chat messages" className="mb-2 max-h-60 overflow-y-auto">
+      <div
+        role="log"
+        aria-label="Chat messages"
+        className="mb-2 max-h-60 overflow-y-auto"
+        ref={logRef}
+      >
         {messages.map((m, i) => (
           <div key={i} className="mb-1">
-            <span className="font-bold">{m.role === 'assistant' ? 'Bot' : 'You'}:</span> {m.content}
+            <span className="font-bold">{m.role === 'assistant' ? 'GPT Assistant' : 'You'}:</span>{' '}
+            {m.content}
           </div>
         ))}
         {thinking && (
-          <div className="mb-1">
-            <span className="font-bold">Bot:</span>{' '}
-            <span className="italic text-neutral-500">...</span>
+          <div className="mb-1 flex items-center gap-1">
+            <span className="font-bold">GPT Assistant:</span>
+            <span className="flex gap-1">
+              <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-500" />
+              <span
+                className="h-2 w-2 animate-bounce rounded-full bg-neutral-500"
+                style={{ animationDelay: '0.2s' }}
+              />
+              <span
+                className="h-2 w-2 animate-bounce rounded-full bg-neutral-500"
+                style={{ animationDelay: '0.4s' }}
+              />
+            </span>
           </div>
         )}
       </div>
@@ -112,7 +158,7 @@ export default function Chatbot() {
           <button type="submit" className="border px-2 py-1">Send</button>
         </form>
       )}
-      {offerHelp && !collectInfo && (
+      {!collectInfo && (
         <button
           onClick={() => {
             setCollectInfo(true);
@@ -120,7 +166,7 @@ export default function Chatbot() {
           }}
           className="mt-2 text-sm underline"
         >
-          Reach out for further help
+          {offerHelp ? 'Reach out for further help' : 'Reach a human'}
         </button>
       )}
     </div>

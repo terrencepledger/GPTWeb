@@ -13,12 +13,14 @@ function sanitizeMessages(input: unknown): ChatMessage[] {
   for (const it of input) {
     const role = (it as any)?.role;
     const content = (it as any)?.content;
+    const timestamp = (it as any)?.timestamp;
     if (typeof content !== 'string') continue;
+    const ts = typeof timestamp === 'string' ? timestamp : new Date().toISOString();
     if (role === 'user' || role === 'assistant') {
-      msgs.push({ role, content });
+      msgs.push({ role, content, timestamp: ts });
     } else if (role === 'bot') {
       // Backward-compat: normalize old 'bot' role to 'assistant'
-      msgs.push({ role: 'assistant', content });
+      msgs.push({ role: 'assistant', content, timestamp: ts });
     }
   }
   return msgs;
