@@ -40,7 +40,7 @@ export async function POST(req: Request) {
   }
 
   const tone = await getChatbotTone();
-  const { reply, confidence, similarityCount, escalate: manual, escalateReason } = await generateChatbotReply(
+  let { reply, confidence, similarityCount, escalate: manual, escalateReason } = await generateChatbotReply(
     messages,
     tone,
   );
@@ -57,5 +57,9 @@ export async function POST(req: Request) {
     });
   }
 
-  return NextResponse.json({ reply, confidence, similarityCount });
+  // Soft optional escalation: if confidence is low, suggest option but do not auto-open form
+  const softThreshold = 0.3;
+  const softEscalate = confidence <= softThreshold;
+
+  return NextResponse.json({ reply, confidence, similarityCount, softEscalate });
 }
