@@ -44,6 +44,7 @@ import type { ChatMessage, EscalationInfo as SharedEscalationInfo } from '@/type
 export type Message = ChatMessage;
 
 import OpenAI from 'openai';
+import { google } from 'googleapis';
 
 let defaultClient: OpenAI | null = null;
 
@@ -149,7 +150,6 @@ export function shouldEscalate(messages: Message[]): boolean {
 export type EscalationInfo = SharedEscalationInfo;
 
 export async function sendEscalationEmail(info: EscalationInfo, history: Message[]) {
-  const { google } = await import('googleapis');
   // Require server-to-server auth via a Google Workspace Service Account with
   // domain-wide delegation, impersonating a fixed sender account sourced from Sanity.
   const svcEmail = process.env.GMAIL_SERVICE_ACCOUNT_EMAIL;
