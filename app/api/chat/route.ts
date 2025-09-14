@@ -4,6 +4,7 @@ import {
   shouldEscalate,
   sendEscalationEmail,
   generateChatbotReply,
+  escalationNotice,
 } from '@/lib/chatbot';
 import type { ChatMessage, EscalationInfo } from '@/types/chat';
 
@@ -40,9 +41,11 @@ export async function POST(req: Request) {
   const { reply, confidence } = await generateChatbotReply(messages, tone);
   const updatedMessages: ChatMessage[] = [...messages, { role: 'assistant', content: reply, confidence }];
 
-  if (shouldEscalate(updatedMessages)) {
-    return NextResponse.json({ escalate: true, reply, confidence });
+  if (await shouldEscalate(updatedMessages)) {
+    const notice = await escalationNotice(tone);
+    return NextResponse.json({ escalate: true, reply: notice, confidence });
   }
 
-  return NextResponse.json({ reply, confidence });
+  const offerHelp = confidence < 0.5;
+  return NextResponse.json({ reply, confidence, offerHelp });
 }

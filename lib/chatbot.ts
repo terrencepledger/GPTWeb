@@ -120,7 +120,8 @@ export async function generateChatbotReply(
         role: 'system',
         content:
           `You are a ${tone} assistant for the website. ${extra ? extra + ' ' : ''}Use only the provided site content to answer questions. ` +
-          'If a question is unrelated to the site, respond that you can only assist with website information.\n\n' +
+          'If a question is unrelated to the site, respond that you can only assist with website information. ' +
+          'If the question is about the church or website but the answer is not present in the site content, say you are sorry and unsure, set confidence to 0, and suggest reaching out for further help. ' +
           `Site content:\n${context}\n` +
           'Respond in JSON with keys "reply" and "confidence" (0-1).',
       },
@@ -140,13 +141,59 @@ export async function generateChatbotReply(
   }
 }
 
-export function shouldEscalate(messages: Message[]): boolean {
-  const userMessages = messages.filter((m) => m.role === 'user');
-  const rephraseCount = userMessages.length > 3;
-  const lowConfidence = messages.some(
-    (m) => typeof m.confidence === 'number' && m.confidence < 0.5,
+export async function shouldEscalate(
+  messages: Message[],
+  client?: OpenAI,
+): Promise<boolean> {
+  const count = await countSimilarQuestions(messages, client);
+  return count >= 2;
+}
+
+async function countSimilarQuestions(
+  messages: Message[],
+  client?: OpenAI,
+): Promise<number> {
+  const openai = getClient(client);
+  const userMsgs = messages.filter((m) => m.role === 'user');
+  if (userMsgs.length < 2) return 0;
+  const last = userMsgs[userMsgs.length - 1].content;
+  const earlier = userMsgs.slice(0, -1).map((m) => m.content);
+  const prompt =
+    `Last question: "${last}"\nEarlier questions:\n` +
+    earlier.map((q, i) => `${i + 1}. ${q}`).join('\n') +
+    '\nCount how many earlier questions are the same as or very similar to the last question. Respond with JSON {"count":number}.';
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      { role: 'system', content: 'You compare questions for semantic similarity.' },
+      { role: 'user', content: prompt },
+    ],
+    response_format: { type: 'json_object' },
+  });
+  const raw = completion.choices[0].message?.content ?? '{}';
+  try {
+    const parsed = JSON.parse(raw);
+    return typeof parsed.count === 'number' ? parsed.count : 0;
+  } catch {
+    return 0;
+  }
+}
+
+export async function escalationNotice(tone: string, client?: OpenAI): Promise<string> {
+  const openai = getClient(client);
+  const completion = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      {
+        role: 'system',
+        content: `You are a ${tone} assistant for the website. Inform the user clearly that their question is being escalated to a human and that they can provide contact details for follow-up.`,
+      },
+    ],
+  });
+  return (
+    completion.choices[0].message?.content?.trim() ||
+    'Connecting you with a team member for further help.'
   );
-  return rephraseCount || lowConfidence;
 }
 
 export type EscalationInfo = SharedEscalationInfo;

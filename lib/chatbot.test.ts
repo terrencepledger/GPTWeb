@@ -5,11 +5,23 @@ const { sanity } = require('./sanity');
 sanity.fetch = async () => '';
 const { generateChatbotReply, shouldEscalate } = require('./chatbot');
 
-const lowConfidence = [
-  { role: 'user', content: 'Hi' },
-  { role: 'assistant', content: 'Hmm', confidence: 0.4 },
+const repeated = [
+  { role: 'user', content: 'When are services?' },
+  { role: 'assistant', content: '...' },
+  { role: 'user', content: 'What time are your services?' },
+  { role: 'assistant', content: '...' },
+  { role: 'user', content: 'When do services start?' },
 ];
-assert.strictEqual(shouldEscalate(lowConfidence), true);
+
+const similarityClient = {
+  chat: {
+    completions: {
+      create: async () => ({
+        choices: [{ message: { content: JSON.stringify({ count: 2 }) } }],
+      }),
+    },
+  },
+};
 
 const fakeClient = {
   chat: {
@@ -24,6 +36,10 @@ const fakeClient = {
 };
 
 (async () => {
+  assert.strictEqual(
+    await shouldEscalate(repeated, similarityClient),
+    true,
+  );
   const { reply, confidence } = await generateChatbotReply(
     [{ role: 'user', content: 'Hi' }],
     'friendly',
