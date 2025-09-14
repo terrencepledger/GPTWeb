@@ -11,6 +11,7 @@ export default function Chatbot() {
   const [collectInfo, setCollectInfo] = useState(false);
   const [info, setInfo] = useState({ name: '', contact: '', email: '', details: '' });
   const [thinking, setThinking] = useState(false);
+  const [offerHelp, setOfferHelp] = useState(false);
 
   async function sendMessage(e: FormEvent) {
     e.preventDefault();
@@ -24,13 +25,14 @@ export default function Chatbot() {
       body: JSON.stringify({ messages: outgoing }),
     });
     const data = await res.json();
+    setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
     if (data.escalate) {
       setCollectInfo(true);
-      setThinking(false);
+      setOfferHelp(false);
     } else {
-      setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
-      setThinking(false);
+      setOfferHelp(Boolean(data.offerHelp));
     }
+    setThinking(false);
   }
 
   async function sendInfo(e: FormEvent) {
@@ -41,6 +43,7 @@ export default function Chatbot() {
       body: JSON.stringify({ escalate: true, info, messages }),
     });
     setCollectInfo(false);
+    setOfferHelp(false);
     setMessages((prev) => [...prev, { role: 'assistant', content: 'Thanks! We will get back to you soon.' }]);
   }
 
@@ -109,12 +112,15 @@ export default function Chatbot() {
           <button type="submit" className="border px-2 py-1">Send</button>
         </form>
       )}
-      {!collectInfo && (
+      {offerHelp && !collectInfo && (
         <button
-          onClick={() => setCollectInfo(true)}
+          onClick={() => {
+            setCollectInfo(true);
+            setOfferHelp(false);
+          }}
           className="mt-2 text-sm underline"
         >
-          Still need help?
+          Reach out for further help
         </button>
       )}
     </div>
