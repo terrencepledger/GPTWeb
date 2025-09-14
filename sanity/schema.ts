@@ -3,6 +3,7 @@ import staff from './schemas/staff';
 import siteSettings from './schemas/siteSettings';
 import ministry from './schemas/ministry';
 import heroSlide from './schemas/heroSlide';
+import chatbot from './schemas/chatbot';
 import missionStatement from './schemas/missionStatement';
 import eventDetail from './schemas/eventDetail';
 import heroSection from './schemas/sections/heroSection';
@@ -24,4 +25,5 @@ export const schemaTypes = [
   subscriptionSection,
   mapSection,
   linkSection,
+  chatbot,
 ];

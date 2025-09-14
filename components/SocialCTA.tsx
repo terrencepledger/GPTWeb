@@ -48,7 +48,7 @@ function SocialCard({ href, label, description, Icon }: SocialItem) {
 
 export default async function SocialCTA() {
   const settings = await siteSettings();
-  const channelId = settings?.youtubeChannelId;
+  const channelId = process.env.YOUTUBE_CHANNEL_ID;
   const serviceDays = extractServiceDays(settings?.serviceTimes);
 
   try {

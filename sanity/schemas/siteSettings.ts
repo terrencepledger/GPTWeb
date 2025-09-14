@@ -40,21 +40,6 @@ export default defineType({
       type: 'string',
     }),
     defineField({
-      name: 'youtubeChannelId',
-      title: 'YouTube Channel ID',
-      type: 'string',
-    }),
-    defineField({
-      name: 'vimeoUserId',
-      title: 'Vimeo User ID',
-      type: 'string',
-    }),
-    defineField({
-      name: 'vimeoAccessToken',
-      title: 'Vimeo Access Token',
-      type: 'string',
-    }),
-    defineField({
       name: 'socialLinks',
       title: 'Social Links',
       type: 'array',

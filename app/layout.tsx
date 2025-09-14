@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AnnouncementBanner from "@/components/AnnouncementBanner";
 import BannerAnchor from "@/components/BannerAnchor";
+import Assistant from "@/components/Assistant";
 import { siteSettings, announcementLatest } from "@/lib/queries";
 import { getCurrentLivestream } from "@/lib/vimeo";
 import AutoRefresh from "@/components/AutoRefresh";
@@ -125,6 +126,7 @@ gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');`}
         )}
         <main className="max-w-site flex-1 px-4 py-8">{children}</main>
         {!isEmbedded && <Footer />}
+        {!isEmbedded && <Assistant />}
       </body>
     </html>
   );

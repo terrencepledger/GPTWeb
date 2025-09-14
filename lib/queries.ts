@@ -64,14 +64,11 @@ export interface SiteSettings {
   phone?: string;
   logo?: string;
   socialLinks?: SocialLink[];
-  youtubeChannelId?: string;
-  vimeoUserId?: string;
-  vimeoAccessToken?: string;
 }
 
 export const siteSettings = () =>
   sanity.fetch<SiteSettings | null>(
-    groq`*[_id == "siteSettings"][0]{_id, title, address, serviceTimes, email, phone, youtubeChannelId, vimeoUserId, vimeoAccessToken, "logo": logo.asset->url, "socialLinks": socialLinks[]{label, href, description, icon}}`
+    groq`*[_id == "siteSettings"][0]{_id, title, email, phone, address, serviceTimes, "logo": logo.asset->url, "socialLinks": socialLinks[]{label, href, description, icon}}`
   );
 
 export interface Ministry {
