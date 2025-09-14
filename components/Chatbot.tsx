@@ -19,6 +19,7 @@ export default function Chatbot() {
   const openRef = useRef(open);
   const [entered, setEntered] = useState(false);
   const [enterOffset, setEnterOffset] = useState(20);
+  const NUDGE_MS = 2400;
 
   const scheduleNudge = useCallback(() => {
     if (nudgeRef.current) clearTimeout(nudgeRef.current);
@@ -59,7 +60,7 @@ export default function Chatbot() {
       const id = setTimeout(() => {
         setNudge(false);
         scheduleNudge();
-      }, 600);
+      }, NUDGE_MS);
       return () => clearTimeout(id);
     }
   }, [nudge, scheduleNudge]);
@@ -212,7 +213,6 @@ export default function Chatbot() {
         }`}
       >
         <button
-          key={nudge ? 'nudge' : 'idle'}
           type="button"
           aria-label="Open chatbot"
           onClick={() => {
@@ -224,7 +224,7 @@ export default function Chatbot() {
               setOpen(true);
             }
           }}
-          className={`flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100 shadow-lg dark:bg-neutral-800 cursor-pointer ${nudge ? 'animate-nudge' : 'animate-none'}`}
+          className={`flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100 shadow-lg dark:bg-neutral-800 cursor-pointer ${nudge ? 'animate-shake' : ''}`}
         >
           <span className="text-2xl">🤖</span>
         </button>

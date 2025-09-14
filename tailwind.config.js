@@ -4,7 +4,6 @@ module.exports = {
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  safelist: ["animate-nudge"],
   theme: {
     screens: {
       sm: "640px",
@@ -48,17 +47,11 @@ module.exports = {
           from: { opacity: 0, transform: 'translateY(0.5rem)' },
           to: { opacity: 1, transform: 'translateY(0)' },
         },
-        nudge: {
-          '0%,100%': { transform: 'translateX(0)' },
-          '25%': { transform: 'translateX(-0.25rem)' },
-          '75%': { transform: 'translateX(0.25rem)' },
-        },
       },
       animation: {
         marquee: "marquee 15s linear infinite",
         'fade-in-down': 'fade-in-down 0.5s ease-out forwards',
         'fade-in-up': 'fade-in-up 0.5s ease-out forwards',
-        nudge: 'nudge 0.6s ease-in-out',
       },
     },
   },
