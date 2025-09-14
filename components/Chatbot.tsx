@@ -16,6 +16,8 @@ export default function Chatbot() {
   const [info, setInfo] = useState({ name: '', contact: '', email: '', details: '' });
   const [nudge, setNudge] = useState(false);
   const nudgeRef = useRef<NodeJS.Timeout | null>(null);
+  const [entered, setEntered] = useState(false);
+  const [enterOffset, setEnterOffset] = useState(20);
 
   const scheduleNudge = useCallback(() => {
     if (nudgeRef.current) clearTimeout(nudgeRef.current);
@@ -29,6 +31,14 @@ export default function Chatbot() {
     setNudge(false);
     scheduleNudge();
   }
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      setEntered(true);
+      setEnterOffset(0);
+    }, 500);
+    return () => clearTimeout(id);
+  }, []);
 
   useEffect(() => {
     scheduleNudge();
@@ -84,7 +94,7 @@ export default function Chatbot() {
     if (!el || !header) return;
     const rect = el.getBoundingClientRect();
     const headerRect = header.getBoundingClientRect();
-    const padding = 16; // match header px-4
+    const padding = 16;
     const targetX = headerRect.right - padding - rect.width;
     const targetY = headerRect.top + (headerRect.height - rect.height) / 2;
     setOffset({ x: targetX - rect.left, y: targetY - rect.top });
@@ -103,8 +113,8 @@ export default function Chatbot() {
   return (
     <div
       ref={containerRef}
-      style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}
-      className="fixed right-6 bottom-6 z-50 transition-transform duration-[1000ms] ease-in-out"
+      style={{ transform: `translate(${offset.x}px, ${offset.y + enterOffset}px)`, opacity: entered ? 1 : 0 }}
+      className={`fixed right-6 bottom-6 z-50 transition-all duration-[1000ms] ease-in-out ${entered ? '' : 'pointer-events-none'}`}
     >
       <div
         className={`absolute bottom-0 right-0 w-80 rounded border bg-neutral-100 p-4 shadow-lg transition-all duration-700 ease-in-out transform dark:bg-neutral-800 ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
