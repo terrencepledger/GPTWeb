@@ -126,7 +126,7 @@ gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');`}
         )}
         <main className="max-w-site flex-1 px-4 py-8">{children}</main>
         {!isEmbedded && <Footer />}
-        <Chatbot />
+        {!isEmbedded && <Chatbot />}
       </body>
     </html>
   );
