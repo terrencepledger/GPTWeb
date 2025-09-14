@@ -107,7 +107,7 @@ export async function generateChatbotReply(
   messages: Message[],
   tone: string,
   client?: OpenAI,
-): Promise<{ reply: string; confidence: number }> {
+): Promise<{ reply: string; confidence: number; similarityCount: number }> {
   const openai = getClient(client);
   const [context, extra] = await Promise.all([
     buildSiteContext(),
@@ -122,8 +122,9 @@ export async function generateChatbotReply(
           `You are a ${tone} assistant for the website. ${extra ? extra + ' ' : ''}Use only the provided site content to answer questions. ` +
           'If a question is unrelated to the site, respond that you can only assist with website information. ' +
           'If the question is about the church or website but the answer is not present in the site content, say you are sorry and unsure, set confidence to 0, and suggest reaching out for further help. ' +
+          'Count how many earlier user questions in the conversation are the same as or very similar to the latest user question and include this number as "similarityCount". ' +
           `Site content:\n${context}\n` +
-          'Respond in JSON with keys "reply" and "confidence" (0-1).',
+          'Respond in JSON with keys "reply", "confidence", and "similarityCount" (number).',
       },
       ...messages.map(({ role, content }) => ({ role, content } as any)),
     ],
@@ -135,47 +136,11 @@ export async function generateChatbotReply(
     return {
       reply: parsed.reply ?? '',
       confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0,
+      similarityCount:
+        typeof parsed.similarityCount === 'number' ? parsed.similarityCount : 0,
     };
   } catch {
-    return { reply: '', confidence: 0 };
-  }
-}
-
-export async function shouldEscalate(
-  messages: Message[],
-  client?: OpenAI,
-): Promise<boolean> {
-  const count = await countSimilarQuestions(messages, client);
-  return count >= 2;
-}
-
-async function countSimilarQuestions(
-  messages: Message[],
-  client?: OpenAI,
-): Promise<number> {
-  const openai = getClient(client);
-  const userMsgs = messages.filter((m) => m.role === 'user');
-  if (userMsgs.length < 2) return 0;
-  const last = userMsgs[userMsgs.length - 1].content;
-  const earlier = userMsgs.slice(0, -1).map((m) => m.content);
-  const prompt =
-    `Last question: "${last}"\nEarlier questions:\n` +
-    earlier.map((q, i) => `${i + 1}. ${q}`).join('\n') +
-    '\nCount how many earlier questions are the same as or very similar to the last question. Respond with JSON {"count":number}.';
-  const completion = await openai.chat.completions.create({
-    model: 'gpt-4o-mini',
-    messages: [
-      { role: 'system', content: 'You compare questions for semantic similarity.' },
-      { role: 'user', content: prompt },
-    ],
-    response_format: { type: 'json_object' },
-  });
-  const raw = completion.choices[0].message?.content ?? '{}';
-  try {
-    const parsed = JSON.parse(raw);
-    return typeof parsed.count === 'number' ? parsed.count : 0;
-  } catch {
-    return 0;
+    return { reply: '', confidence: 0, similarityCount: 0 };
   }
 }
 
