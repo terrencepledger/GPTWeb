@@ -211,16 +211,13 @@ export async function sendEscalationEmail(info: EscalationInfo, history: Message
         if (typeof creds.private_key === 'string') {
           svcKeyRaw = creds.private_key;
         }
-        credsSource = 'env-json';
       } catch (e: any) {
         // ignore parse error; will fail below if unusable
       }
     } else if (envRaw) {
       svcKeyRaw = envRaw;
-      credsSource = 'env-pem';
     }
   } else if (!credsSource || credsSource === 'unknown') {
-    credsSource = 'env';
   }
 
   if (!svcEmail || !svcKeyRaw) {
