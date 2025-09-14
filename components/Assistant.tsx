@@ -156,7 +156,7 @@ export default function Assistant() {
       className={`fixed right-6 bottom-6 z-50 transition-all duration-[1000ms] ease-in-out ${entered ? '' : 'pointer-events-none'}`}
     >
       <div
-        className={`absolute bottom-0 right-0 w-80 rounded border bg-neutral-100 p-4 shadow-lg transition-all duration-700 ease-in-out transform dark:bg-neutral-800 ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
+        className={`absolute bottom-0 right-0 w-80 rounded border border-brand-purple bg-brand-purpleLt text-brand-ink p-4 shadow-lg transition-all duration-700 ease-in-out transform dark:border-brand-gold dark:bg-brand-ink dark:text-neutral-100 ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
       >
         <button
           type="button"
@@ -165,25 +165,25 @@ export default function Assistant() {
             setOpen(false);
             resetNudge();
           }}
-          className="absolute right-2 top-2 text-xl leading-none cursor-pointer"
+          className="absolute right-2 top-2 text-xl leading-none cursor-pointer text-brand-ink dark:text-brand-gold"
         >
           ×
         </button>
         <div role="log" aria-label="Chat messages" className="mb-2 max-h-60 overflow-y-auto" ref={logRef}>
           {messages.map((m, i) => (
             <div key={i} className="mb-1">
-              <span className="font-bold">{m.role === 'assistant' ? 'Assistant' : 'You'}:</span> {m.content}
+              <span className={`font-bold ${m.role === 'assistant' ? 'text-brand-purple' : 'text-brand-gold'}`}>{m.role === 'assistant' ? 'Assistant' : 'You'}:</span> {m.content}
             </div>
           ))}
           {thinking && !collectInfo && (
-            <div className="mb-1 text-neutral-500">Assistant is thinking…</div>
+            <div className="mb-1 text-brand-purple">Assistant is thinking…</div>
           )}
         </div>
         {collectInfo ? (
           <form onSubmit={sendInfo} className="flex flex-col gap-2" aria-label="Contact form">
             <input
               type="text"
-              className="border p-1"
+              className="border border-brand-purple bg-neutral-50 p-1 text-brand-ink dark:bg-brand-ink dark:text-neutral-100"
               placeholder="Name"
               value={info.name}
               onChange={(e) => setInfo({ ...info, name: e.target.value })}
@@ -192,7 +192,7 @@ export default function Assistant() {
             />
             <input
               type="text"
-              className="border p-1"
+              className="border border-brand-purple bg-neutral-50 p-1 text-brand-ink dark:bg-brand-ink dark:text-neutral-100"
               placeholder="Contact Number"
               value={info.contact}
               onChange={(e) => setInfo({ ...info, contact: e.target.value })}
@@ -201,7 +201,7 @@ export default function Assistant() {
             />
             <input
               type="email"
-              className="border p-1"
+              className="border border-brand-purple bg-neutral-50 p-1 text-brand-ink dark:bg-brand-ink dark:text-neutral-100"
               placeholder="Email"
               value={info.email}
               onChange={(e) => setInfo({ ...info, email: e.target.value })}
@@ -209,24 +209,24 @@ export default function Assistant() {
               required
             />
             <textarea
-              className="border p-1"
+              className="border border-brand-purple bg-neutral-50 p-1 text-brand-ink dark:bg-brand-ink dark:text-neutral-100"
               placeholder="Any extra details"
               value={info.details}
               onChange={(e) => setInfo({ ...info, details: e.target.value })}
               aria-label="Any extra details"
             />
-            <button type="submit" className="border px-2 py-1 cursor-pointer">Send</button>
+            <button type="submit" className="border border-brand-purple bg-brand-gold px-2 py-1 text-brand-ink cursor-pointer dark:bg-brand-purple dark:text-neutral-100">Send</button>
           </form>
         ) : (
           <form onSubmit={sendMessage} className="flex gap-2" aria-label="Chat input">
             <input
               type="text"
-              className="flex-1 border p-1"
+              className="flex-1 border border-brand-purple bg-neutral-50 p-1 text-brand-ink dark:bg-brand-ink dark:text-neutral-100"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               aria-label="Message"
             />
-            <button type="submit" className="border px-2 py-1 cursor-pointer">Send</button>
+            <button type="submit" className="border border-brand-purple bg-brand-gold px-2 py-1 text-brand-ink cursor-pointer dark:bg-brand-purple dark:text-neutral-100">Send</button>
           </form>
         )}
       </div>
@@ -247,7 +247,7 @@ export default function Assistant() {
               setOpen(true);
             }
           }}
-          className={`flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100 shadow-lg dark:bg-neutral-800 cursor-pointer ${nudge ? 'animate-shake' : ''}`}
+          className={`flex h-14 w-14 items-center justify-center rounded-full bg-brand-gold text-brand-ink shadow-lg dark:bg-brand-purple dark:text-neutral-100 cursor-pointer ${nudge ? 'animate-shake' : ''}`}
         >
           <span className="text-2xl">🤖</span>
         </button>
@@ -256,7 +256,7 @@ export default function Assistant() {
             type="button"
             aria-label="Dismiss assistant"
             onClick={dock}
-            className="absolute -top-3 -right-3 hidden h-5 w-5 items-center justify-center rounded-full bg-neutral-400 text-xs text-neutral-50 group-hover:flex cursor-pointer"
+            className="absolute -top-3 -right-3 hidden h-5 w-5 items-center justify-center rounded-full bg-brand-purple text-xs text-neutral-50 group-hover:flex cursor-pointer"
           >
             ×
           </button>
