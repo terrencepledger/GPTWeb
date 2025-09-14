@@ -140,7 +140,7 @@ export async function generateChatbotReply(
   messages: Message[],
   tone: string,
   client?: OpenAI,
-): Promise<{ reply: string; confidence: number; similarityCount: number }> {
+): Promise<{ reply: string; confidence: number; similarityCount: number; escalate: boolean }> {
   const openai = getClient(client);
   const [context, extra] = await Promise.all([
     buildSiteContext(),
@@ -160,7 +160,7 @@ export async function generateChatbotReply(
           'If a question is unrelated to the site, respond that you can only assist with website information. ' +
           'If the question is about the church or website but the answer is not present in the site content, say you are sorry and unsure, set confidence to 0, and suggest reaching out for further help. ' +
           'If the user requests to speak to a person or otherwise asks for escalation, set "escalate" to true. Avoid copy-paste escalation text; any escalation notice should reference the user\'s situation. ' +
-          'Count how many times in the conversation the user has asked the same or very similar question, including the current question, and include this number as "similarityCount". ' +
+          'Count how many times so far the user has asked this same or a very similar question, including the current attempt. Do not increase the count for new or different questions. Include this number as "similarityCount". ' +
           `Site content:\n${context}\n` +
           'Respond in JSON with keys "reply", "confidence", "similarityCount" (number), and "escalate" (boolean).',
       },
