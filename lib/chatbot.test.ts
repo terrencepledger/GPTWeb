@@ -17,7 +17,7 @@ const fakeClient = {
               content: JSON.stringify({
                 reply: 'Hello there',
                 confidence: 0.9,
-                similarityCount: 2,
+                similarityCount: 3,
               }),
             },
           },
@@ -35,7 +35,7 @@ const fakeClient = {
   );
   assert.strictEqual(reply, 'Hello there');
   assert.strictEqual(confidence, 0.9);
-  assert.strictEqual(similarityCount, 2);
+  assert.strictEqual(similarityCount, 3);
   console.log('tests passed');
 })();
 
