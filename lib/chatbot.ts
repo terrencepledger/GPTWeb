@@ -1,6 +1,5 @@
 import { sanity } from './sanity';
 import groq from 'groq';
-import { google } from 'googleapis';
 import {
   siteSettings,
   staffAll,
@@ -150,6 +149,7 @@ export function shouldEscalate(messages: Message[]): boolean {
 export type EscalationInfo = SharedEscalationInfo;
 
 export async function sendEscalationEmail(info: EscalationInfo, history: Message[]) {
+  const { google } = await import('googleapis');
   // Require server-to-server auth via a Google Workspace Service Account with
   // domain-wide delegation, impersonating a fixed sender account sourced from Sanity.
   const svcEmail = process.env.GMAIL_SERVICE_ACCOUNT_EMAIL;
