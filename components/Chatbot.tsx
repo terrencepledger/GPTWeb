@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, FormEvent } from 'react';
+import { useState, useRef, FormEvent, useEffect, useCallback } from 'react';
 import type { ChatMessage } from '@/types/chat';
 
 export default function Chatbot() {
@@ -14,9 +14,42 @@ export default function Chatbot() {
   const [input, setInput] = useState('');
   const [collectInfo, setCollectInfo] = useState(false);
   const [info, setInfo] = useState({ name: '', contact: '', email: '', details: '' });
+  const [nudge, setNudge] = useState(false);
+  const nudgeRef = useRef<NodeJS.Timeout | null>(null);
+
+  const scheduleNudge = useCallback(() => {
+    if (nudgeRef.current) clearTimeout(nudgeRef.current);
+    const timeout = Math.floor(Math.random() * 45000) + 45000;
+    nudgeRef.current = setTimeout(() => {
+      if (!open) setNudge(true);
+    }, timeout);
+  }, [open]);
+
+  function resetNudge() {
+    setNudge(false);
+    scheduleNudge();
+  }
+
+  useEffect(() => {
+    scheduleNudge();
+    return () => {
+      if (nudgeRef.current) clearTimeout(nudgeRef.current);
+    };
+  }, [scheduleNudge]);
+
+  useEffect(() => {
+    if (nudge) {
+      const id = setTimeout(() => {
+        setNudge(false);
+        scheduleNudge();
+      }, 600);
+      return () => clearTimeout(id);
+    }
+  }, [nudge, scheduleNudge]);
 
   async function sendMessage(e: FormEvent) {
     e.preventDefault();
+    resetNudge();
     const outgoing: ChatMessage[] = [...messages, { role: 'user', content: input }];
     setMessages(outgoing);
     setInput('');
@@ -35,6 +68,7 @@ export default function Chatbot() {
 
   async function sendInfo(e: FormEvent) {
     e.preventDefault();
+    resetNudge();
     await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -55,11 +89,13 @@ export default function Chatbot() {
     const targetY = headerRect.top + (headerRect.height - rect.height) / 2;
     setOffset({ x: targetX - rect.left, y: targetY - rect.top });
     setDocked(true);
+    resetNudge();
   }
 
   function undock() {
     setOffset({ x: 0, y: 0 });
     setDocked(false);
+    resetNudge();
   }
 
   const ANIM_MS = 1000;
@@ -76,7 +112,10 @@ export default function Chatbot() {
         <button
           type="button"
           aria-label="Close chatbot"
-          onClick={() => setOpen(false)}
+          onClick={() => {
+            setOpen(false);
+            resetNudge();
+          }}
           className="absolute right-2 top-2 text-xl leading-none cursor-pointer"
         >
           ×
@@ -140,7 +179,10 @@ export default function Chatbot() {
         )}
         {!collectInfo && (
           <button
-            onClick={() => setCollectInfo(true)}
+            onClick={() => {
+              setCollectInfo(true);
+              resetNudge();
+            }}
             className="mt-2 text-sm underline cursor-pointer"
           >
             Still need help?
@@ -156,6 +198,7 @@ export default function Chatbot() {
           type="button"
           aria-label="Open chatbot"
           onClick={() => {
+            resetNudge();
             if (docked) {
               undock();
               setTimeout(() => setOpen(true), ANIM_MS);
@@ -163,7 +206,7 @@ export default function Chatbot() {
               setOpen(true);
             }
           }}
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100 shadow-lg dark:bg-neutral-800 cursor-pointer"
+          className={`flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100 shadow-lg dark:bg-neutral-800 cursor-pointer ${nudge ? 'animate-nudge' : ''}`}
         >
           <span className="text-2xl">🤖</span>
         </button>
