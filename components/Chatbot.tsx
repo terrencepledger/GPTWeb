@@ -49,13 +49,16 @@ export default function Chatbot({ name }: { name: string }) {
     setMessages((prev) => [...prev, { role: 'assistant', content: 'Thanks! We will get back to you soon.' }]);
   }
 
-  function handleClose() {
+  function closeDialog() {
+    setOpen(false);
+  }
+
+  function handleDock() {
     setClosing(true);
     setTimeout(() => {
-      setOpen(false);
       setDocked(true);
       setClosing(false);
-    }, 300);
+    }, 500);
   }
 
   function openFromHeader() {
@@ -71,10 +74,10 @@ export default function Chatbot({ name }: { name: string }) {
     <>
       {open && (
         <div
-          className="fixed right-4 z-50 w-80 max-h-[60vh] rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] p-4 shadow transition-all duration-300"
+          className="fixed right-4 z-50 w-80 max-h-[60vh] rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] p-4 shadow transition-all duration-500 ease-in-out"
           style={style}
         >
-          <button onClick={handleClose} className="absolute top-2 right-2">×</button>
+          <button onClick={closeDialog} className="absolute top-2 right-2 cursor-pointer">×</button>
           <div role="log" aria-label="Chat messages" className="mb-2 max-h-48 overflow-y-auto">
             {messages.map((m, i) => (
               <div key={i} className="mb-1">
@@ -118,7 +121,7 @@ export default function Chatbot({ name }: { name: string }) {
                 onChange={(e) => setInfo({ ...info, details: e.target.value })}
                 aria-label="Any extra details"
               />
-              <button type="submit" className="border border-[var(--brand-border)] px-2 py-1">Send</button>
+              <button type="submit" className="border border-[var(--brand-border)] px-2 py-1 cursor-pointer">Send</button>
             </form>
           ) : (
             <form onSubmit={sendMessage} className="flex gap-2" aria-label="Chat input">
@@ -129,29 +132,43 @@ export default function Chatbot({ name }: { name: string }) {
                 onChange={(e) => setInput(e.target.value)}
                 aria-label="Message"
               />
-              <button type="submit" className="border border-[var(--brand-border)] px-2 py-1">Send</button>
+              <button type="submit" className="border border-[var(--brand-border)] px-2 py-1 cursor-pointer">Send</button>
             </form>
           )}
           {!collectInfo && (
-            <button onClick={() => setCollectInfo(true)} className="mt-2 text-sm underline">
+            <button onClick={() => setCollectInfo(true)} className="mt-2 text-sm underline cursor-pointer">
               Still need help?
             </button>
           )}
         </div>
       )}
       {!open && !docked && (
-        <button
-          onClick={() => setOpen(true)}
-          className="fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--brand-alt)] text-2xl text-[var(--brand-surface)] shadow transition-transform duration-300"
+        <div
+          className="fixed bottom-4 right-4 z-50 group relative transition-all duration-500 ease-in-out"
+          style={style}
         >
-          🤖
-        </button>
+          <button
+            onClick={() => setOpen(true)}
+            className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--brand-alt)] text-2xl text-[var(--brand-surface)] shadow transition-transform duration-500 ease-in-out cursor-pointer"
+            aria-label="Open chatbot"
+          >
+            🤖
+          </button>
+          <button
+            onClick={handleDock}
+            className="absolute -top-2 -right-2 hidden h-5 w-5 items-center justify-center rounded-full bg-[var(--brand-alt)] text-xs text-[var(--brand-surface)] shadow group-hover:flex cursor-pointer"
+            aria-label="Dismiss chatbot"
+          >
+            ×
+          </button>
+        </div>
       )}
       {docked && headerEl &&
         createPortal(
           <button
             onClick={openFromHeader}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--brand-alt)] text-xl text-[var(--brand-surface)] shadow transition-transform duration-300"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--brand-alt)] text-xl text-[var(--brand-surface)] shadow transition-transform duration-500 ease-in-out cursor-pointer"
+            aria-label="Open chatbot"
           >
             🤖
           </button>,
