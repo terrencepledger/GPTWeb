@@ -1,34 +1,26 @@
 process.env.SANITY_STUDIO_PROJECT_ID = 'test';
 process.env.SANITY_STUDIO_DATASET = 'test';
-const assert = require('node:assert');
-const { sanity } = require('./sanity');
+
+import assert from 'node:assert';
+import { sanity } from './sanity';
+import { generateChatbotReply } from './chatbot';
+
 sanity.fetch = async () => '';
-const { generateChatbotReply, shouldEscalate } = require('./chatbot');
-
-const repeated = [
-  { role: 'user', content: 'When are services?' },
-  { role: 'assistant', content: '...' },
-  { role: 'user', content: 'What time are your services?' },
-  { role: 'assistant', content: '...' },
-  { role: 'user', content: 'When do services start?' },
-];
-
-const similarityClient = {
-  chat: {
-    completions: {
-      create: async () => ({
-        choices: [{ message: { content: JSON.stringify({ count: 2 }) } }],
-      }),
-    },
-  },
-};
 
 const fakeClient = {
   chat: {
     completions: {
       create: async () => ({
         choices: [
-          { message: { content: JSON.stringify({ reply: 'Hello there', confidence: 0.9 }) } },
+          {
+            message: {
+              content: JSON.stringify({
+                reply: 'Hello there',
+                confidence: 0.9,
+                similarityCount: 2,
+              }),
+            },
+          },
         ],
       }),
     },
@@ -36,16 +28,14 @@ const fakeClient = {
 };
 
 (async () => {
-  assert.strictEqual(
-    await shouldEscalate(repeated, similarityClient),
-    true,
-  );
-  const { reply, confidence } = await generateChatbotReply(
+  const { reply, confidence, similarityCount } = await generateChatbotReply(
     [{ role: 'user', content: 'Hi' }],
     'friendly',
-    fakeClient,
+    fakeClient as any,
   );
   assert.strictEqual(reply, 'Hello there');
   assert.strictEqual(confidence, 0.9);
+  assert.strictEqual(similarityCount, 2);
   console.log('tests passed');
 })();
+

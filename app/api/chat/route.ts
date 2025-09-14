@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import {
   getChatbotTone,
-  shouldEscalate,
   sendEscalationEmail,
   generateChatbotReply,
   escalationNotice,
@@ -38,14 +37,16 @@ export async function POST(req: Request) {
   }
 
   const tone = await getChatbotTone();
-  const { reply, confidence } = await generateChatbotReply(messages, tone);
-  const updatedMessages: ChatMessage[] = [...messages, { role: 'assistant', content: reply, confidence }];
+  const { reply, confidence, similarityCount } = await generateChatbotReply(
+    messages,
+    tone,
+  );
 
-  if (await shouldEscalate(updatedMessages)) {
+  if (similarityCount >= 2) {
     const notice = await escalationNotice(tone);
-    return NextResponse.json({ escalate: true, reply: notice, confidence });
+    return NextResponse.json({ escalate: true, reply: notice, confidence, similarityCount });
   }
 
   const offerHelp = confidence < 0.5;
-  return NextResponse.json({ reply, confidence, offerHelp });
+  return NextResponse.json({ reply, confidence, offerHelp, similarityCount });
 }
