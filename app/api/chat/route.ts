@@ -57,6 +57,5 @@ export async function POST(req: Request) {
     });
   }
 
-  const offerHelp = confidence < 0.5;
-  return NextResponse.json({ reply, confidence, offerHelp, similarityCount });
+  return NextResponse.json({ reply, confidence, similarityCount });
 }
