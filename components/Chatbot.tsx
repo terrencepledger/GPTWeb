@@ -10,12 +10,14 @@ export default function Chatbot() {
   const [input, setInput] = useState('');
   const [collectInfo, setCollectInfo] = useState(false);
   const [info, setInfo] = useState({ name: '', contact: '', email: '', details: '' });
+  const [thinking, setThinking] = useState(false);
 
   async function sendMessage(e: FormEvent) {
     e.preventDefault();
     const outgoing: ChatMessage[] = [...messages, { role: 'user', content: input }];
     setMessages(outgoing);
     setInput('');
+    setThinking(true);
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -24,8 +26,10 @@ export default function Chatbot() {
     const data = await res.json();
     if (data.escalate) {
       setCollectInfo(true);
+      setThinking(false);
     } else {
       setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
+      setThinking(false);
     }
   }
 
@@ -34,7 +38,7 @@ export default function Chatbot() {
     await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ escalate: true, info }),
+      body: JSON.stringify({ escalate: true, info, messages }),
     });
     setCollectInfo(false);
     setMessages((prev) => [...prev, { role: 'assistant', content: 'Thanks! We will get back to you soon.' }]);
@@ -48,6 +52,12 @@ export default function Chatbot() {
             <span className="font-bold">{m.role === 'assistant' ? 'Bot' : 'You'}:</span> {m.content}
           </div>
         ))}
+        {thinking && (
+          <div className="mb-1">
+            <span className="font-bold">Bot:</span>{' '}
+            <span className="italic text-neutral-500">...</span>
+          </div>
+        )}
       </div>
       {collectInfo ? (
         <form onSubmit={sendInfo} className="flex flex-col gap-2" aria-label="Contact form">

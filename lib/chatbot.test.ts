@@ -1,4 +1,8 @@
+process.env.SANITY_STUDIO_PROJECT_ID = 'test';
+process.env.SANITY_STUDIO_DATASET = 'test';
 const assert = require('node:assert');
+const { sanity } = require('./sanity');
+sanity.fetch = async () => '';
 const { generateChatbotReply, shouldEscalate } = require('./chatbot');
 
 const lowConfidence = [

@@ -1,10 +1,31 @@
 import { sanity } from './sanity';
 import groq from 'groq';
 import { google } from 'googleapis';
+import {
+  siteSettings,
+  staffAll,
+  ministriesAll,
+  missionStatement,
+  announcementLatest,
+} from './queries';
 
 export async function getChatbotTone(): Promise<string> {
   const tone = await sanity.fetch(groq`*[_type == "chatbotSettings"][0].tone`);
   return tone || 'friendly';
+}
+
+export async function getChatbotExtraContext(): Promise<string> {
+  if (!process.env.SANITY_STUDIO_PROJECT_ID || !process.env.SANITY_STUDIO_DATASET) {
+    return '';
+  }
+  try {
+    const extra = await sanity.fetch(
+      groq`*[_type == "chatbotSettings"][0].extraContext`,
+    );
+    return extra || '';
+  } catch {
+    return '';
+  }
 }
 
 export async function getEscalationAddresses(): Promise<{ from: string; to: string }> {
@@ -38,19 +59,67 @@ function getClient(client?: OpenAI): OpenAI {
   return defaultClient;
 }
 
+async function buildSiteContext(): Promise<string> {
+  if (!process.env.SANITY_STUDIO_PROJECT_ID || !process.env.SANITY_STUDIO_DATASET) {
+    return '';
+  }
+  try {
+    const [settings, staff, ministries, mission, announcement] = await Promise.all([
+      siteSettings().catch(() => null),
+      staffAll().catch(() => []),
+      ministriesAll().catch(() => []),
+      missionStatement().catch(() => null),
+      announcementLatest().catch(() => null),
+    ]);
+    let context = '';
+    if (settings) {
+      context += `Site title: ${settings.title}. `;
+      if (settings.address) context += `Address: ${settings.address}. `;
+      if (settings.serviceTimes) context += `Service times: ${settings.serviceTimes}. `;
+    }
+    if (announcement) {
+      context += `Latest announcement: ${announcement.title} - ${announcement.message}. `;
+    }
+    if (mission) {
+      context += `Mission statement: ${mission.headline}. ${mission.message || ''} `;
+    }
+    if (staff.length) {
+      context +=
+        'Staff: ' + staff.map((s) => `${s.name} (${s.role})`).join('; ') + '. ';
+    }
+    if (ministries.length) {
+      context +=
+        'Ministries: ' +
+        ministries
+          .map((m) => `${m.name} - ${m.description}`)
+          .join('; ') +
+        '. ';
+    }
+    return context.trim();
+  } catch {
+    return '';
+  }
+}
+
 export async function generateChatbotReply(
   messages: Message[],
   tone: string,
   client?: OpenAI,
 ): Promise<{ reply: string; confidence: number }> {
   const openai = getClient(client);
+  const [context, extra] = await Promise.all([
+    buildSiteContext(),
+    getChatbotExtraContext(),
+  ]);
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [
       {
         role: 'system',
         content:
-          `You are a ${tone} chatbot that answers using only provided internal content. ` +
+          `You are a ${tone} assistant for the website. ${extra ? extra + ' ' : ''}Use only the provided site content to answer questions. ` +
+          'If a question is unrelated to the site, respond that you can only assist with website information.\n\n' +
+          `Site content:\n${context}\n` +
           'Respond in JSON with keys "reply" and "confidence" (0-1).',
       },
       ...messages.map(({ role, content }) => ({ role, content } as any)),
@@ -80,7 +149,7 @@ export function shouldEscalate(messages: Message[]): boolean {
 
 export type EscalationInfo = SharedEscalationInfo;
 
-export async function sendEscalationEmail(info: EscalationInfo) {
+export async function sendEscalationEmail(info: EscalationInfo, history: Message[]) {
   // Require server-to-server auth via a Google Workspace Service Account with
   // domain-wide delegation, impersonating a fixed sender account sourced from Sanity.
   const svcEmail = process.env.GMAIL_SERVICE_ACCOUNT_EMAIL;
@@ -110,6 +179,9 @@ export async function sendEscalationEmail(info: EscalationInfo) {
     `From: ${from}`,
   ];
 
+  const historyLines = history
+    .map((m) => `${m.role}: ${m.content}`)
+    .join('\n');
   const message = [
     ...headers,
     '',
@@ -117,6 +189,9 @@ export async function sendEscalationEmail(info: EscalationInfo) {
     `Contact Number: ${info.contact}`,
     `Email: ${info.email}`,
     `Details: ${info.details}`,
+    '',
+    'Chat History:',
+    historyLines,
   ].join('\n');
 
   // Gmail API expects base64url encoding (RFC 4648 §5)

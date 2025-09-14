@@ -18,6 +18,12 @@ export default defineType({
       },
     }),
     defineField({
+      name: "extraContext",
+      title: "Extra Context",
+      type: "text",
+      description: "Additional commands or context for the chatbot",
+    }),
+    defineField({
       name: "escalationFrom",
       title: "Escalation From (sender email)",
       type: "string",

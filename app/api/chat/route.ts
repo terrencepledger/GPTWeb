@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   const info = body?.info as EscalationInfo | undefined;
 
   if (escalate && info) {
-    await sendEscalationEmail(info);
+    await sendEscalationEmail(info, messages);
     return NextResponse.json({ status: 'escalated' });
   }
 
