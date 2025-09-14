@@ -60,7 +60,8 @@ export async function POST(req: Request) {
   );
 
   if (manual || similarityCount >= 3) {
-    const notice = await escalationNotice(tone);
+    const last = messages[messages.length - 1]?.content || '';
+    const notice = await escalationNotice(tone, last);
     return NextResponse.json({ escalate: true, reply: notice, confidence, similarityCount });
   }
 
