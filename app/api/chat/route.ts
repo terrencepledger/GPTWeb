@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     tone,
   );
 
-  if (similarityCount >= 2) {
+  if (similarityCount >= 3) {
     const notice = await escalationNotice(tone);
     return NextResponse.json({ escalate: true, reply: notice, confidence, similarityCount });
   }

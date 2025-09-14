@@ -122,7 +122,7 @@ export async function generateChatbotReply(
           `You are a ${tone} assistant for the website. ${extra ? extra + ' ' : ''}Use only the provided site content to answer questions. ` +
           'If a question is unrelated to the site, respond that you can only assist with website information. ' +
           'If the question is about the church or website but the answer is not present in the site content, say you are sorry and unsure, set confidence to 0, and suggest reaching out for further help. ' +
-          'Count how many earlier user questions in the conversation are the same as or very similar to the latest user question and include this number as "similarityCount". ' +
+          'Count how many times in the conversation the user has asked the same or very similar question, including the current question, and include this number as "similarityCount". ' +
           `Site content:\n${context}\n` +
           'Respond in JSON with keys "reply", "confidence", and "similarityCount" (number).',
       },
