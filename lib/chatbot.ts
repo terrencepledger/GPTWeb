@@ -262,20 +262,24 @@ export async function sendEscalationEmail(info: EscalationInfo, history: Message
     dateStyle: 'medium',
     timeStyle: 'short',
   });
-  const historyLines = history
-    .map(
-      (m) =>
-        `[${fmt.format(new Date(m.timestamp))}] ${m.role}: ${m.content}`,
-    )
-    .join('\n');
-  const historyHtml = `<pre style="font-family:'Courier New',monospace;background-color:rgb(238,238,238);padding:8px;">${escapeHtml(
-    historyLines,
-  )}</pre>`;
+  const historyHtml = `<pre style="font-family:'Courier New',monospace;background-color:rgb(238,238,238);padding:8px;">${history
+    .map((m) => {
+      const color = m.role === 'assistant' ? 'red' : 'blue';
+      const label = m.role === 'assistant' ? 'Assistant' : 'Visitor';
+      return `<span style="color:${color}">[${fmt.format(new Date(m.timestamp))}] ${label}: ${escapeHtml(
+        m.content,
+      )}</span>`;
+    })
+    .join('\\n')}</pre>`;
 
-  function buildMessage(toAddr: string, extraHeaders: string[] = []) {
+  function buildMessage(
+    toAddr: string,
+    subject: string,
+    extraHeaders: string[] = [],
+  ) {
     const headers = [
       `To: ${toAddr}`,
-      'Subject: Chatbot escalation',
+      `Subject: ${subject}`,
       `From: ${from}`,
       'MIME-Version: 1.0',
       'Content-Type: text/html; charset="UTF-8"',
@@ -289,11 +293,19 @@ export async function sendEscalationEmail(info: EscalationInfo, history: Message
       '<p>Chat History:</p>',
       historyHtml,
     ].join('');
-    return headers.join('\r\n') + '\r\n\r\n' + body;
+    return headers.join('\\r\\n') + '\\r\\n\\r\\n' + body;
   }
 
-  const visitorMsg = buildMessage(info.email, ['Reply-To: info@gptchurch.org']);
-  const staffMsg = buildMessage(to);
+  const visitorMsg = buildMessage(
+    info.email,
+    'Your Chat with GPT',
+    ['Reply-To: info@gptchurch.org'],
+  );
+  const staffMsg = buildMessage(
+    to,
+    `[${info.name}] - Chat Escalation`,
+    [`Reply-To: ${info.email}`],
+  );
 
   const encode = (msg: string) =>
     Buffer.from(msg)
