@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, FormEvent, useEffect, useCallback } from 'react';
-import type { ChatMessage } from '@/types/chat';
+import {FormEvent, useCallback, useEffect, useRef, useState} from 'react';
+import type {ChatMessage} from '@/types/chat';
 
 export default function Chatbot() {
   const [open, setOpen] = useState(false);
@@ -9,7 +9,7 @@ export default function Chatbot() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'assistant', content: 'Hi! How can I help you today?' },
+    { role: 'assistant', content: 'Hi! How can I help you today?', timestamp: new Date().toISOString() },
   ]);
   const [input, setInput] = useState('');
   const [collectInfo, setCollectInfo] = useState(false);
@@ -20,6 +20,10 @@ export default function Chatbot() {
   const [entered, setEntered] = useState(false);
   const [enterOffset, setEnterOffset] = useState(20);
   const NUDGE_MS = 2400;
+  const [thinking, setThinking] = useState(false);
+  const [offerHelp, setOfferHelp] = useState(true);
+  const [escalationReason, setEscalationReason] = useState('');
+  const logRef = useRef<HTMLDivElement>(null);
 
   const scheduleNudge = useCallback(() => {
     if (nudgeRef.current) clearTimeout(nudgeRef.current);
@@ -65,35 +69,67 @@ export default function Chatbot() {
     }
   }, [nudge, scheduleNudge]);
 
+  useEffect(() => {
+    const el = logRef.current;
+    if (!el) return;
+    const last = el.lastElementChild as HTMLElement | null;
+    last?.scrollIntoView({ block: 'start' });
+  }, [messages, thinking]);
+
   async function sendMessage(e: FormEvent) {
     e.preventDefault();
     resetNudge();
-    const outgoing: ChatMessage[] = [...messages, { role: 'user', content: input }];
+    const now = new Date().toISOString();
+    const outgoing: ChatMessage[] = [
+      ...messages,
+      { role: 'user', content: input, timestamp: now },
+    ];
     setMessages(outgoing);
     setInput('');
+    setThinking(true);
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages: outgoing }),
     });
     const data = await res.json();
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: 'assistant',
+        content: data.reply,
+        confidence: data.confidence,
+        timestamp: new Date().toISOString(),
+      },
+    ]);
     if (data.escalate) {
       setCollectInfo(true);
-    } else {
-      setMessages((prev) => [...prev, { role: 'assistant', content: data.reply }]);
+      setOfferHelp(false);
+      setEscalationReason(data.reason || '');
+    } else if (typeof data.offerHelp !== 'undefined') {
+      setOfferHelp(Boolean(data.offerHelp));
     }
+    setThinking(false);
   }
 
   async function sendInfo(e: FormEvent) {
     e.preventDefault();
     resetNudge();
-    await fetch('/api/chat', {
+      const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ escalate: true, info }),
+      body: JSON.stringify({ escalate: true, info, messages: messages, reason: escalationReason }),
     });
     setCollectInfo(false);
-    setMessages((prev) => [...prev, { role: 'assistant', content: 'Thanks! We will get back to you soon.' }]);
+    setOfferHelp(false);
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: 'assistant',
+        content: res.ok ? 'Your request has been sent. We will get back to you soon.' : 'There was an issue sending your request.',
+        timestamp: new Date().toISOString(),
+      },
+    ]);
   }
 
   function dock() {
@@ -138,12 +174,15 @@ export default function Chatbot() {
         >
           ×
         </button>
-        <div role="log" aria-label="Chat messages" className="mb-2 max-h-60 overflow-y-auto">
+        <div role="log" aria-label="Chat messages" className="mb-2 max-h-60 overflow-y-auto" ref={logRef}>
           {messages.map((m, i) => (
             <div key={i} className="mb-1">
               <span className="font-bold">{m.role === 'assistant' ? 'Bot' : 'You'}:</span> {m.content}
             </div>
           ))}
+          {thinking && !collectInfo && (
+            <div className="mb-1 text-neutral-500">Bot is thinking…</div>
+          )}
         </div>
         {collectInfo ? (
           <form onSubmit={sendInfo} className="flex flex-col gap-2" aria-label="Contact form">
@@ -195,7 +234,7 @@ export default function Chatbot() {
             <button type="submit" className="border px-2 py-1 cursor-pointer">Send</button>
           </form>
         )}
-        {!collectInfo && (
+        {!collectInfo && offerHelp && (
           <button
             onClick={() => {
               setCollectInfo(true);

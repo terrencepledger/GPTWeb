@@ -1,18 +1,29 @@
-const assert = require('node:assert');
-const { generateChatbotReply, shouldEscalate } = require('./chatbot');
+process.env.SANITY_STUDIO_PROJECT_ID = 'test';
+process.env.SANITY_STUDIO_DATASET = 'test';
 
-const lowConfidence = [
-  { role: 'user', content: 'Hi' },
-  { role: 'assistant', content: 'Hmm', confidence: 0.4 },
-];
-assert.strictEqual(shouldEscalate(lowConfidence), true);
+import assert from 'node:assert';
+import { sanity } from './sanity';
+import { generateChatbotReply } from './chatbot';
+
+const sanityAny: any = sanity;
+sanityAny.fetch = async () => '' as any;
 
 const fakeClient = {
   chat: {
     completions: {
       create: async () => ({
         choices: [
-          { message: { content: JSON.stringify({ reply: 'Hello there', confidence: 0.9 }) } },
+          {
+            message: {
+              content: JSON.stringify({
+                reply: 'Hello there',
+                confidence: 0.9,
+                similarityCount: 3,
+                escalate: false,
+                escalateReason: '',
+              }),
+            },
+          },
         ],
       }),
     },
@@ -20,12 +31,22 @@ const fakeClient = {
 };
 
 (async () => {
-  const { reply, confidence } = await generateChatbotReply(
-    [{ role: 'user', content: 'Hi' }],
+  const { reply, confidence, similarityCount, escalate, escalateReason } = await generateChatbotReply(
+    [
+      {
+        role: 'user',
+        content: 'Hi',
+        timestamp: new Date().toISOString(),
+      },
+    ],
     'friendly',
-    fakeClient,
+    fakeClient as any,
   );
   assert.strictEqual(reply, 'Hello there');
   assert.strictEqual(confidence, 0.9);
+  assert.strictEqual(similarityCount, 3);
+  assert.strictEqual(escalate, false);
+  assert.strictEqual(escalateReason, '');
   console.log('tests passed');
 })();
+

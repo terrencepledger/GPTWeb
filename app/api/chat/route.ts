@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import {
   getChatbotTone,
-  shouldEscalate,
   sendEscalationEmail,
   generateChatbotReply,
+  escalationNotice,
 } from '@/lib/chatbot';
 import type { ChatMessage, EscalationInfo } from '@/types/chat';
 
@@ -13,12 +13,14 @@ function sanitizeMessages(input: unknown): ChatMessage[] {
   for (const it of input) {
     const role = (it as any)?.role;
     const content = (it as any)?.content;
+    const timestamp = (it as any)?.timestamp;
     if (typeof content !== 'string') continue;
+    const ts = typeof timestamp === 'string' ? timestamp : new Date().toISOString();
     if (role === 'user' || role === 'assistant') {
-      msgs.push({ role, content });
+      msgs.push({ role, content, timestamp: ts });
     } else if (role === 'bot') {
       // Backward-compat: normalize old 'bot' role to 'assistant'
-      msgs.push({ role: 'assistant', content });
+      msgs.push({ role: 'assistant', content, timestamp: ts });
     }
   }
   return msgs;
@@ -30,19 +32,31 @@ export async function POST(req: Request) {
   const messages: ChatMessage[] = sanitizeMessages(incoming);
   const escalate = Boolean(body?.escalate);
   const info = body?.info as EscalationInfo | undefined;
+  const reason = typeof body?.reason === 'string' ? body.reason : '';
 
   if (escalate && info) {
-    await sendEscalationEmail(info);
+    await sendEscalationEmail(info, messages, reason);
     return NextResponse.json({ status: 'escalated' });
   }
 
   const tone = await getChatbotTone();
-  const { reply, confidence } = await generateChatbotReply(messages, tone);
-  const updatedMessages: ChatMessage[] = [...messages, { role: 'assistant', content: reply, confidence }];
+  const { reply, confidence, similarityCount, escalate: manual, escalateReason } = await generateChatbotReply(
+    messages,
+    tone,
+  );
 
-  if (shouldEscalate(updatedMessages)) {
-    return NextResponse.json({ escalate: true, reply, confidence });
+  if (manual || similarityCount >= 3) {
+    const last = messages[messages.length - 1]?.content || '';
+    const notice = await escalationNotice(tone, last);
+    return NextResponse.json({
+      escalate: true,
+      reply: notice,
+      confidence,
+      similarityCount,
+      reason: escalateReason || (similarityCount >= 3 ? 'User repeated the question multiple times.' : ''),
+    });
   }
 
-  return NextResponse.json({ reply, confidence });
+  const offerHelp = confidence < 0.5;
+  return NextResponse.json({ reply, confidence, offerHelp, similarityCount });
 }
