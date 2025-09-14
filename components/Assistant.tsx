@@ -3,7 +3,7 @@
 import {FormEvent, useCallback, useEffect, useRef, useState} from 'react';
 import type {ChatMessage} from '@/types/chat';
 
-export default function Chatbot() {
+export default function Assistant() {
   const [open, setOpen] = useState(false);
   const [docked, setDocked] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -165,7 +165,7 @@ export default function Chatbot() {
       >
         <button
           type="button"
-          aria-label="Close chatbot"
+          aria-label="Close assistant"
           onClick={() => {
             setOpen(false);
             resetNudge();
@@ -177,11 +177,11 @@ export default function Chatbot() {
         <div role="log" aria-label="Chat messages" className="mb-2 max-h-60 overflow-y-auto" ref={logRef}>
           {messages.map((m, i) => (
             <div key={i} className="mb-1">
-              <span className="font-bold">{m.role === 'assistant' ? 'Bot' : 'You'}:</span> {m.content}
+              <span className="font-bold">{m.role === 'assistant' ? 'Assistant' : 'You'}:</span> {m.content}
             </div>
           ))}
           {thinking && !collectInfo && (
-            <div className="mb-1 text-neutral-500">Bot is thinking…</div>
+            <div className="mb-1 text-neutral-500">Assistant is thinking…</div>
           )}
         </div>
         {collectInfo ? (
@@ -253,7 +253,7 @@ export default function Chatbot() {
       >
         <button
           type="button"
-          aria-label="Open chatbot"
+          aria-label="Open assistant"
           onClick={() => {
             resetNudge();
             if (docked) {
@@ -270,7 +270,7 @@ export default function Chatbot() {
         {!docked && (
           <button
             type="button"
-            aria-label="Dismiss chatbot"
+            aria-label="Dismiss assistant"
             onClick={dock}
             className="absolute -top-3 -right-3 hidden h-5 w-5 items-center justify-center rounded-full bg-neutral-400 text-xs text-neutral-50 group-hover:flex cursor-pointer"
           >
