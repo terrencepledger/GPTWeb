@@ -8,6 +8,8 @@ export default async function Footer() {
   const title = settings?.title ?? "Greater Pentecostal Temple";
   const address = settings?.address ?? "123 Main St, Hometown, ST 12345";
   const serviceTimes = settings?.serviceTimes ?? "Sundays 10:00 AM";
+  const email = settings?.email;
+  const phone = settings?.phone;
   const year = new Date().getFullYear();
   const socials = (settings?.socialLinks ?? [])
     .map(({ icon, href, label }) => {
@@ -91,6 +93,24 @@ export default async function Footer() {
 
           <div>
             <h4 className="mb-2 font-semibold text-[var(--brand-surface-contrast)]">Connect</h4>
+            <div className="mb-2 space-y-0.5 text-[var(--brand-accent)] dark:text-[var(--brand-fg)]">
+              {phone && (
+                <a
+                  href={`tel:${phone}`}
+                  className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
+                >
+                  {phone}
+                </a>
+              )}
+              {email && (
+                <a
+                  href={`mailto:${email}`}
+                  className="rounded text-[var(--brand-accent)] no-underline hover:text-[var(--brand-alt)] hover:underline focus-visible:text-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]"
+                >
+                  {email}
+                </a>
+              )}
+            </div>
             <ul className="flex justify-center gap-3 md:justify-start">
               {socials.map(({ href, label, Icon }) => (
                 <li key={label}>
