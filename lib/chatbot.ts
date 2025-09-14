@@ -139,7 +139,12 @@ export async function generateChatbotReply(
       similarityCount:
         typeof parsed.similarityCount === 'number' ? parsed.similarityCount : 0,
     };
-  } catch {
+  } catch (e: any) {
+    console.warn('chatbot_reply_parse_error', {
+      ts: new Date().toISOString(),
+      error: e?.message || String(e),
+      raw,
+    });
     return { reply: '', confidence: 0, similarityCount: 0 };
   }
 }

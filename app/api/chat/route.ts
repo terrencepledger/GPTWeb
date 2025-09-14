@@ -32,8 +32,23 @@ export async function POST(req: Request) {
   const info = body?.info as EscalationInfo | undefined;
 
   if (escalate && info) {
-    await sendEscalationEmail(info, messages);
-    return NextResponse.json({ status: 'escalated' });
+    // Manual escalation request coming from client
+    try {
+      await sendEscalationEmail(info, messages);
+      console.info('chatbot_escalation_email', {
+        ts: new Date().toISOString(),
+        mode: 'manual',
+        info: { name: info.name, contact: info.contact, email: info.email },
+        historyCount: messages.length,
+      });
+      return NextResponse.json({ status: 'escalated' });
+    } catch (e: any) {
+      console.error('chatbot_escalation_email_error', {
+        ts: new Date().toISOString(),
+        error: e?.message || String(e),
+      });
+      return NextResponse.json({ status: 'error' }, { status: 500 });
+    }
   }
 
   const tone = await getChatbotTone();

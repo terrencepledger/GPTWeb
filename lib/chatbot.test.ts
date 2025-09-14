@@ -5,7 +5,8 @@ import assert from 'node:assert';
 import { sanity } from './sanity';
 import { generateChatbotReply } from './chatbot';
 
-sanity.fetch = async () => '';
+const sanityAny: any = sanity;
+sanityAny.fetch = async () => '' as any;
 
 const fakeClient = {
   chat: {
