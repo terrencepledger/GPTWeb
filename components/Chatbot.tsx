@@ -5,6 +5,7 @@ import type { ChatMessage } from '@/types/chat';
 
 export default function Chatbot() {
   const [open, setOpen] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: 'assistant', content: 'Hi! How can I help you today?' },
   ]);
@@ -41,6 +42,8 @@ export default function Chatbot() {
     setMessages((prev) => [...prev, { role: 'assistant', content: 'Thanks! We will get back to you soon.' }]);
   }
 
+  if (dismissed) return null;
+
   return (
     <div className="fixed bottom-6 right-6 z-50">
       <div
@@ -50,7 +53,7 @@ export default function Chatbot() {
           type="button"
           aria-label="Close chatbot"
           onClick={() => setOpen(false)}
-          className="absolute right-2 top-2 text-xl leading-none"
+          className="absolute right-2 top-2 text-xl leading-none cursor-pointer"
         >
           ×
         </button>
@@ -97,7 +100,7 @@ export default function Chatbot() {
               onChange={(e) => setInfo({ ...info, details: e.target.value })}
               aria-label="Any extra details"
             />
-            <button type="submit" className="border px-2 py-1">Send</button>
+            <button type="submit" className="border px-2 py-1 cursor-pointer">Send</button>
           </form>
         ) : (
           <form onSubmit={sendMessage} className="flex gap-2" aria-label="Chat input">
@@ -108,26 +111,40 @@ export default function Chatbot() {
               onChange={(e) => setInput(e.target.value)}
               aria-label="Message"
             />
-            <button type="submit" className="border px-2 py-1">Send</button>
+            <button type="submit" className="border px-2 py-1 cursor-pointer">Send</button>
           </form>
         )}
         {!collectInfo && (
           <button
             onClick={() => setCollectInfo(true)}
-            className="mt-2 text-sm underline"
+            className="mt-2 text-sm underline cursor-pointer"
           >
             Still need help?
           </button>
         )}
       </div>
-      <button
-        type="button"
-        aria-label="Open chatbot"
-        onClick={() => setOpen(true)}
-        className={`flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100 shadow-lg transition-all duration-300 ease-out dark:bg-neutral-800 ${open ? 'translate-y-4 opacity-0 pointer-events-none' : 'opacity-100'}`}
+      <div
+        className={`relative group transition-all duration-300 ease-out ${
+          open ? 'translate-y-4 opacity-0 pointer-events-none' : 'opacity-100'
+        }`}
       >
-        <span className="text-2xl">🤖</span>
-      </button>
+        <button
+          type="button"
+          aria-label="Open chatbot"
+          onClick={() => setOpen(true)}
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100 shadow-lg dark:bg-neutral-800 cursor-pointer"
+        >
+          <span className="text-2xl">🤖</span>
+        </button>
+        <button
+          type="button"
+          aria-label="Dismiss chatbot"
+          onClick={() => setDismissed(true)}
+          className="absolute -top-2 -right-2 hidden h-5 w-5 items-center justify-center rounded-full bg-neutral-400 text-xs text-neutral-50 group-hover:flex cursor-pointer"
+        >
+          ×
+        </button>
+      </div>
     </div>
   );
 }
