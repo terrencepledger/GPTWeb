@@ -142,24 +142,21 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
           </div>
         </nav>
 
-        <div className="ml-auto flex items-center gap-2">
-          <div id="chatbot-header" />
-          <button
-            className="text-[var(--brand-accent)] hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)] lg:hidden"
-            aria-label="Open menu"
-            onClick={() => mobileMenuRef.current?.open()}
+        <button
+          className="ml-auto text-[var(--brand-accent)] hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)] lg:hidden"
+          aria-label="Open menu"
+          onClick={() => mobileMenuRef.current?.open()}
+        >
+          <svg
+            className="h-6 w-6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
           >
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-        </div>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
       </div>
 
       <MobileMenu ref={mobileMenuRef} nav={nav} />
