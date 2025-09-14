@@ -39,12 +39,12 @@ export async function POST(req: Request) {
   }
 
   const tone = await getChatbotTone();
-  const { reply, confidence, similarityCount } = await generateChatbotReply(
+  const { reply, confidence, similarityCount, escalate: manual } = await generateChatbotReply(
     messages,
     tone,
   );
 
-  if (similarityCount >= 3) {
+  if (manual || similarityCount >= 3) {
     const notice = await escalationNotice(tone);
     return NextResponse.json({ escalate: true, reply: notice, confidence, similarityCount });
   }

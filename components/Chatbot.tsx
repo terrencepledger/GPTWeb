@@ -7,7 +7,7 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<ChatMessage[]>(() => [
     {
       role: 'assistant',
-      content: 'Hi! I\'m the GPT Assistant for Greater Pentecostal Temple. How can I help you today?',
+      content: 'Hi! I\'m here to help with questions about Greater Pentecostal Temple. How can I assist you today?',
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -87,13 +87,13 @@ export default function Chatbot() {
       >
         {messages.map((m, i) => (
           <div key={i} className="mb-1">
-            <span className="font-bold">{m.role === 'assistant' ? 'GPT Assistant' : 'You'}:</span>{' '}
+            <span className="font-bold">{m.role === 'assistant' ? 'Assistant' : 'You'}:</span>{' '}
             {m.content}
           </div>
         ))}
         {thinking && (
           <div className="mb-1 flex items-center gap-1">
-            <span className="font-bold">GPT Assistant:</span>
+            <span className="font-bold">Assistant:</span>
             <span className="flex gap-1">
               <span className="h-2 w-2 animate-bounce rounded-full bg-neutral-500" />
               <span
@@ -158,7 +158,7 @@ export default function Chatbot() {
           <button type="submit" className="border px-2 py-1">Send</button>
         </form>
       )}
-      {!collectInfo && (
+      {!collectInfo && offerHelp && (
         <button
           onClick={() => {
             setCollectInfo(true);
@@ -166,7 +166,7 @@ export default function Chatbot() {
           }}
           className="mt-2 text-sm underline"
         >
-          {offerHelp ? 'Reach out for further help' : 'Reach a human'}
+          Reach out for further help
         </button>
       )}
     </div>
