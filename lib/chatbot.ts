@@ -107,7 +107,7 @@ export async function generateChatbotReply(
   messages: Message[],
   tone: string,
   client?: OpenAI,
-): Promise<{ reply: string; confidence: number; similarityCount: number }> {
+): Promise<{ reply: string; confidence: number; similarityCount: number; escalate: boolean }> {
   const openai = getClient(client);
   const [context, extra] = await Promise.all([
     buildSiteContext(),
@@ -285,7 +285,7 @@ export async function sendEscalationEmail(info: EscalationInfo, history: Message
       `<p>Name: ${escapeHtml(info.name)}</p>`,
       `<p>Contact Number: ${escapeHtml(info.contact)}</p>`,
       `<p>Email: ${escapeHtml(info.email)}</p>`,
-      `<p>Details: ${escapeHtml(info.details)}</p>`,
+      `<p>Details: ${escapeHtml(info.details || '')}</p>`, 
       '<p>Chat History:</p>',
       historyHtml,
     ].join('');
