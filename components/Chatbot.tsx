@@ -5,7 +5,7 @@ import type { ChatMessage } from '@/types/chat';
 
 export default function Chatbot() {
   const [open, setOpen] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
+  const [docked, setDocked] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: 'assistant', content: 'Hi! How can I help you today?' },
   ]);
@@ -42,12 +42,14 @@ export default function Chatbot() {
     setMessages((prev) => [...prev, { role: 'assistant', content: 'Thanks! We will get back to you soon.' }]);
   }
 
-  if (dismissed) return null;
-
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div
+      className={`fixed right-6 z-50 transition-all duration-700 ease-in-out ${
+        docked ? 'top-4' : 'bottom-6'
+      }`}
+    >
       <div
-        className={`absolute bottom-0 right-0 w-80 rounded border bg-neutral-100 p-4 shadow-lg transition-all duration-500 ease-in-out transform dark:bg-neutral-800 ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
+        className={`absolute bottom-0 right-0 w-80 rounded border bg-neutral-100 p-4 shadow-lg transition-all duration-700 ease-in-out transform dark:bg-neutral-800 ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
       >
         <button
           type="button"
@@ -124,26 +126,35 @@ export default function Chatbot() {
         )}
       </div>
       <div
-        className={`relative group transition-all duration-300 ease-out ${
+        className={`relative group transition-all duration-700 ease-in-out ${
           open ? 'translate-y-4 opacity-0 pointer-events-none' : 'opacity-100'
         }`}
       >
         <button
           type="button"
           aria-label="Open chatbot"
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            if (docked) {
+              setDocked(false);
+              setTimeout(() => setOpen(true), 700);
+            } else {
+              setOpen(true);
+            }
+          }}
           className="flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100 shadow-lg dark:bg-neutral-800 cursor-pointer"
         >
           <span className="text-2xl">🤖</span>
         </button>
-        <button
-          type="button"
-          aria-label="Dismiss chatbot"
-          onClick={() => setDismissed(true)}
-          className="absolute -top-2 -right-2 hidden h-5 w-5 items-center justify-center rounded-full bg-neutral-400 text-xs text-neutral-50 group-hover:flex cursor-pointer"
-        >
-          ×
-        </button>
+        {!docked && (
+          <button
+            type="button"
+            aria-label="Dismiss chatbot"
+            onClick={() => setDocked(true)}
+            className="absolute -top-3 -right-3 hidden h-5 w-5 items-center justify-center rounded-full bg-neutral-400 text-xs text-neutral-50 group-hover:flex cursor-pointer"
+          >
+            ×
+          </button>
+        )}
       </div>
     </div>
   );
