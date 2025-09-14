@@ -16,6 +16,7 @@ export default function Chatbot() {
   const [info, setInfo] = useState({ name: '', contact: '', email: '', details: '' });
   const [thinking, setThinking] = useState(false);
   const [offerHelp, setOfferHelp] = useState(false);
+  const [escalationReason, setEscalationReason] = useState('');
   const logRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -53,6 +54,7 @@ export default function Chatbot() {
     if (data.escalate) {
       setCollectInfo(true);
       setOfferHelp(false);
+      setEscalationReason(data.reason || '');
     } else {
       setOfferHelp(Boolean(data.offerHelp));
     }
@@ -64,7 +66,7 @@ export default function Chatbot() {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ escalate: true, info, messages }),
+      body: JSON.stringify({ escalate: true, info, messages, reason: escalationReason }),
     });
     setCollectInfo(false);
     setOfferHelp(false);
