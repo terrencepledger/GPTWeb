@@ -173,7 +173,7 @@ export async function generateChatbotReply(
           'If a question is unrelated to the site, respond that you can only assist with website information. ' +
           'If the question is about the church or website but the answer is not present in the site content, say you are sorry and unsure, set confidence to 0, and suggest reaching out for further help. ' +
           'If the user requests to speak to a person or otherwise asks for escalation, set "escalate" to true and provide the trigger in "escalateReason". Avoid copy-paste escalation text; any escalation notice should reference the user\'s situation. ' +
-          'Count how many times so far the user has asked this same or a very similar question, including the current attempt. Do not increase the count for new or different questions. Include this number as "similarityCount". ' +
+          'Count how many times so far the user has asked this same or a very similar question, including the current attempt. Do not increase the count for new or different questions. Include this number as "similarityCount". Allow a visitor to repeat a question only twice; on the third time, set "escalate" to true with a friendly "escalateReason" indicating the question has been asked multiple times and a team member can follow up if they share contact details. ' +
           `The current date is ${dateStr}. ` +
           `Site content:\n${context}\n` +
           'Respond in JSON with keys "reply", "confidence", "similarityCount" (number), "escalate" (boolean), and "escalateReason" (string).',
@@ -389,44 +389,45 @@ export async function sendEscalationEmail(
     })
     .join('\n')}</pre>`;
 
-  function buildMessage(
-    toAddr: string,
-    subject: string,
-    extraHeaders: string[] = [],
-  ) {
-    const toSan = stripHeader(toAddr);
-    const subjectSan = stripHeader(subject);
-    const fromSan = stripHeader(from);
-    const safeExtra = extraHeaders.map(stripHeader).filter(Boolean);
-    const headers = [
-      `To: ${toSan}`,
-      `Subject: ${subjectSan}`,
-      `From: ${fromSan}`,
-      'MIME-Version: 1.0',
-      'Content-Type: text/html; charset="UTF-8"',
-      ...safeExtra,
-    ];
-    // Log header composition with masked addresses for troubleshooting
-    dlog('Composed email headers', {
-      to: maskEmail(extractAngleEmail(toSan)),
-      from: maskEmail(extractAngleEmail(fromSan)),
-      subject: subjectSan,
-      extraHeaderNames: safeExtra.map((h) => h.split(':')[0])
-    });
-    // Also log the exact headers as a single block for debugging invalid headers
-    dlog('Composed email headers (raw)', headers.join('\r\n'));
-    const body = [
-      `<p>Name: ${escapeHtml(info.name)}</p>`,
-      `<p>Contact Number: ${escapeHtml(info.contact)}</p>`,
-      `<p>Email: ${escapeHtml(info.email)}</p>`,
-      `<p>Details: ${escapeHtml(info.details || '')}</p>`,
-      '<p>Chat History:</p>',
-      historyHtml,
-      reason ? `<p>Escalation Reason: ${escapeHtml(reason)}</p>` : '',
-    ].join('');
-    return headers.join('\r\n') + '\r\n\r\n' + body;
-  }
+    function buildMessage(
+      toAddr: string,
+      subject: string,
+      extraHeaders: string[] = [],
+      includeReason = false,
+    ) {
+      const headers = [
+        `To: ${toAddr}`,
+        `Subject: ${subject}`,
+        `From: ${from}`,
+        'MIME-Version: 1.0',
+        'Content-Type: text/html; charset="UTF-8"',
+        ...extraHeaders,
+      ];
+      const bodyParts = [
+        `<p>Name: ${escapeHtml(info.name)}</p>`,
+        `<p>Contact Number: ${escapeHtml(info.contact)}</p>`,
+        `<p>Email: ${escapeHtml(info.email)}</p>`,
+        `<p>Details: ${escapeHtml(info.details)}</p>`,
+      ];
+      if (includeReason && reason) {
+        bodyParts.push(`<p>Escalation Reason: ${escapeHtml(reason)}</p>`);
+      }
+      bodyParts.push('<p>Chat History:</p>', historyHtml);
+      const body = bodyParts.join('');
+      return headers.join('\\r\\n') + '\\r\\n\\r\\n' + body;
+    }
 
+    const visitorMsg = buildMessage(
+      info.email,
+      'Your Chat with GPT',
+      ['Reply-To: info@gptchurch.org'],
+    );
+    const staffMsg = buildMessage(
+      to,
+      `[${info.name}] - Chat Escalation`,
+      [`Reply-To: ${info.email}`],
+      true,
+    );
   const visitorEmail = safeEmail(info.email);
   let visitorMsg: string | null = null;
   let visitorHeadersText: string | null = null;
