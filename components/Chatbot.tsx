@@ -16,6 +16,7 @@ export default function Chatbot() {
   const [info, setInfo] = useState({ name: '', contact: '', email: '', details: '' });
   const [nudge, setNudge] = useState(false);
   const nudgeRef = useRef<NodeJS.Timeout | null>(null);
+  const openRef = useRef(open);
   const [entered, setEntered] = useState(false);
   const [enterOffset, setEnterOffset] = useState(20);
 
@@ -23,13 +24,13 @@ export default function Chatbot() {
     if (nudgeRef.current) clearTimeout(nudgeRef.current);
     const timeout = Math.floor(Math.random() * 45000) + 45000;
     nudgeRef.current = setTimeout(() => {
-      if (!open) setNudge(true);
+      if (!openRef.current) setNudge(true);
     }, timeout);
-  }, [open]);
+  }, []);
 
   function resetNudge() {
     setNudge(false);
-    scheduleNudge();
+    if (!openRef.current) scheduleNudge();
   }
 
   useEffect(() => {
@@ -46,6 +47,12 @@ export default function Chatbot() {
       if (nudgeRef.current) clearTimeout(nudgeRef.current);
     };
   }, [scheduleNudge]);
+
+  useEffect(() => {
+    openRef.current = open;
+    if (!open) scheduleNudge();
+    else if (nudgeRef.current) clearTimeout(nudgeRef.current);
+  }, [open, scheduleNudge]);
 
   useEffect(() => {
     if (nudge) {
