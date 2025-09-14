@@ -21,7 +21,6 @@ export default function Assistant() {
   const [enterOffset, setEnterOffset] = useState(20);
   const NUDGE_MS = 2400;
   const [thinking, setThinking] = useState(false);
-  const [offerHelp, setOfferHelp] = useState(true);
   const [escalationReason, setEscalationReason] = useState('');
   const logRef = useRef<HTMLDivElement>(null);
 
@@ -104,10 +103,7 @@ export default function Assistant() {
     ]);
     if (data.escalate) {
       setCollectInfo(true);
-      setOfferHelp(false);
       setEscalationReason(data.reason || '');
-    } else if (typeof data.offerHelp !== 'undefined') {
-      setOfferHelp(Boolean(data.offerHelp));
     }
     setThinking(false);
   }
@@ -121,7 +117,6 @@ export default function Assistant() {
       body: JSON.stringify({ escalate: true, info, messages: messages, reason: escalationReason }),
     });
     setCollectInfo(false);
-    setOfferHelp(false);
     setMessages((prev) => [
       ...prev,
       {
@@ -233,17 +228,6 @@ export default function Assistant() {
             />
             <button type="submit" className="border px-2 py-1 cursor-pointer">Send</button>
           </form>
-        )}
-        {!collectInfo && offerHelp && (
-          <button
-            onClick={() => {
-              setCollectInfo(true);
-              resetNudge();
-            }}
-            className="mt-2 text-sm underline cursor-pointer"
-          >
-            Still need help?
-          </button>
         )}
       </div>
       <div
