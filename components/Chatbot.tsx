@@ -21,7 +21,8 @@ export default function Chatbot() {
   useEffect(() => {
     const el = logRef.current;
     if (el) {
-      el.scrollTop = el.scrollHeight;
+      const last = el.lastElementChild as HTMLElement | null;
+      last?.scrollIntoView({ block: 'start' });
     }
   }, [messages, thinking]);
 
@@ -60,7 +61,7 @@ export default function Chatbot() {
 
   async function sendInfo(e: FormEvent) {
     e.preventDefault();
-    await fetch('/api/chat', {
+    const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ escalate: true, info, messages }),
@@ -71,7 +72,10 @@ export default function Chatbot() {
       ...prev,
       {
         role: 'assistant',
-        content: 'Thanks! We will get back to you soon.',
+        content:
+          res.ok
+            ? 'Your request has been sent. We will get back to you soon.'
+            : 'There was an issue sending your request.',
         timestamp: new Date().toISOString(),
       },
     ]);

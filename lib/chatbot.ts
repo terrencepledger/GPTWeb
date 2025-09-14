@@ -188,37 +188,60 @@ export async function sendEscalationEmail(info: EscalationInfo, history: Message
   await auth.authorize();
 
   const gmail = google.gmail({ version: 'v1', auth });
-
-  const headers = [
-    `To: ${info.email}`,
-    `Bcc: ${to}`,
-    'Subject: Chatbot escalation',
-    `From: ${from}`,
-  ];
-
+  const escapeHtml = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const tz = process.env.TZ || 'UTC';
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
   const historyLines = history
-    .map((m) => `[${m.timestamp}] ${m.role}: ${m.content}`)
+    .map(
+      (m) =>
+        `[${fmt.format(new Date(m.timestamp))}] ${m.role}: ${m.content}`,
+    )
     .join('\n');
-  const message = [
-    ...headers,
-    '',
-    `Name: ${info.name}`,
-    `Contact Number: ${info.contact}`,
-    `Email: ${info.email}`,
-    `Details: ${info.details}`,
-    '',
-    'Chat History:',
-    '```',
+  const historyHtml = `<pre style="font-family:'Courier New',monospace;background-color:rgb(238,238,238);padding:8px;">${escapeHtml(
     historyLines,
-    '```',
-  ].join('\n');
+  )}</pre>`;
 
-  // Gmail API expects base64url encoding (RFC 4648 §5)
-  const base64 = Buffer.from(message).toString('base64');
-  const encodedMessage = base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  function buildMessage(toAddr: string, extraHeaders: string[] = []) {
+    const headers = [
+      `To: ${toAddr}`,
+      'Subject: Chatbot escalation',
+      `From: ${from}`,
+      'MIME-Version: 1.0',
+      'Content-Type: text/html; charset="UTF-8"',
+      ...extraHeaders,
+    ];
+    const body = [
+      `<p>Name: ${escapeHtml(info.name)}</p>`,
+      `<p>Contact Number: ${escapeHtml(info.contact)}</p>`,
+      `<p>Email: ${escapeHtml(info.email)}</p>`,
+      `<p>Details: ${escapeHtml(info.details)}</p>`,
+      '<p>Chat History:</p>',
+      historyHtml,
+    ].join('');
+    return headers.join('\r\n') + '\r\n\r\n' + body;
+  }
+
+  const visitorMsg = buildMessage(info.email, ['Reply-To: info@gptchurch.org']);
+  const staffMsg = buildMessage(to);
+
+  const encode = (msg: string) =>
+    Buffer.from(msg)
+      .toString('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
 
   await gmail.users.messages.send({
     userId: 'me',
-    requestBody: { raw: encodedMessage },
+    requestBody: { raw: encode(visitorMsg) },
+  });
+  await gmail.users.messages.send({
+    userId: 'me',
+    requestBody: { raw: encode(staffMsg) },
   });
 }
