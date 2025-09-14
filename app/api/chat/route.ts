@@ -13,12 +13,14 @@ function sanitizeMessages(input: unknown): ChatMessage[] {
   for (const it of input) {
     const role = (it as any)?.role;
     const content = (it as any)?.content;
+    const timestamp = (it as any)?.timestamp;
     if (typeof content !== 'string') continue;
+    const ts = typeof timestamp === 'string' ? timestamp : new Date().toISOString();
     if (role === 'user' || role === 'assistant') {
-      msgs.push({ role, content });
+      msgs.push({ role, content, timestamp: ts });
     } else if (role === 'bot') {
       // Backward-compat: normalize old 'bot' role to 'assistant'
-      msgs.push({ role: 'assistant', content });
+      msgs.push({ role: 'assistant', content, timestamp: ts });
     }
   }
   return msgs;
@@ -52,12 +54,12 @@ export async function POST(req: Request) {
   }
 
   const tone = await getChatbotTone();
-  const { reply, confidence, similarityCount } = await generateChatbotReply(
+  const { reply, confidence, similarityCount, escalate: manual } = await generateChatbotReply(
     messages,
     tone,
   );
 
-  if (similarityCount >= 3) {
+  if (manual || similarityCount >= 3) {
     const notice = await escalationNotice(tone);
     return NextResponse.json({ escalate: true, reply: notice, confidence, similarityCount });
   }

@@ -19,6 +19,7 @@ const fakeClient = {
                 reply: 'Hello there',
                 confidence: 0.9,
                 similarityCount: 3,
+                escalate: false,
               }),
             },
           },
@@ -29,14 +30,21 @@ const fakeClient = {
 };
 
 (async () => {
-  const { reply, confidence, similarityCount } = await generateChatbotReply(
-    [{ role: 'user', content: 'Hi' }],
+  const { reply, confidence, similarityCount, escalate } = await generateChatbotReply(
+    [
+      {
+        role: 'user',
+        content: 'Hi',
+        timestamp: new Date().toISOString(),
+      },
+    ],
     'friendly',
     fakeClient as any,
   );
   assert.strictEqual(reply, 'Hello there');
   assert.strictEqual(confidence, 0.9);
   assert.strictEqual(similarityCount, 3);
+  assert.strictEqual(escalate, false);
   console.log('tests passed');
 })();
 

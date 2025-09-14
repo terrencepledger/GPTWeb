@@ -3,6 +3,8 @@
 export type ChatMessage = {
   role: 'assistant' | 'user';
   content: string;
+  /** ISO timestamp when the message was created */
+  timestamp: string;
   confidence?: number;
 };
 
