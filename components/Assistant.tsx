@@ -2,6 +2,7 @@
 
 import {FormEvent, useCallback, useEffect, useRef, useState} from 'react';
 import type {ChatMessage} from '@/types/chat';
+import Link from 'next/link';
 
 export default function Assistant() {
   const [open, setOpen] = useState(false);
@@ -23,6 +24,36 @@ export default function Assistant() {
   const [thinking, setThinking] = useState(false);
   const [escalationReason, setEscalationReason] = useState('');
   const logRef = useRef<HTMLDivElement>(null);
+
+  function renderContent(text: string) {
+    const regex = /(https?:\/\/[^\s]+|\/[A-Za-z0-9\-_/]+)/g;
+    const parts = text.split(regex).filter(Boolean);
+    return parts.map((part, idx) => {
+      if (/^https?:\/\//.test(part)) {
+        let label = part.replace(/^https?:\/\//, '');
+        if (label.endsWith('/')) label = label.slice(0, -1);
+        return (
+          <a
+            key={idx}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline"
+          >
+            {label}
+          </a>
+        );
+      }
+      if (/^\//.test(part)) {
+        return (
+          <Link key={idx} href={part} className="underline">
+            {part}
+          </Link>
+        );
+      }
+      return <span key={idx}>{part}</span>;
+    });
+  }
 
   const scheduleNudge = useCallback(() => {
     if (nudgeRef.current) clearTimeout(nudgeRef.current);
@@ -172,7 +203,8 @@ export default function Assistant() {
         <div role="log" aria-label="Chat messages" className="mb-2 max-h-60 overflow-y-auto" ref={logRef}>
           {messages.map((m, i) => (
             <div key={i} className="mb-1">
-              <span className="font-bold">{m.role === 'assistant' ? 'Assistant' : 'You'}:</span> {m.content}
+              <span className="font-bold">{m.role === 'assistant' ? 'Assistant' : 'You'}:</span>{' '}
+              {renderContent(m.content)}
             </div>
           ))}
           {thinking && !collectInfo && (

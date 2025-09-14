@@ -175,6 +175,8 @@ export async function generateChatbotReply(
           'If a visitor uses "you", "your", or makes a vague reference, reinterpret it to be about the church or its website and answer in that framework. ' +
           'If a question is unrelated to the site, respond that you can only assist with website information. ' +
           'If the question is about the church or website but the answer is not present in the site content, say you are sorry and unsure, set confidence to 0, and suggest reaching out for further help. ' +
+          'When referencing a page on this site, include its path starting with "/". ' +
+          'Only provide external links that already appear in the site content and include the full URL. ' +
           'If the user requests to speak to a person or otherwise asks for escalation, set "escalate" to true and provide the trigger in "escalateReason". Avoid copy-paste escalation text; any escalation notice should reference the user\'s situation and kindly explain that providing their contact information is necessary for staff to reach out. ' +
           'Count how many times so far the user has asked this same or a very similar question, including the current attempt. Do not increase the count for new or different questions. Include this number as "similarityCount". Allow a visitor to repeat a question only twice; on the third time, set "escalate" to true with a friendly "escalateReason" indicating the question has been asked multiple times and a team member can follow up if they share contact details. ' +
           `The current date is ${dateStr}. ` +
