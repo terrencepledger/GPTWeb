@@ -10,6 +10,7 @@ import BannerAnchor from "@/components/BannerAnchor";
 import Chatbot from "@/components/Chatbot";
 import { siteSettings, announcementLatest } from "@/lib/queries";
 import { getCurrentLivestream } from "@/lib/vimeo";
+import { getChatbotName } from "@/lib/chatbot";
 import AutoRefresh from "@/components/AutoRefresh";
 import Script from "next/script";
 import { cookies, headers } from "next/headers";
@@ -56,10 +57,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [settings, announcement, livestream] = await Promise.all([
+  const [settings, announcement, livestream, chatbotName] = await Promise.all([
     siteSettings(),
     announcementLatest(),
     getCurrentLivestream(),
+    getChatbotName(),
   ]);
   const headerTitle = settings?.title ?? "Greater Pentecostal Temple";
   const maxWidth = "90vw";
@@ -126,7 +128,7 @@ gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');`}
         )}
         <main className="max-w-site flex-1 px-4 py-8">{children}</main>
         {!isEmbedded && <Footer />}
-        <Chatbot />
+        {!isEmbedded && <Chatbot name={chatbotName} />}
       </body>
     </html>
   );

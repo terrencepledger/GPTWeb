@@ -7,6 +7,11 @@ export async function getChatbotTone(): Promise<string> {
   return tone || 'friendly';
 }
 
+export async function getChatbotName(): Promise<string> {
+  const name = await sanity.fetch(groq`*[_type == "chatbotSettings"][0].name`);
+  return name || 'Chatbot';
+}
+
 export async function getEscalationAddresses(): Promise<{ from: string; to: string }> {
   const result = await sanity.fetch(groq`*[_type == "chatbotSettings"][0]{
     "from": escalationFrom,
@@ -91,6 +96,7 @@ export async function sendEscalationEmail(info: EscalationInfo) {
 
   // Get sender and recipient from Sanity
   const { from, to } = await getEscalationAddresses();
+  const name = await getChatbotName();
 
   // Normalize private key: support both literal newlines and escaped \n
   const svcKey = svcKeyRaw.includes('\\n') ? svcKeyRaw.replace(/\\n/g, '\n') : svcKeyRaw;
@@ -106,7 +112,7 @@ export async function sendEscalationEmail(info: EscalationInfo) {
 
   const headers = [
     `To: ${to}`,
-    'Subject: Chatbot escalation',
+    `Subject: ${name} escalation`,
     `From: ${from}`,
   ];
 
