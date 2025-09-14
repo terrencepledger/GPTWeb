@@ -80,7 +80,7 @@ export default async function Footer() {
 
           <div>
             <h4 className="mb-2 font-semibold text-[var(--brand-surface-contrast)]">Connect</h4>
-            <div className="mb-2 flex flex-col items-center space-y-1 text-[var(--brand-accent)] dark:text-[var(--brand-fg)] md:items-start">
+            <div className="mb-2 flex flex-col items-center space-y-1 text-[var(--brand-accent)] dark:text-[var(--brand-fg)]">
               {phone && (
                 <a
                   href={`tel:${phone}`}
