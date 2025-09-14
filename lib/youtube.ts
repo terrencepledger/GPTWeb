@@ -8,6 +8,10 @@ function rfc3339(date: Date) {
 
 export type LatestLivestream = { id: string; published: Date };
 
+type CacheEntry = { key: string; value: LatestLivestream | null; time: number };
+let cache: CacheEntry | null = null;
+const cacheMs = 600000;
+
 export async function getLatestLivestream(
   channelId: string,
   serviceDays: number[],
@@ -15,6 +19,8 @@ export async function getLatestLivestream(
 ): Promise<LatestLivestream | null> {
   const apiKey = process.env.YOUTUBE_API_KEY;
   if (!channelId || serviceDays.length === 0 || !apiKey) return null;
+  const key = `${channelId}|${serviceDays.join(",")}|${timeZone}`;
+  if (cache && cache.key === key && Date.now() - cache.time < cacheMs) return cache.value;
 
   try {
     // Build Search API request (fixed 14-day lookback)
@@ -51,6 +57,7 @@ export async function getLatestLivestream(
           statusText: res.statusText,
         });
       } catch {}
+      cache = { key, value: null, time: Date.now() };
       return null;
     }
     const data = await res.json();
@@ -72,6 +79,7 @@ export async function getLatestLivestream(
         // eslint-disable-next-line no-console
         console.warn("[YouTube][latestLivestream] No search results");
       } catch {}
+      cache = { key, value: null, time: Date.now() };
       return null;
     }
 
@@ -98,6 +106,7 @@ export async function getLatestLivestream(
           statusText: vidsRes.statusText,
         });
       } catch {}
+      cache = { key, value: null, time: Date.now() };
       return null;
     }
 
@@ -149,7 +158,9 @@ export async function getLatestLivestream(
           dateISO: chosen.startLocal.toISOString(),
         });
       } catch {}
-      return { id: chosen.id, published: chosen.startLocal };
+      const value = { id: chosen.id, published: chosen.startLocal };
+      cache = { key, value, time: Date.now() };
+      return value;
     }
 
     try {
@@ -160,13 +171,14 @@ export async function getLatestLivestream(
         publishedAfter: publishedAfter.toISOString(),
       });
     } catch {}
-
+    cache = { key, value: null, time: Date.now() };
     return null;
   } catch (e) {
     try {
       // eslint-disable-next-line no-console
       console.error("[YouTube][latestLivestream][exception]", String(e));
     } catch {}
+    cache = { key, value: null, time: Date.now() };
     return null;
   }
 }

@@ -60,13 +60,15 @@ export interface SiteSettings {
   title: string;
   address?: string;
   serviceTimes?: string;
+  email?: string;
+  phone?: string;
   logo?: string;
   socialLinks?: SocialLink[];
 }
 
 export const siteSettings = () =>
   sanity.fetch<SiteSettings | null>(
-    groq`*[_id == "siteSettings"][0]{_id, title, address, serviceTimes, "logo": logo.asset->url, "socialLinks": socialLinks[]{label, href, description, icon}}`
+    groq`*[_id == "siteSettings"][0]{_id, title, email, phone, address, serviceTimes, "logo": logo.asset->url, "socialLinks": socialLinks[]{label, href, description, icon}}`
   );
 
 export interface Ministry {

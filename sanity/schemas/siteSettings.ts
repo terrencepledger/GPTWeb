@@ -29,6 +29,17 @@ export default defineType({
       description: 'e.g., Sundays 9am & 11am; Wednesdays 7pm',
     }),
     defineField({
+      name: 'email',
+      title: 'Email',
+      type: 'string',
+      validation: (Rule) => Rule.email(),
+    }),
+    defineField({
+      name: 'phone',
+      title: 'Phone',
+      type: 'string',
+    }),
+    defineField({
       name: 'socialLinks',
       title: 'Social Links',
       type: 'array',
