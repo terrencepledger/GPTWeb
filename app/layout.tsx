@@ -67,15 +67,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const maxWidth = "90vw";
   const hdrs = headers();
   const secFetchDest = hdrs.get("sec-fetch-dest");
-  const referer = hdrs.get("referer") || "";
-  let isEmbedded = secFetchDest === "iframe";
-  try {
-    const allowedOrigin = new URL(process.env.SANITY_STUDIO_SITE_URL || "http://localhost:3333").origin;
-    const refOrigin = new URL(referer).origin;
-    if (refOrigin === allowedOrigin) {
-      isEmbedded = true;
-    }
-  } catch {}
+  const isEmbedded = secFetchDest === "iframe";
   const themeAttr = isEmbedded ? (cookies().get("preview-theme")?.value || "light") : undefined;
 
   let banner: { id: string; message: string; cta?: { label: string; href: string } } | null = null;
