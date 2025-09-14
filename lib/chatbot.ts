@@ -113,7 +113,7 @@ async function buildSiteContext(): Promise<string> {
         'Ministries: ' + ministries.map((m) => `${m.name} - ${m.description}`).join('; ') + '. ';
     }
     if (livestream) {
-      let status = '';
+      let status: string;
       if (livestream.live?.status === 'streaming') {
         status = 'live now';
       } else if (livestream.live?.scheduled_time) {
@@ -407,27 +407,16 @@ export async function sendEscalationEmail(
         `<p>Name: ${escapeHtml(info.name)}</p>`,
         `<p>Contact Number: ${escapeHtml(info.contact)}</p>`,
         `<p>Email: ${escapeHtml(info.email)}</p>`,
-        `<p>Details: ${escapeHtml(info.details)}</p>`,
+        `<p>Details: ${escapeHtml(info.details || '')}</p>`, 
       ];
       if (includeReason && reason) {
         bodyParts.push(`<p>Escalation Reason: ${escapeHtml(reason)}</p>`);
       }
       bodyParts.push('<p>Chat History:</p>', historyHtml);
       const body = bodyParts.join('');
-      return headers.join('\\r\\n') + '\\r\\n\\r\\n' + body;
+      return headers.join('\r\n') + '\r\n\r\n' + body;
     }
 
-    const visitorMsg = buildMessage(
-      info.email,
-      'Your Chat with GPT',
-      ['Reply-To: info@gptchurch.org'],
-    );
-    const staffMsg = buildMessage(
-      to,
-      `[${info.name}] - Chat Escalation`,
-      [`Reply-To: ${info.email}`],
-      true,
-    );
   const visitorEmail = safeEmail(info.email);
   let visitorMsg: string | null = null;
   let visitorHeadersText: string | null = null;
@@ -454,6 +443,7 @@ export async function sendEscalationEmail(
     to,
     `[${info.name}] - Chat Escalation`,
     staffHeaders,
+    true,
   );
   const staffHeadersText = staffMsg.split('\r\n\r\n')[0];
 
