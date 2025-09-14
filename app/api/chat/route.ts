@@ -32,29 +32,15 @@ export async function POST(req: Request) {
   const messages: ChatMessage[] = sanitizeMessages(incoming);
   const escalate = Boolean(body?.escalate);
   const info = body?.info as EscalationInfo | undefined;
+  const reason = typeof body?.reason === 'string' ? body.reason : '';
 
   if (escalate && info) {
-    // Manual escalation request coming from client
-    try {
-      await sendEscalationEmail(info, messages);
-      console.info('chatbot_escalation_email', {
-        ts: new Date().toISOString(),
-        mode: 'manual',
-        info: { name: info.name, contact: info.contact, email: info.email },
-        historyCount: messages.length,
-      });
-      return NextResponse.json({ status: 'escalated' });
-    } catch (e: any) {
-      console.error('chatbot_escalation_email_error', {
-        ts: new Date().toISOString(),
-        error: e?.message || String(e),
-      });
-      return NextResponse.json({ status: 'error' }, { status: 500 });
-    }
+    await sendEscalationEmail(info, messages, reason);
+    return NextResponse.json({ status: 'escalated' });
   }
 
   const tone = await getChatbotTone();
-  const { reply, confidence, similarityCount, escalate: manual } = await generateChatbotReply(
+  const { reply, confidence, similarityCount, escalate: manual, escalateReason } = await generateChatbotReply(
     messages,
     tone,
   );
@@ -62,7 +48,13 @@ export async function POST(req: Request) {
   if (manual || similarityCount >= 3) {
     const last = messages[messages.length - 1]?.content || '';
     const notice = await escalationNotice(tone, last);
-    return NextResponse.json({ escalate: true, reply: notice, confidence, similarityCount });
+    return NextResponse.json({
+      escalate: true,
+      reply: notice,
+      confidence,
+      similarityCount,
+      reason: escalateReason || (similarityCount >= 3 ? 'User repeated the question multiple times.' : ''),
+    });
   }
 
   const offerHelp = confidence < 0.5;

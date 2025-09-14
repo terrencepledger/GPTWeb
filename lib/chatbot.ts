@@ -142,12 +142,23 @@ export async function generateChatbotReply(
   messages: Message[],
   tone: string,
   client?: OpenAI,
-): Promise<{ reply: string; confidence: number; similarityCount: number; escalate: boolean }> {
+): Promise<{
+  reply: string;
+  confidence: number;
+  similarityCount: number;
+  escalate: boolean;
+  escalateReason: string;
+}> {
   const openai = getClient(client);
   const [context, extra] = await Promise.all([
     buildSiteContext(),
     getChatbotExtraContext(),
   ]);
+  const tz = process.env.TZ || 'UTC';
+  const dateStr = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    dateStyle: 'long',
+  }).format(new Date());
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [
@@ -161,10 +172,11 @@ export async function generateChatbotReply(
           'If a visitor addresses you as "you," reinterpret their question to be about the church or its website and answer in that framework. ' +
           'If a question is unrelated to the site, respond that you can only assist with website information. ' +
           'If the question is about the church or website but the answer is not present in the site content, say you are sorry and unsure, set confidence to 0, and suggest reaching out for further help. ' +
-          'If the user requests to speak to a person or otherwise asks for escalation, set "escalate" to true. Avoid copy-paste escalation text; any escalation notice should reference the user\'s situation. ' +
+          'If the user requests to speak to a person or otherwise asks for escalation, set "escalate" to true and provide the trigger in "escalateReason". Avoid copy-paste escalation text; any escalation notice should reference the user\'s situation. ' +
           'Count how many times so far the user has asked this same or a very similar question, including the current attempt. Do not increase the count for new or different questions. Include this number as "similarityCount". ' +
+          `The current date is ${dateStr}. ` +
           `Site content:\n${context}\n` +
-          'Respond in JSON with keys "reply", "confidence", "similarityCount" (number), and "escalate" (boolean).',
+          'Respond in JSON with keys "reply", "confidence", "similarityCount" (number), "escalate" (boolean), and "escalateReason" (string).',
       },
       ...messages.map(({ role, content }) => ({ role, content } as any)),
     ],
@@ -179,9 +191,16 @@ export async function generateChatbotReply(
       similarityCount:
         typeof parsed.similarityCount === 'number' ? parsed.similarityCount : 0,
       escalate: Boolean(parsed.escalate),
+      escalateReason: typeof parsed.escalateReason === 'string' ? parsed.escalateReason : '',
     };
   } catch {
-    return { reply: '', confidence: 0, similarityCount: 0, escalate: false };
+    return {
+      reply: '',
+      confidence: 0,
+      similarityCount: 0,
+      escalate: false,
+      escalateReason: '',
+    };
   }
 }
 
@@ -208,7 +227,11 @@ export async function escalationNotice(
 
 export type EscalationInfo = SharedEscalationInfo;
 
-export async function sendEscalationEmail(info: EscalationInfo, history: Message[]) {
+export async function sendEscalationEmail(
+  info: EscalationInfo,
+  history: Message[],
+  reason: string,
+) {
   // Require server-to-server auth via a Google Workspace Service Account with
   // domain-wide delegation, impersonating a fixed sender account sourced from Sanity.
   // Allow disabling email sending only via an explicit flag.
@@ -399,6 +422,7 @@ export async function sendEscalationEmail(info: EscalationInfo, history: Message
       `<p>Details: ${escapeHtml(info.details || '')}</p>`,
       '<p>Chat History:</p>',
       historyHtml,
+      reason ? `<p>Escalation Reason: ${escapeHtml(reason)}</p>` : '',
     ].join('');
     return headers.join('\r\n') + '\r\n\r\n' + body;
   }
