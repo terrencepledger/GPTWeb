@@ -1,6 +1,6 @@
 'use client';
 
-import {FormEvent, useCallback, useEffect, useRef, useState} from 'react';
+import {FormEvent, useCallback, useEffect, useRef, useState, type CSSProperties} from 'react';
 import type {ChatMessage} from '@/types/chat';
 import Link from 'next/link';
 
@@ -191,7 +191,12 @@ export default function Assistant() {
       className={`fixed right-6 bottom-6 z-50 transition-all duration-[1000ms] ease-in-out ${entered ? '' : 'pointer-events-none'}`}
     >
       <div
-        className={`absolute bottom-0 right-0 w-80 rounded-lg border border-brand-purple bg-neutral-50 text-brand-ink p-4 shadow-lg transition-all duration-700 ease-in-out transform dark:bg-neutral-900 dark:text-neutral-50 ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
+        className={`absolute bottom-0 right-0 w-80 rounded-lg border p-4 shadow-lg transition-all duration-700 ease-in-out transform ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
+        style={{
+          backgroundColor: 'var(--brand-alt)',
+          color: 'var(--brand-ink)',
+          borderColor: 'var(--brand-primary)',
+        }}
       >
         <button
           type="button"
@@ -212,11 +217,17 @@ export default function Assistant() {
             >
               <div className="max-w-[85%] flex flex-col">
                 <div
-                  className={`rounded-2xl px-3 py-2 whitespace-pre-wrap ${
-                    m.role === 'assistant'
-                      ? 'bg-brand-purple text-neutral-50'
-                      : 'bg-brand-gold text-brand-ink'
-                  }`}
+                  className="rounded-2xl px-3 py-2 whitespace-pre-wrap"
+                  style={{
+                    backgroundColor:
+                      m.role === 'assistant'
+                        ? 'var(--brand-primary)'
+                        : 'var(--brand-accent)',
+                    color:
+                      m.role === 'assistant'
+                        ? 'var(--brand-primary-contrast)'
+                        : 'var(--brand-ink)',
+                  }}
                 >
                   {renderContent(m.content)}
                   {m.role === 'assistant' && m.softEscalate && !collectInfo && (
@@ -243,11 +254,21 @@ export default function Assistant() {
                   )}
                 </div>
                 <div
-                  className={`mt-1 inline-block rounded border px-2 py-[2px] text-sm font-semibold ${
+                  className={`mt-1 inline-block rounded border px-3 py-1 text-base font-semibold ${
                     m.role === 'assistant'
-                      ? 'border-brand-purple text-brand-purple self-start'
-                      : 'border-brand-gold text-brand-gold self-end'
+                      ? 'self-start'
+                      : 'self-end'
                   }`}
+                  style={{
+                    borderColor:
+                      m.role === 'assistant'
+                        ? 'var(--brand-primary)'
+                        : 'var(--brand-accent)',
+                    color:
+                      m.role === 'assistant'
+                        ? 'var(--brand-primary)'
+                        : 'var(--brand-accent)',
+                  }}
                 >
                   {m.role === 'assistant' ? 'Assistant' : 'You'}
                 </div>
@@ -265,14 +286,24 @@ export default function Assistant() {
                 type="button"
                 onClick={() => { setCollectInfo(false); setCollectInfoMode(null); }}
                 aria-label="Go back to chat"
-                className="self-start -mb-1 text-brand-ink hover:text-brand-ink/70 underline focus:outline-none focus:ring-1 focus:ring-brand-ink/40 cursor-pointer"
+                className="self-start -mb-1 underline focus:outline-none focus:ring-1 cursor-pointer hover:opacity-80"
+                style={{
+                  color: 'var(--brand-ink)',
+                  '--tw-ring-color': 'var(--brand-ink)',
+                } as CSSProperties}
               >
                 Back
               </button>
             )}
             <input
               type="text"
-              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-neutral-600 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
+              className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'var(--brand-alt)',
+                color: 'var(--brand-ink)',
+                borderColor: 'var(--brand-border)',
+                '--tw-ring-color': 'var(--brand-primary)',
+              } as CSSProperties}
               placeholder="Name"
               value={info.name}
               onChange={(e) => setInfo({ ...info, name: e.target.value })}
@@ -281,7 +312,13 @@ export default function Assistant() {
             />
             <input
               type="text"
-              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-neutral-600 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
+              className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'var(--brand-alt)',
+                color: 'var(--brand-ink)',
+                borderColor: 'var(--brand-border)',
+                '--tw-ring-color': 'var(--brand-primary)',
+              } as CSSProperties}
               placeholder="Contact Number"
               value={info.contact}
               onChange={(e) => setInfo({ ...info, contact: e.target.value })}
@@ -290,7 +327,13 @@ export default function Assistant() {
             />
             <input
               type="email"
-              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-neutral-600 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
+              className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'var(--brand-alt)',
+                color: 'var(--brand-ink)',
+                borderColor: 'var(--brand-border)',
+                '--tw-ring-color': 'var(--brand-primary)',
+              } as CSSProperties}
               placeholder="Email"
               value={info.email}
               onChange={(e) => setInfo({ ...info, email: e.target.value })}
@@ -298,7 +341,13 @@ export default function Assistant() {
               required
             />
             <textarea
-              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-neutral-600 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
+              className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'var(--brand-alt)',
+                color: 'var(--brand-ink)',
+                borderColor: 'var(--brand-border)',
+                '--tw-ring-color': 'var(--brand-primary)',
+              } as CSSProperties}
               placeholder="Any extra details"
               value={info.details}
               onChange={(e) => setInfo({ ...info, details: e.target.value })}
@@ -306,7 +355,12 @@ export default function Assistant() {
             />
             <button
               type="submit"
-              className="rounded bg-brand-purple px-3 py-1 text-neutral-50 hover:bg-brand-purpleLt focus:outline-none focus:ring-2 focus:ring-brand-purple cursor-pointer"
+              className="rounded px-3 py-1 focus:outline-none focus:ring-2 cursor-pointer"
+              style={{
+                backgroundColor: 'var(--brand-primary)',
+                color: 'var(--brand-primary-contrast)',
+                '--tw-ring-color': 'var(--brand-primary)',
+              } as CSSProperties}
             >
               Send
             </button>
@@ -315,14 +369,25 @@ export default function Assistant() {
           <form onSubmit={sendMessage} className="flex gap-2" aria-label="Chat input">
             <input
               type="text"
-              className="flex-1 border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-neutral-600 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
+              className="flex-1 border rounded px-2 py-1 focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'var(--brand-alt)',
+                color: 'var(--brand-ink)',
+                borderColor: 'var(--brand-border)',
+                '--tw-ring-color': 'var(--brand-primary)',
+              } as CSSProperties}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               aria-label="Message"
             />
             <button
               type="submit"
-              className="rounded bg-brand-purple px-3 py-1 text-neutral-50 hover:bg-brand-purpleLt focus:outline-none focus:ring-2 focus:ring-brand-purple cursor-pointer"
+              className="rounded px-3 py-1 focus:outline-none focus:ring-2 cursor-pointer"
+              style={{
+                backgroundColor: 'var(--brand-primary)',
+                color: 'var(--brand-primary-contrast)',
+                '--tw-ring-color': 'var(--brand-primary)',
+              } as CSSProperties}
             >
               Send
             </button>
@@ -346,7 +411,12 @@ export default function Assistant() {
               setOpen(true);
             }
           }}
-          className={`flex h-14 w-14 items-center justify-center rounded-full bg-brand-purple text-neutral-50 shadow-lg cursor-pointer hover:bg-brand-purpleLt border border-brand-purple ${nudge ? 'animate-shake' : ''}`}
+          className={`flex h-14 w-14 items-center justify-center rounded-full shadow-lg cursor-pointer border hover:opacity-90 ${nudge ? 'animate-shake' : ''}`}
+          style={{
+            backgroundColor: 'var(--brand-primary)',
+            color: 'var(--brand-primary-contrast)',
+            borderColor: 'var(--brand-primary)',
+          }}
         >
           <span className="text-2xl">🤖</span>
         </button>
