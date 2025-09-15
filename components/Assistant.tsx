@@ -24,19 +24,6 @@ export default function Assistant() {
   const [escalationReason, setEscalationReason] = useState('');
   const logRef = useRef<HTMLDivElement>(null);
 
-  const panelClass =
-    'absolute bottom-0 right-0 w-80 rounded border border-brand-purple bg-brand-purpleLt p-4 text-brand-ink shadow-lg transition-all duration-700 ease-in-out transform dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100';
-  const inputClass =
-    'border border-brand-purple bg-neutral-50 p-1 text-brand-ink placeholder-brand-purple focus:border-brand-gold focus:outline-none dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100 dark:placeholder-brand-purpleLt';
-  const buttonClass =
-    'border border-brand-purple bg-brand-gold px-2 py-1 text-brand-ink hover:bg-brand-gold/90 focus:bg-brand-gold/90 cursor-pointer dark:border-brand-gold dark:bg-brand-purple dark:text-neutral-100 dark:hover:bg-brand-purpleLt dark:focus:bg-brand-purpleLt';
-  const iconButtonClass =
-    'flex h-14 w-14 items-center justify-center rounded-full bg-brand-gold text-brand-ink shadow-lg hover:bg-brand-gold/90 cursor-pointer dark:bg-brand-purple dark:text-neutral-100 dark:hover:bg-brand-purpleLt';
-  const dismissButtonClass =
-    'absolute -top-3 -right-3 hidden h-5 w-5 items-center justify-center rounded-full bg-brand-purple text-xs text-neutral-50 group-hover:flex cursor-pointer dark:bg-brand-gold dark:text-brand-ink';
-  const closeButtonClass =
-    'absolute right-2 top-2 text-xl leading-none cursor-pointer text-brand-ink hover:text-brand-ink/80 dark:text-brand-gold dark:hover:text-brand-gold/80';
-
   const scheduleNudge = useCallback(() => {
     if (nudgeRef.current) clearTimeout(nudgeRef.current);
     const timeout = Math.floor(Math.random() * 45000) + 45000;
@@ -168,20 +155,20 @@ export default function Assistant() {
       style={{ transform: `translate(${offset.x}px, ${offset.y + enterOffset}px)`, opacity: entered ? 1 : 0 }}
       className={`fixed right-6 bottom-6 z-50 transition-all duration-[1000ms] ease-in-out ${entered ? '' : 'pointer-events-none'}`}
     >
-      <div
-        className={`${panelClass} ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
-      >
-        <button
-          type="button"
-          aria-label="Close assistant"
-          onClick={() => {
-            setOpen(false);
-            resetNudge();
-          }}
-          className={closeButtonClass}
+        <div
+          className={`absolute bottom-0 right-0 w-80 rounded border border-brand-gold bg-brand-purple p-4 text-neutral-50 shadow-lg transition-all duration-700 ease-in-out transform dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100 ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
         >
-          ×
-        </button>
+          <button
+            type="button"
+            aria-label="Close assistant"
+            onClick={() => {
+              setOpen(false);
+              resetNudge();
+            }}
+            className="absolute right-2 top-2 text-xl leading-none cursor-pointer text-brand-gold hover:text-brand-gold/80 dark:text-brand-gold dark:hover:text-brand-gold/80"
+          >
+            ×
+          </button>
         <div role="log" aria-label="Chat messages" className="mb-2 max-h-60 overflow-y-auto" ref={logRef}>
           {messages.map((m, i) => (
             <div key={i} className="mb-1">
@@ -194,86 +181,86 @@ export default function Assistant() {
         </div>
         {collectInfo ? (
           <form onSubmit={sendInfo} className="flex flex-col gap-2" aria-label="Contact form">
-            <input
-              type="text"
-              className={inputClass}
-              placeholder="Name"
-              value={info.name}
-              onChange={(e) => setInfo({ ...info, name: e.target.value })}
-              aria-label="Name"
-              required
-            />
-            <input
-              type="text"
-              className={inputClass}
-              placeholder="Contact Number"
-              value={info.contact}
-              onChange={(e) => setInfo({ ...info, contact: e.target.value })}
-              aria-label="Contact Number"
-              required
-            />
-            <input
-              type="email"
-              className={inputClass}
-              placeholder="Email"
-              value={info.email}
-              onChange={(e) => setInfo({ ...info, email: e.target.value })}
-              aria-label="Email"
-              required
-            />
-            <textarea
-              className={inputClass}
-              placeholder="Any extra details"
-              value={info.details}
-              onChange={(e) => setInfo({ ...info, details: e.target.value })}
-              aria-label="Any extra details"
-            />
-            <button type="submit" className={buttonClass}>Send</button>
+              <input
+                type="text"
+                className="border border-brand-purple bg-neutral-50 p-1 text-brand-ink placeholder-brand-purple focus:border-brand-gold focus:outline-none dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100 dark:placeholder-brand-purpleLt"
+                placeholder="Name"
+                value={info.name}
+                onChange={(e) => setInfo({ ...info, name: e.target.value })}
+                aria-label="Name"
+                required
+              />
+              <input
+                type="text"
+                className="border border-brand-purple bg-neutral-50 p-1 text-brand-ink placeholder-brand-purple focus:border-brand-gold focus:outline-none dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100 dark:placeholder-brand-purpleLt"
+                placeholder="Contact Number"
+                value={info.contact}
+                onChange={(e) => setInfo({ ...info, contact: e.target.value })}
+                aria-label="Contact Number"
+                required
+              />
+              <input
+                type="email"
+                className="border border-brand-purple bg-neutral-50 p-1 text-brand-ink placeholder-brand-purple focus:border-brand-gold focus:outline-none dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100 dark:placeholder-brand-purpleLt"
+                placeholder="Email"
+                value={info.email}
+                onChange={(e) => setInfo({ ...info, email: e.target.value })}
+                aria-label="Email"
+                required
+              />
+              <textarea
+                className="border border-brand-purple bg-neutral-50 p-1 text-brand-ink placeholder-brand-purple focus:border-brand-gold focus:outline-none dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100 dark:placeholder-brand-purpleLt"
+                placeholder="Any extra details"
+                value={info.details}
+                onChange={(e) => setInfo({ ...info, details: e.target.value })}
+                aria-label="Any extra details"
+              />
+              <button type="submit" className="border border-brand-purple bg-brand-gold px-2 py-1 text-brand-ink hover:bg-brand-gold/90 focus:bg-brand-gold/90 cursor-pointer dark:border-brand-gold dark:bg-brand-purple dark:text-neutral-100 dark:hover:bg-brand-purpleLt dark:focus:bg-brand-purpleLt">Send</button>
           </form>
         ) : (
-          <form onSubmit={sendMessage} className="flex gap-2" aria-label="Chat input">
-            <input
-              type="text"
-              className={`flex-1 ${inputClass}`}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              aria-label="Message"
-            />
-            <button type="submit" className={buttonClass}>Send</button>
-          </form>
-        )}
+            <form onSubmit={sendMessage} className="flex gap-2" aria-label="Chat input">
+              <input
+                type="text"
+                className="flex-1 border border-brand-purple bg-neutral-50 p-1 text-brand-ink placeholder-brand-purple focus:border-brand-gold focus:outline-none dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100 dark:placeholder-brand-purpleLt"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                aria-label="Message"
+              />
+              <button type="submit" className="border border-brand-purple bg-brand-gold px-2 py-1 text-brand-ink hover:bg-brand-gold/90 focus:bg-brand-gold/90 cursor-pointer dark:border-brand-gold dark:bg-brand-purple dark:text-neutral-100 dark:hover:bg-brand-purpleLt dark:focus:bg-brand-purpleLt">Send</button>
+            </form>
+          )}
       </div>
       <div
         className={`relative group transition-all duration-700 ease-in-out ${
           open ? 'translate-y-4 opacity-0 pointer-events-none' : 'opacity-100'
         }`}
       >
-        <button
-          type="button"
-          aria-label="Open assistant"
-          onClick={() => {
-            resetNudge();
-            if (docked) {
-              undock();
-              setTimeout(() => setOpen(true), ANIM_MS);
-            } else {
-              setOpen(true);
-            }
-          }}
-          className={`${iconButtonClass} ${nudge ? 'animate-shake' : ''}`}
-        >
-          <span className="text-2xl">🤖</span>
-        </button>
-        {!docked && (
           <button
             type="button"
-            aria-label="Dismiss assistant"
-            onClick={dock}
-            className={dismissButtonClass}
+            aria-label="Open assistant"
+            onClick={() => {
+              resetNudge();
+              if (docked) {
+                undock();
+                setTimeout(() => setOpen(true), ANIM_MS);
+              } else {
+                setOpen(true);
+              }
+            }}
+            className={`flex h-14 w-14 items-center justify-center rounded-full bg-brand-gold text-brand-ink shadow-lg hover:bg-brand-gold/90 cursor-pointer dark:bg-brand-purple dark:text-neutral-100 dark:hover:bg-brand-purpleLt ${nudge ? 'animate-shake' : ''}`}
           >
-            ×
+            <span className="text-2xl">🤖</span>
           </button>
-        )}
+          {!docked && (
+            <button
+              type="button"
+              aria-label="Dismiss assistant"
+              onClick={dock}
+              className="absolute -top-3 -right-3 hidden h-5 w-5 items-center justify-center rounded-full bg-brand-purple text-xs text-neutral-50 group-hover:flex cursor-pointer dark:bg-brand-gold dark:text-brand-ink"
+            >
+              ×
+            </button>
+          )}
       </div>
     </div>
   );
