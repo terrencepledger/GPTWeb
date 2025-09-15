@@ -135,7 +135,6 @@ export default function Assistant() {
       },
     ]);
     if (data.escalate) {
-      // Hard escalation: auto-open the contact form
       setCollectInfo(true);
       setCollectInfoMode('hard');
       setEscalationReason(data.reason || '');
@@ -194,7 +193,7 @@ export default function Assistant() {
         className={`absolute bottom-0 right-0 w-80 rounded-lg border p-4 shadow-lg transition-all duration-700 ease-in-out transform ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
         style={{
           backgroundColor: 'var(--brand-surface)',
-          color: 'var(--brand-surface-contrast)',
+          color: 'var(--brand-ink)',
           borderColor: 'var(--brand-border)',
         }}
       >
@@ -205,7 +204,7 @@ export default function Assistant() {
             setOpen(false);
             resetNudge();
           }}
-          className="absolute right-2 top-2 text-xl leading-none cursor-pointer"
+          className="absolute right-2 top-2 p-2 text-xl leading-none cursor-pointer"
         >
           ×
         </button>
@@ -215,7 +214,7 @@ export default function Assistant() {
               key={i}
               className={`mb-2 flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className="max-w-[85%] flex flex-col">
+              <div className={`max-w-[85%] flex flex-col ${m.role === 'assistant' ? 'items-start' : 'items-end'}`}>
                 <div
                   className="relative rounded-2xl border px-3 py-2 whitespace-pre-wrap"
                   style={{
@@ -223,10 +222,7 @@ export default function Assistant() {
                       m.role === 'assistant'
                         ? 'var(--brand-primary)'
                         : 'var(--brand-accent)',
-                    color:
-                      m.role === 'assistant'
-                        ? 'var(--brand-primary-contrast)'
-                        : 'var(--brand-ink)',
+                    color: 'var(--brand-ink)',
                     borderColor: 'var(--brand-border)',
                   }}
                 >
@@ -235,7 +231,7 @@ export default function Assistant() {
                     <div className="mt-1 text-sm">
                       <button
                         type="button"
-                        className="underline text-neutral-50 hover:text-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold cursor-pointer bg-transparent p-0 font-normal"
+                        className="underline hover:text-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold cursor-pointer bg-transparent p-0 font-normal" style={{ color: 'var(--brand-ink)' }}
                         onClick={() => {
                           const pct = Math.max(
                             0,
@@ -254,7 +250,7 @@ export default function Assistant() {
                     </div>
                   )}
                   <div
-                    className="absolute left-1/2 -bottom-2 h-3 w-3 -translate-x-1/2 rotate-45 border-b border-r"
+                    className={`absolute -bottom-2 h-3 w-3 rotate-45 border-b ${m.role === 'assistant' ? 'border-l left-3' : 'border-r right-3'}`}
                     style={{
                       backgroundColor:
                         m.role === 'assistant'
@@ -272,10 +268,7 @@ export default function Assistant() {
                   }`}
                   style={{
                     borderColor: 'var(--brand-border)',
-                    color:
-                      m.role === 'assistant'
-                        ? 'var(--brand-primary)'
-                        : 'var(--brand-accent)',
+                    color: 'var(--brand-ink)',
                   }}
                 >
                   {m.role === 'assistant' ? 'Assistant' : 'You'}
@@ -288,7 +281,7 @@ export default function Assistant() {
           )}
         </div>
         {collectInfo ? (
-          <form onSubmit={sendInfo} className="flex flex-col gap-2" aria-label="Contact form">
+          <form onSubmit={sendInfo} className="flex flex-col gap-2 border rounded p-2" aria-label="Contact form" style={{ borderColor: 'var(--brand-border)' }}>
             {collectInfoMode === 'soft' && (
               <button
                 type="button"
@@ -296,8 +289,8 @@ export default function Assistant() {
                 aria-label="Go back to chat"
                 className="self-start -mb-1 underline focus:outline-none focus:ring-1 cursor-pointer hover:opacity-80"
                 style={{
-                  color: 'var(--brand-surface-contrast)',
-                  '--tw-ring-color': 'var(--brand-surface-contrast)',
+                  color: 'var(--brand-ink)',
+                  '--tw-ring-color': 'var(--brand-ink)',
                 } as CSSProperties}
               >
                 Back
@@ -366,7 +359,7 @@ export default function Assistant() {
               className="rounded px-3 py-1 focus:outline-none focus:ring-2 cursor-pointer"
               style={{
                 backgroundColor: 'var(--brand-primary)',
-                color: 'var(--brand-primary-contrast)',
+                color: 'var(--brand-ink)',
                 '--tw-ring-color': 'var(--brand-primary)',
               } as CSSProperties}
             >
@@ -393,7 +386,7 @@ export default function Assistant() {
               className="rounded px-3 py-1 focus:outline-none focus:ring-2 cursor-pointer"
               style={{
                 backgroundColor: 'var(--brand-primary)',
-                color: 'var(--brand-primary-contrast)',
+                color: 'var(--brand-ink)',
                 '--tw-ring-color': 'var(--brand-primary)',
               } as CSSProperties}
             >
@@ -433,7 +426,7 @@ export default function Assistant() {
             type="button"
             aria-label="Dismiss assistant"
             onClick={dock}
-            className="absolute -top-3 -right-3 hidden h-5 w-5 items-center justify-center rounded-full bg-brand-gold text-xs text-brand-ink group-hover:flex cursor-pointer"
+            className="absolute -top-3 -right-3 hidden h-5 w-5 items-center justify-center rounded-full border bg-brand-gold text-xs text-brand-ink group-hover:flex cursor-pointer" style={{ borderColor: 'var(--brand-border)' }}
           >
             ×
           </button>
