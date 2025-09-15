@@ -184,7 +184,7 @@ export const eventDetailBySlug = (slug: string, preview = false) => {
 export interface Product {
   _id: string;
   title: string;
-  price: number;
+  price?: number;
   image?: string;
 }
 
@@ -194,7 +194,7 @@ export const productsAll = () =>
       _id,
       title,
       price,
-      "image": image.asset->url
+      "image": images[0].asset->url
     }`
   );
 
