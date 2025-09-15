@@ -1,6 +1,6 @@
 'use client';
 
-import {FormEvent, useCallback, useEffect, useRef, useState} from 'react';
+import {FormEvent, useCallback, useEffect, useRef, useState, type CSSProperties} from 'react';
 import type {ChatMessage} from '@/types/chat';
 import Link from 'next/link';
 
@@ -135,7 +135,6 @@ export default function Assistant() {
       },
     ]);
     if (data.escalate) {
-      // Hard escalation: auto-open the contact form
       setCollectInfo(true);
       setCollectInfoMode('hard');
       setEscalationReason(data.reason || '');
@@ -191,7 +190,12 @@ export default function Assistant() {
       className={`fixed right-6 bottom-6 z-50 transition-all duration-[1000ms] ease-in-out ${entered ? '' : 'pointer-events-none'}`}
     >
       <div
-        className={`absolute bottom-0 right-0 w-80 rounded border bg-neutral-100 p-4 shadow-lg transition-all duration-700 ease-in-out transform dark:bg-neutral-800 ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
+        className={`absolute bottom-0 right-0 w-80 rounded-lg border pt-8 pr-8 pb-4 pl-4 shadow-lg transition-all duration-700 ease-in-out transform ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
+        style={{
+          backgroundColor: 'var(--brand-surface)',
+          color: 'var(--brand-ink)',
+          borderColor: 'var(--brand-border)',
+        }}
       >
         <button
           type="button"
@@ -200,52 +204,115 @@ export default function Assistant() {
             setOpen(false);
             resetNudge();
           }}
-          className="absolute right-2 top-2 text-xl leading-none cursor-pointer"
+          className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full border text-2xl leading-none cursor-pointer"
+          style={{
+            backgroundColor: 'var(--brand-accent)',
+            color: 'var(--brand-ink)',
+            borderColor: 'var(--brand-border)',
+          }}
         >
           ×
         </button>
         <div role="log" aria-label="Chat messages" className="mb-2 max-h-60 overflow-y-auto" ref={logRef}>
           {messages.map((m, i) => (
-            <div key={i} className="mb-1">
-              <span className="font-bold">{m.role === 'assistant' ? 'Assistant' : 'You'}:</span> {renderContent(m.content)}
-              {m.role === 'assistant' && m.softEscalate && !collectInfo && (
-                <div className="mt-1 text-sm">
-                  <button
-                    type="button"
-                    className="underline text-brand-purple hover:text-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold cursor-pointer bg-transparent p-0 font-normal"
-                    onClick={() => {
-                      const pct = Math.max(0, Math.min(100, Math.round(((m.confidence ?? 0) as number) * 100)));
-                      setEscalationReason(`Assistant confidence ${pct}%. Visitor opted to reach out for a more certain answer.`);
-                      setCollectInfo(true);
-                      setCollectInfoMode('soft');
+            <div
+              key={i}
+              className={`mb-2 flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            >
+              <div className={`max-w-[85%] flex flex-col ${m.role === 'assistant' ? 'items-start' : 'items-end'}`}>
+                <div
+                  className="relative rounded-2xl border px-3 py-2 whitespace-pre-wrap"
+                  style={{
+                    backgroundColor:
+                      m.role === 'assistant'
+                        ? 'var(--brand-primary)'
+                        : 'var(--brand-accent)',
+                    color: 'var(--brand-ink)',
+                    borderColor: 'var(--brand-border)',
+                  }}
+                >
+                  {renderContent(m.content)}
+                  {m.role === 'assistant' && m.softEscalate && !collectInfo && (
+                    <div className="mt-1 text-sm">
+                      <button
+                        type="button"
+                        className="underline hover:text-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold cursor-pointer bg-transparent p-0 font-normal" style={{ color: 'var(--brand-ink)' }}
+                        onClick={() => {
+                          const pct = Math.max(
+                            0,
+                            Math.min(100, Math.round(((m.confidence ?? 0) as number) * 100))
+                          );
+                          setEscalationReason(
+                            `Assistant confidence ${pct}%. Visitor opted to reach out for a more certain answer.`
+                          );
+                          setCollectInfo(true);
+                          setCollectInfoMode('soft');
+                        }}
+                        aria-label="Open escalation form"
+                      >
+                        Reach Out to a Staff Member
+                      </button>
+                    </div>
+                  )}
+                  <div
+                    className={`absolute -bottom-2 h-3 w-3 rotate-45 border-b ${m.role === 'assistant' ? 'border-l left-3' : 'border-r right-3'}`}
+                    style={{
+                      backgroundColor:
+                        m.role === 'assistant'
+                          ? 'var(--brand-primary)'
+                          : 'var(--brand-accent)',
+                      borderColor: 'var(--brand-border)',
                     }}
-                    aria-label="Open escalation form"
-                  >
-                    Reach Out to a Staff Member
-                  </button>
+                  />
                 </div>
-              )}
+                <div
+                  className={`mt-3 inline-block rounded border px-3 py-1 text-base font-semibold ${
+                    m.role === 'assistant'
+                      ? 'self-start'
+                      : 'self-end'
+                  }`}
+                  style={{
+                    borderColor: 'var(--brand-border)',
+                    color: 'var(--brand-accent)',
+                  }}
+                >
+                  {m.role === 'assistant' ? 'Assistant' : 'You'}
+                </div>
+              </div>
             </div>
           ))}
           {thinking && !collectInfo && (
-            <div className="mb-1 text-neutral-500">Assistant is thinking…</div>
+            <div className="mb-1" style={{ color: 'var(--brand-muted)' }}>Assistant is thinking…</div>
           )}
         </div>
         {collectInfo ? (
-          <form onSubmit={sendInfo} className="flex flex-col gap-2" aria-label="Contact form">
+          <form onSubmit={sendInfo} className="flex flex-col gap-2 border rounded p-2" aria-label="Contact form" style={{ borderColor: 'var(--brand-border)' }}>
             {collectInfoMode === 'soft' && (
               <button
                 type="button"
                 onClick={() => { setCollectInfo(false); setCollectInfoMode(null); }}
                 aria-label="Go back to chat"
-                className="self-start -mb-1 text-brand-ink hover:text-brand-ink/70 underline focus:outline-none focus:ring-1 focus:ring-brand-ink/40 cursor-pointer"
+                className="self-start -mb-1 underline focus:outline-none focus:ring-1 cursor-pointer hover:opacity-80"
+                style={{
+                  color: 'var(--brand-ink)',
+                  '--tw-ring-color': 'var(--brand-ink)',
+                } as CSSProperties}
               >
                 Back
               </button>
             )}
+            <p className="mb-2 text-lg font-semibold" style={{ color: 'var(--brand-accent)' }}>
+              Contact a Staff Member
+            </p>
             <input
               type="text"
-              className="border p-1"
+              className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'var(--brand-alt)',
+                color: 'var(--brand-ink)',
+                borderColor: 'var(--brand-border)',
+                '--tw-ring-color': 'var(--brand-primary)',
+              } as CSSProperties}
               placeholder="Name"
               value={info.name}
               onChange={(e) => setInfo({ ...info, name: e.target.value })}
@@ -254,7 +321,13 @@ export default function Assistant() {
             />
             <input
               type="text"
-              className="border p-1"
+              className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'var(--brand-alt)',
+                color: 'var(--brand-ink)',
+                borderColor: 'var(--brand-border)',
+                '--tw-ring-color': 'var(--brand-primary)',
+              } as CSSProperties}
               placeholder="Contact Number"
               value={info.contact}
               onChange={(e) => setInfo({ ...info, contact: e.target.value })}
@@ -263,7 +336,13 @@ export default function Assistant() {
             />
             <input
               type="email"
-              className="border p-1"
+              className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'var(--brand-alt)',
+                color: 'var(--brand-ink)',
+                borderColor: 'var(--brand-border)',
+                '--tw-ring-color': 'var(--brand-primary)',
+              } as CSSProperties}
               placeholder="Email"
               value={info.email}
               onChange={(e) => setInfo({ ...info, email: e.target.value })}
@@ -271,24 +350,56 @@ export default function Assistant() {
               required
             />
             <textarea
-              className="border p-1"
+              className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'var(--brand-alt)',
+                color: 'var(--brand-ink)',
+                borderColor: 'var(--brand-border)',
+                '--tw-ring-color': 'var(--brand-primary)',
+              } as CSSProperties}
               placeholder="Any extra details"
               value={info.details}
               onChange={(e) => setInfo({ ...info, details: e.target.value })}
               aria-label="Any extra details"
             />
-            <button type="submit" className="border px-2 py-1 cursor-pointer">Send</button>
+            <button
+              type="submit"
+              className="rounded px-3 py-1 focus:outline-none focus:ring-2 cursor-pointer"
+              style={{
+                backgroundColor: 'var(--brand-primary)',
+                color: 'var(--brand-ink)',
+                '--tw-ring-color': 'var(--brand-primary)',
+              } as CSSProperties}
+            >
+              Send
+            </button>
           </form>
         ) : (
           <form onSubmit={sendMessage} className="flex gap-2" aria-label="Chat input">
             <input
               type="text"
-              className="flex-1 border p-1"
+              className="flex-1 border rounded px-2 py-1 focus:outline-none focus:ring-2"
+              style={{
+                backgroundColor: 'var(--brand-alt)',
+                color: 'var(--brand-ink)',
+                borderColor: 'var(--brand-border)',
+                '--tw-ring-color': 'var(--brand-primary)',
+              } as CSSProperties}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               aria-label="Message"
             />
-            <button type="submit" className="border px-2 py-1 cursor-pointer">Send</button>
+            <button
+              type="submit"
+              className="rounded px-3 py-1 focus:outline-none focus:ring-2 cursor-pointer"
+              style={{
+                backgroundColor: 'var(--brand-primary)',
+                color: 'var(--brand-ink)',
+                '--tw-ring-color': 'var(--brand-primary)',
+              } as CSSProperties}
+            >
+              Send
+            </button>
           </form>
         )}
       </div>
@@ -309,7 +420,12 @@ export default function Assistant() {
               setOpen(true);
             }
           }}
-          className={`flex h-14 w-14 items-center justify-center rounded-full bg-neutral-100 shadow-lg dark:bg-neutral-800 cursor-pointer ${nudge ? 'animate-shake' : ''}`}
+          className={`flex h-14 w-14 items-center justify-center rounded-full shadow-lg cursor-pointer border hover:opacity-90 ${nudge ? 'animate-shake' : ''}`}
+          style={{
+            backgroundColor: 'var(--brand-accent)',
+            color: 'var(--brand-ink)',
+            borderColor: 'var(--brand-border)',
+          }}
         >
           <span className="text-2xl">🤖</span>
         </button>
@@ -318,7 +434,12 @@ export default function Assistant() {
             type="button"
             aria-label="Dismiss assistant"
             onClick={dock}
-            className="absolute -top-3 -right-3 hidden h-5 w-5 items-center justify-center rounded-full bg-neutral-400 text-xs text-neutral-50 group-hover:flex cursor-pointer"
+            className="absolute -top-4 -right-4 hidden h-9 w-9 place-items-center rounded-full border text-2xl leading-none group-hover:grid cursor-pointer"
+            style={{
+              borderColor: 'var(--brand-border)',
+              backgroundColor: 'var(--brand-accent)',
+              color: 'var(--brand-ink)',
+            }}
           >
             ×
           </button>
