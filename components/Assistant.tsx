@@ -57,7 +57,7 @@ export default function Assistant() {
             href={part}
             target="_blank"
             rel="noopener noreferrer"
-            className="underline"
+            className="underline hover:opacity-80 text-[var(--brand-accent)]"
           >
             {label}
           </a>
@@ -65,7 +65,11 @@ export default function Assistant() {
       }
       if (/^\//.test(part)) {
         return (
-          <Link key={idx} href={part} className="underline">
+          <Link
+            key={idx}
+            href={part}
+            className="underline hover:opacity-80 text-[var(--brand-accent)]"
+          >
             {part}
           </Link>
         );
@@ -260,7 +264,8 @@ export default function Assistant() {
                     <div className="mt-1 text-sm">
                       <button
                         type="button"
-                        className="underline hover:text-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold cursor-pointer bg-transparent p-0 font-normal" style={{ color: 'var(--brand-ink)' }}
+                        className="underline hover:opacity-80 focus:outline-none focus:ring-1 cursor-pointer bg-transparent p-0 font-normal"
+                        style={{ color: 'var(--brand-accent)', '--tw-ring-color': 'var(--brand-accent)' } as CSSProperties}
                         onClick={() => {
                           const pct = Math.max(
                             0,
@@ -318,8 +323,8 @@ export default function Assistant() {
                 aria-label="Go back to chat"
                 className="self-start -mb-1 underline focus:outline-none focus:ring-1 cursor-pointer hover:opacity-80"
                 style={{
-                  color: 'var(--brand-ink)',
-                  '--tw-ring-color': 'var(--brand-ink)',
+                  color: 'var(--brand-accent)',
+                  '--tw-ring-color': 'var(--brand-accent)',
                 } as CSSProperties}
               >
                 Back
