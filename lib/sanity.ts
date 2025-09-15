@@ -4,7 +4,6 @@ import { createClient } from '@sanity/client';
 const projectId = process.env.SANITY_STUDIO_PROJECT_ID;
 const dataset = process.env.SANITY_STUDIO_DATASET;
 
-// Optional read token (single canonical name)
 // Fall back to SANITY_API_TOKEN for compatibility with existing envs
 const token = process.env.SANITY_READ_TOKEN || process.env.SANITY_API_TOKEN;
 

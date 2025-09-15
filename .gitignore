@@ -22,3 +22,6 @@ lerna-debug.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Secrets
+config/gmail-service-account.json

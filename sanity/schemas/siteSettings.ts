@@ -29,18 +29,14 @@ export default defineType({
       description: 'e.g., Sundays 9am & 11am; Wednesdays 7pm',
     }),
     defineField({
-      name: 'youtubeChannelId',
-      title: 'YouTube Channel ID',
+      name: 'email',
+      title: 'Email',
       type: 'string',
+      validation: (Rule) => Rule.email(),
     }),
     defineField({
-      name: 'vimeoUserId',
-      title: 'Vimeo User ID',
-      type: 'string',
-    }),
-    defineField({
-      name: 'vimeoAccessToken',
-      title: 'Vimeo Access Token',
+      name: 'phone',
+      title: 'Phone',
       type: 'string',
     }),
     defineField({
