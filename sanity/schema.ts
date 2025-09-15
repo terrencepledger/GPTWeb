@@ -3,14 +3,15 @@ import staff from './schemas/staff';
 import siteSettings from './schemas/siteSettings';
 import ministry from './schemas/ministry';
 import heroSlide from './schemas/heroSlide';
+import chatbot from './schemas/chatbot';
 import missionStatement from './schemas/missionStatement';
 import eventDetail from './schemas/eventDetail';
 import product from './schemas/product';
 import heroSection from './schemas/sections/heroSection';
 import gallerySection from './schemas/sections/gallerySection';
-import calendarSection from './schemas/sections/calendarSection';
+import subscriptionSection from './schemas/sections/subscriptionSection';
 import mapSection from './schemas/sections/mapSection';
-import registrationSection from './schemas/sections/registrationSection';
+import linkSection from './schemas/sections/linkSection';
 
 export const schemaTypes = [
   announcement,
@@ -23,7 +24,8 @@ export const schemaTypes = [
   product,
   heroSection,
   gallerySection,
-  calendarSection,
+  subscriptionSection,
   mapSection,
-  registrationSection,
+  linkSection,
+  chatbot,
 ];

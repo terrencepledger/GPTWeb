@@ -60,16 +60,15 @@ export interface SiteSettings {
   title: string;
   address?: string;
   serviceTimes?: string;
+  email?: string;
+  phone?: string;
   logo?: string;
   socialLinks?: SocialLink[];
-  youtubeChannelId?: string;
-  vimeoUserId?: string;
-  vimeoAccessToken?: string;
 }
 
 export const siteSettings = () =>
   sanity.fetch<SiteSettings | null>(
-    groq`*[_id == "siteSettings"][0]{_id, title, address, serviceTimes, youtubeChannelId, vimeoUserId, vimeoAccessToken, "logo": logo.asset->url, "socialLinks": socialLinks[]{label, href, description, icon}}`
+    groq`*[_id == "siteSettings"][0]{_id, title, email, phone, address, serviceTimes, "logo": logo.asset->url, "socialLinks": socialLinks[]{label, href, description, icon}}`
   );
 
 export interface Ministry {
@@ -123,6 +122,7 @@ export interface EventDetail {
   _id: string;
   title: string;
   calendarEventId: string;
+  eventDate?: string;
   body?: any;
   palette?: {
     light?: { primary?: string; accent?: string; contrast?: string };
@@ -132,9 +132,9 @@ export interface EventDetail {
   sections?: (
     | { _type: 'heroSection'; headline?: string; subheadline?: string; backgroundImage?: string }
     | { _type: 'gallerySection'; layout?: string; images: { _key: string; url: string; alt?: string }[] }
-    | { _type: 'calendarSection'; showSubscribe?: boolean }
+    | { _type: 'subscriptionSection'; showSubscribe?: boolean }
     | { _type: 'mapSection'; address?: string; mapType?: string }
-    | { _type: 'registrationSection'; formUrl?: string }
+    | { _type: 'linkSection'; linkText?: string; url?: string }
   )[];
 }
 
@@ -153,6 +153,7 @@ export const eventDetailBySlug = (slug: string, preview = false) => {
       _id,
       title,
       calendarEventId,
+      eventDate,
       body,
       palette{
         light{primary, accent, contrast},
@@ -171,9 +172,9 @@ export const eventDetailBySlug = (slug: string, preview = false) => {
           layout,
           "images": images[]{ _key, "url": asset->url, "alt": coalesce(alt, "") }
         },
-        _type == 'calendarSection' => { _type, showSubscribe },
+        _type == 'subscriptionSection' => { _type, showSubscribe },
         _type == 'mapSection' => { _type, address, mapType },
-        _type == 'registrationSection' => { _type, formUrl }
+        _type == 'linkSection' => { _type, linkText, url }
       }
     }`,
     { slug }

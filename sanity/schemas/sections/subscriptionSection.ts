@@ -1,8 +1,8 @@
 import { defineType, defineField } from 'sanity';
 
 export default defineType({
-  name: 'calendarSection',
-  title: 'Calendar Section',
+  name: 'subscriptionSection',
+  title: 'Subscription Section',
   type: 'object',
   fields: [
     defineField({

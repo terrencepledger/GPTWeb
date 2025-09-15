@@ -23,6 +23,9 @@
       ],
       "@/lib/*": [
         "lib/*"
+      ],
+      "@/types/*": [
+        "types/*"
       ]
     },
     "incremental": true,
@@ -45,5 +48,12 @@
   ],
   "references": [
     { "path": "./sanity" }
-  ]
+  ],
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs",
+      "moduleResolution": "node"
+    },
+    "transpileOnly": true
+  }
 }
