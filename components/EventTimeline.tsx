@@ -71,7 +71,7 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
           />
           <span
             style={{ transitionDelay: `${i * 150}ms` }}
-            className={`timeline-connector absolute top-6 h-px bg-[var(--brand-accent)] transition-transform duration-500 scale-x-0 left-4 w-[calc(100%-2.5rem)] origin-left ${
+            className={`timeline-connector absolute top-6 h-px bg-[var(--brand-accent)] transition-transform duration-500 scale-x-0 left-4 w-6 origin-left ${
               i % 2 === 0
                 ? "sm:left-1/2 sm:w-[calc(50%-2.5rem)] sm:origin-left"
                 : "sm:left-auto sm:right-1/2 sm:w-[calc(50%-2.5rem)] sm:origin-right"
