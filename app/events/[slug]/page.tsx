@@ -91,7 +91,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
   return (
     <>
       {liveStyleEl}
-      <article id="event-article" className="space-y-8">
+      <article id="event-article" className="mx-auto w-full max-w-screen-md space-y-8">
         {!hasHero && (
           <HeroSection
             title={detail.title}

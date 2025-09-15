@@ -36,10 +36,10 @@ export default function HeroSection({
           />
         </div>
       )}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           {eventLogo && (
-            <div className="relative h-24 w-24">
+            <div className="relative h-20 w-20 sm:h-24 sm:w-24">
               <Image src={eventLogo.url} alt={eventLogo.alt || ''} fill className="object-contain" />
             </div>
           )}
@@ -51,7 +51,7 @@ export default function HeroSection({
           </div>
         </div>
         {subscribeUrl && (
-          <div className="flex items-center gap-4 text-right">
+          <div className="flex items-center gap-4 sm:text-right">
             {date && <p className="text-[var(--brand-fg)]">{date}</p>}
             <a
               href={subscribeUrl}
