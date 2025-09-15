@@ -78,12 +78,6 @@ export interface Ministry {
   staffImage?: string;
 }
 
-export const ministriesHighlights = (limit: number) =>
-  sanity.fetch<Ministry[]>(
-    groq`*[_type == "ministry"] | order(_createdAt desc)[0...$limit]{_id, name, description, "staffImage": staffImage.asset->url}`,
-    {limit},
-  );
-
 export const ministriesAll = () =>
   sanity.fetch<Ministry[]>(
     groq`*[_type == "ministry"] | order(name asc){_id, name, description, "staffImage": staffImage.asset->url}`
@@ -184,7 +178,7 @@ export const eventDetailBySlug = (slug: string, preview = false) => {
 export interface Product {
   _id: string;
   title: string;
-  price: number;
+  price?: number;
   description?: string;
   image?: string;
 }
@@ -195,8 +189,8 @@ export const productsAll = () =>
       _id,
       title,
       price,
+      "image": images[0].asset->url
       description,
-      "image": image.asset->url
     }`
   );
 
