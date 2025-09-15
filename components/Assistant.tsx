@@ -210,16 +210,7 @@ export default function Assistant() {
               key={i}
               className={`mb-2 flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className="max-w-[85%]">
-                <div
-                  className={`mb-1 text-xs font-semibold ${
-                    m.role === 'assistant'
-                      ? 'text-brand-purple text-left'
-                      : 'text-brand-gold text-right'
-                  }`}
-                >
-                  {m.role === 'assistant' ? 'Assistant' : 'You'}
-                </div>
+              <div className="max-w-[85%] flex flex-col">
                 <div
                   className={`rounded-2xl px-3 py-2 whitespace-pre-wrap ${
                     m.role === 'assistant'
@@ -251,6 +242,15 @@ export default function Assistant() {
                     </div>
                   )}
                 </div>
+                <div
+                  className={`mt-1 inline-block rounded border px-2 py-[2px] text-sm font-semibold ${
+                    m.role === 'assistant'
+                      ? 'border-brand-purple text-brand-purple self-start'
+                      : 'border-brand-gold text-brand-gold self-end'
+                  }`}
+                >
+                  {m.role === 'assistant' ? 'Assistant' : 'You'}
+                </div>
               </div>
             </div>
           ))}
@@ -272,7 +272,7 @@ export default function Assistant() {
             )}
             <input
               type="text"
-              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-brand-ink/60 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
+              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-neutral-600 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
               placeholder="Name"
               value={info.name}
               onChange={(e) => setInfo({ ...info, name: e.target.value })}
@@ -281,7 +281,7 @@ export default function Assistant() {
             />
             <input
               type="text"
-              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-brand-ink/60 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
+              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-neutral-600 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
               placeholder="Contact Number"
               value={info.contact}
               onChange={(e) => setInfo({ ...info, contact: e.target.value })}
@@ -290,7 +290,7 @@ export default function Assistant() {
             />
             <input
               type="email"
-              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-brand-ink/60 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
+              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-neutral-600 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
               placeholder="Email"
               value={info.email}
               onChange={(e) => setInfo({ ...info, email: e.target.value })}
@@ -298,7 +298,7 @@ export default function Assistant() {
               required
             />
             <textarea
-              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-brand-ink/60 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
+              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-neutral-600 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
               placeholder="Any extra details"
               value={info.details}
               onChange={(e) => setInfo({ ...info, details: e.target.value })}
@@ -315,7 +315,7 @@ export default function Assistant() {
           <form onSubmit={sendMessage} className="flex gap-2" aria-label="Chat input">
             <input
               type="text"
-              className="flex-1 border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-brand-ink/60 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
+              className="flex-1 border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-neutral-600 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               aria-label="Message"
