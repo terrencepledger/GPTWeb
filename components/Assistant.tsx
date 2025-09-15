@@ -236,7 +236,7 @@ export default function Assistant() {
         style={{
           backgroundColor: 'var(--brand-surface)',
           color: 'var(--brand-ink)',
-          borderColor: 'var(--brand-border)',
+          borderColor: 'var(--brand-ink)',
         }}
       >
         <button
@@ -246,10 +246,11 @@ export default function Assistant() {
             setOpen(false);
             resetNudge();
           }}
-          className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full border border-[var(--brand-alt)] dark:border-[var(--brand-border)] text-2xl leading-none cursor-pointer"
+          className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full border text-2xl leading-none cursor-pointer"
           style={{
             backgroundColor: 'var(--brand-alt)',
             color: 'var(--brand-ink)',
+            borderColor: 'var(--brand-ink)',
           }}
         >
           ×
@@ -484,10 +485,11 @@ export default function Assistant() {
             type="button"
             aria-label="Dismiss assistant"
             onClick={dock}
-            className="absolute -top-4 -right-4 hidden h-9 w-9 place-items-center rounded-full border border-[var(--brand-border)] dark:border-[var(--brand-alt)] text-2xl leading-none group-hover:grid cursor-pointer"
+            className="absolute -top-4 -right-4 hidden h-9 w-9 place-items-center rounded-full border text-2xl leading-none group-hover:grid cursor-pointer"
             style={{
               backgroundColor: 'var(--brand-accent)',
               color: 'var(--brand-ink)',
+              borderColor: 'var(--brand-ink)',
             }}
           >
             ×
