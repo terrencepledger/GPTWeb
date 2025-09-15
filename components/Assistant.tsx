@@ -25,6 +25,24 @@ export default function Assistant() {
   const [escalationReason, setEscalationReason] = useState('');
   const [collectInfoMode, setCollectInfoMode] = useState<'soft' | 'hard' | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
+  const baseBottom = 24;
+  const [viewportOffset, setViewportOffset] = useState(0);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    const handle = () => {
+      if (!viewport) return;
+      const diff = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+      setViewportOffset(diff);
+    };
+    viewport?.addEventListener('resize', handle);
+    viewport?.addEventListener('scroll', handle);
+    handle();
+    return () => {
+      viewport?.removeEventListener('resize', handle);
+      viewport?.removeEventListener('scroll', handle);
+    };
+  }, []);
 
   function renderContent(text: string) {
     const regex = /(https?:\/\/[^\s]+|\/[A-Za-z0-9\-_/]+)/g;
@@ -186,7 +204,7 @@ export default function Assistant() {
   return (
     <div
       ref={containerRef}
-      style={{ transform: `translate(${offset.x}px, ${offset.y + enterOffset}px)`, opacity: entered ? 1 : 0 }}
+      style={{ transform: `translate(${offset.x}px, ${offset.y + enterOffset}px)`, opacity: entered ? 1 : 0, bottom: baseBottom + viewportOffset }}
       className={`fixed right-6 bottom-6 z-50 transition-all duration-[1000ms] ease-in-out ${entered ? '' : 'pointer-events-none'}`}
     >
       <div
@@ -213,7 +231,13 @@ export default function Assistant() {
         >
           ×
         </button>
-        <div role="log" aria-label="Chat messages" className="mb-2 max-h-60 overflow-y-auto" ref={logRef}>
+        <div
+          role="log"
+          aria-label="Chat messages"
+          className="mb-2 max-h-60 overflow-y-auto pr-2"
+          style={{ scrollbarGutter: 'stable' } as CSSProperties}
+          ref={logRef}
+        >
           {messages.map((m, i) => (
             <div
               key={i}
@@ -378,7 +402,7 @@ export default function Assistant() {
           <form onSubmit={sendMessage} className="flex gap-2" aria-label="Chat input">
             <input
               type="text"
-              className="flex-1 border rounded px-2 py-1 focus:outline-none focus:ring-2"
+              className="flex-1 min-w-0 border rounded px-2 py-1 focus:outline-none focus:ring-2"
               style={{
                 backgroundColor: 'var(--brand-alt)',
                 color: 'var(--brand-ink)',
