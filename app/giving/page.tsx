@@ -1,11 +1,10 @@
 import type { SVGProps } from "react";
+import type { GivingOption } from "@/lib/giving";
+import { givingOptions } from "@/lib/giving";
 
 export const metadata = { title: "Giving" };
 
-type Option = {
-  title: string;
-  content: string;
-  href?: string;
+type Option = GivingOption & {
   icon: (props: SVGProps<SVGSVGElement>) => JSX.Element;
 };
 
@@ -86,30 +85,17 @@ function LinkIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
-const options: Option[] = [
-  {
-    title: "Mailing Address",
-    content: "864 Splitlog Ave., Kansas City, KS 66101",
-    icon: MailIcon,
-  },
-  {
-    title: "Cash App",
-    content: "$GPTKCK",
-    icon: CashIcon,
-  },
-  {
-    title: "Givelify",
-    content: "Greater Pentecostal Temple Church",
-    href: "https://www.givelify.com/donate/MTUxODY4MQ==/selection",
-    icon: HeartIcon,
-  },
-  {
-    title: "Razmobile",
-    content: "Give securely online",
-    href: "https://www.razmobile.com/GPTChurch",
-    icon: LinkIcon,
-  },
-];
+const iconMap: Record<string, (props: SVGProps<SVGSVGElement>) => JSX.Element> = {
+  "Mailing Address": MailIcon,
+  "Cash App": CashIcon,
+  Givelify: HeartIcon,
+  Razmobile: LinkIcon,
+};
+
+const options: Option[] = givingOptions.map((opt) => ({
+  ...opt,
+  icon: iconMap[opt.title] ?? LinkIcon,
+}));
 
 function OptionCard({ option, delay }: { option: Option; delay: string }) {
   const Icon = option.icon;

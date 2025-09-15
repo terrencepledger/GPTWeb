@@ -11,6 +11,7 @@ import { getCurrentLivestream } from './vimeo';
 import { getUpcomingEvents } from './googleCalendar';
 import fs from 'fs';
 import path from 'path';
+import { givingOptions } from './giving';
 
 export async function getChatbotTone(): Promise<string> {
   const tone = await sanity.fetch(groq`*[_type == "chatbotSettings"][0].tone`);
@@ -173,6 +174,14 @@ async function buildSiteContext(): Promise<string> {
     if (ministries.length) {
       context +=
         'Ministries: ' + ministries.map((m) => `${m.name} - ${m.description}`).join('; ') + '. ';
+    }
+    if (givingOptions.length) {
+      context +=
+        'Giving options: ' +
+        givingOptions
+          .map((g) => `${g.title} ${g.content}${g.href ? ' ' + g.href : ''}`)
+          .join('; ') +
+        '. ';
     }
     if (livestream) {
       let status: string;
