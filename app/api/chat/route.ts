@@ -57,7 +57,6 @@ export async function POST(req: Request) {
     });
   }
 
-  // Soft optional escalation: if confidence is low, suggest option but do not auto-open form
   const softThreshold = 0.3;
   const softEscalate = confidence <= softThreshold;
 
