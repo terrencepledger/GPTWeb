@@ -169,14 +169,28 @@ export default function Assistant() {
           >
             ×
           </button>
-        <div role="log" aria-label="Chat messages" className="mb-2 max-h-60 overflow-y-auto" ref={logRef}>
+        <div
+          role="log"
+          aria-label="Chat messages"
+          className="mb-2 flex max-h-60 flex-col gap-1 overflow-y-auto"
+          ref={logRef}
+        >
           {messages.map((m, i) => (
-            <div key={i} className="mb-1">
-              <span className={`font-bold ${m.role === 'assistant' ? 'text-brand-purple' : 'text-brand-gold'}`}>{m.role === 'assistant' ? 'Assistant' : 'You'}:</span> {m.content}
+            <div
+              key={i}
+              className={`w-fit rounded px-2 py-1 ${
+                m.role === 'assistant'
+                  ? 'self-start bg-brand-purpleLt text-brand-ink dark:bg-brand-purple dark:text-neutral-100'
+                  : 'self-end bg-brand-gold text-brand-ink dark:bg-brand-gold'
+              }`}
+            >
+              {m.content}
             </div>
           ))}
           {thinking && !collectInfo && (
-            <div className="mb-1 text-brand-purple">Assistant is thinking…</div>
+            <div className="self-start w-fit rounded bg-brand-purpleLt px-2 py-1 text-brand-ink dark:bg-brand-purple dark:text-neutral-100">
+              Assistant is thinking…
+            </div>
           )}
         </div>
         {collectInfo ? (
