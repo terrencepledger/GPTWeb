@@ -51,7 +51,7 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
   }
 
   return (
-    <div className="relative mx-auto w-full max-w-4xl py-8 before:absolute before:top-0 before:bottom-0 before:left-1/2 before:-translate-x-1/2 before:w-px before:bg-[var(--brand-border)]">
+    <div className="relative mx-auto w-full max-w-4xl py-8 before:absolute before:top-0 before:bottom-0 before:left-4 before:translate-x-0 before:w-px before:bg-[var(--brand-border)] sm:before:left-1/2 sm:before:-translate-x-1/2">
       {events.map((ev, i) => (
         <div
           key={ev.id}
@@ -59,22 +59,22 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
             refs.current[i] = el;
           }}
           style={{ transitionDelay: `${i * 150}ms` }}
-          className={`group relative mb-16 flex w-full opacity-0 translate-y-4 transition-all duration-500 ${
+          className={`group relative mb-16 flex w-full opacity-0 translate-y-4 transition-all duration-500 justify-start pl-10 text-left ${
             i % 2 === 0
-              ? "justify-start pr-10 text-right"
-              : "justify-end pl-10 text-left"
+              ? "sm:pr-10 sm:pl-0 sm:text-right"
+              : "sm:justify-end sm:pl-10"
           }`}
         >
           <span
             style={{ transitionDelay: `${i * 150}ms` }}
-            className="timeline-dot absolute top-4 left-1/2 -translate-x-1/2 h-4 w-4 rounded-full bg-[var(--brand-accent)] transition-transform duration-500 scale-0 group-hover:scale-125"
+            className="timeline-dot absolute top-4 left-4 -translate-x-1/2 h-4 w-4 rounded-full bg-[var(--brand-accent)] transition-transform duration-500 scale-0 group-hover:scale-125 sm:left-1/2"
           />
           <span
             style={{ transitionDelay: `${i * 150}ms` }}
-            className={`timeline-connector absolute top-6 h-px bg-[var(--brand-accent)] transition-transform duration-500 scale-x-0 ${
+            className={`timeline-connector absolute top-6 h-px bg-[var(--brand-accent)] transition-transform duration-500 scale-x-0 left-4 w-[calc(100%-2.5rem)] origin-left ${
               i % 2 === 0
-                ? "left-1/2 w-[calc(50%-2.5rem)] origin-left"
-                : "right-1/2 w-[calc(50%-2.5rem)] origin-right"
+                ? "sm:left-1/2 sm:w-[calc(50%-2.5rem)] sm:origin-left"
+                : "sm:left-auto sm:right-1/2 sm:w-[calc(50%-2.5rem)] sm:origin-right"
             }`}
           />
           {ev.href ? (
