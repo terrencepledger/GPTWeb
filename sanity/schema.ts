@@ -5,6 +5,7 @@ import ministry from './schemas/ministry';
 import heroSlide from './schemas/heroSlide';
 import missionStatement from './schemas/missionStatement';
 import eventDetail from './schemas/eventDetail';
+import product from './schemas/product';
 import heroSection from './schemas/sections/heroSection';
 import gallerySection from './schemas/sections/gallerySection';
 import calendarSection from './schemas/sections/calendarSection';
@@ -19,6 +20,7 @@ export const schemaTypes = [
   heroSlide,
   missionStatement,
   eventDetail,
+  product,
   heroSection,
   gallerySection,
   calendarSection,
