@@ -6,6 +6,7 @@ import {
   ministriesAll,
   missionStatement,
   announcementLatest,
+  productsAll,
 } from './queries';
 import { getCurrentLivestream } from './vimeo';
 import { getUpcomingEvents } from './googleCalendar';
@@ -136,6 +137,7 @@ async function buildSiteContext(): Promise<string> {
       announcement,
       livestream,
       events,
+      products,
     ] = await Promise.all([
       siteSettings().catch(() => null),
       staffAll().catch(() => []),
@@ -144,6 +146,7 @@ async function buildSiteContext(): Promise<string> {
       announcementLatest().catch(() => null),
       getCurrentLivestream().catch(() => null),
       getUpcomingEvents(5).catch(() => []),
+      productsAll().catch(() => []),
     ]);
     let context = '';
     const tz = process.env.TZ || 'UTC';
@@ -202,6 +205,19 @@ async function buildSiteContext(): Promise<string> {
           .map((e) => `${e.title} on ${evFmt.format(new Date(e.start))}${e.location ? ' at ' + e.location : ''}`)
           .join('; ') +
         '. ';
+    }
+    if (products.length) {
+      const productDetails = products
+        .map((product) => {
+          const priceText =
+            typeof product.price === 'number' && Number.isFinite(product.price)
+              ? `$${product.price.toFixed(2)}`
+              : 'price unavailable';
+          const description = product.description ? ` - ${product.description.trim()}` : '';
+          return `${product.title} (${priceText})${description}`;
+        })
+        .join('; ');
+      context += `Store products: ${productDetails}. `;
     }
     if (sitemap) {
       context += `Navigation (site map paths): ${sitemap}. `;
