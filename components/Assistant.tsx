@@ -191,7 +191,7 @@ export default function Assistant() {
       className={`fixed right-6 bottom-6 z-50 transition-all duration-[1000ms] ease-in-out ${entered ? '' : 'pointer-events-none'}`}
     >
       <div
-        className={`absolute bottom-0 right-0 w-80 rounded-lg border border-brand-purple bg-neutral-50 p-4 shadow-lg transition-all duration-700 ease-in-out transform dark:bg-neutral-900 ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
+        className={`absolute bottom-0 right-0 w-80 rounded-lg border border-brand-purple bg-neutral-50 text-brand-ink p-4 shadow-lg transition-all duration-700 ease-in-out transform dark:bg-neutral-900 dark:text-neutral-50 ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
       >
         <button
           type="button"
@@ -210,39 +210,47 @@ export default function Assistant() {
               key={i}
               className={`mb-2 flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div
-                className={`rounded-2xl px-3 py-2 max-w-[85%] whitespace-pre-wrap ${
-                  m.role === 'assistant'
-                    ? 'bg-brand-purple text-neutral-50'
-                    : 'bg-brand-gold text-brand-ink'
-                }`}
-              >
-                <span className="sr-only">
-                  {m.role === 'assistant' ? 'Assistant' : 'You'}:
-                </span>
-                {renderContent(m.content)}
-                {m.role === 'assistant' && m.softEscalate && !collectInfo && (
-                  <div className="mt-1 text-sm">
-                    <button
-                      type="button"
-                      className="underline text-neutral-50 hover:text-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold cursor-pointer bg-transparent p-0 font-normal"
-                      onClick={() => {
-                        const pct = Math.max(
-                          0,
-                          Math.min(100, Math.round(((m.confidence ?? 0) as number) * 100))
-                        );
-                        setEscalationReason(
-                          `Assistant confidence ${pct}%. Visitor opted to reach out for a more certain answer.`
-                        );
-                        setCollectInfo(true);
-                        setCollectInfoMode('soft');
-                      }}
-                      aria-label="Open escalation form"
-                    >
-                      Reach Out to a Staff Member
-                    </button>
-                  </div>
-                )}
+              <div className="max-w-[85%]">
+                <div
+                  className={`mb-1 text-xs font-semibold ${
+                    m.role === 'assistant'
+                      ? 'text-brand-purple text-left'
+                      : 'text-brand-gold text-right'
+                  }`}
+                >
+                  {m.role === 'assistant' ? 'Assistant' : 'You'}
+                </div>
+                <div
+                  className={`rounded-2xl px-3 py-2 whitespace-pre-wrap ${
+                    m.role === 'assistant'
+                      ? 'bg-brand-purple text-neutral-50'
+                      : 'bg-brand-gold text-brand-ink'
+                  }`}
+                >
+                  {renderContent(m.content)}
+                  {m.role === 'assistant' && m.softEscalate && !collectInfo && (
+                    <div className="mt-1 text-sm">
+                      <button
+                        type="button"
+                        className="underline text-neutral-50 hover:text-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold cursor-pointer bg-transparent p-0 font-normal"
+                        onClick={() => {
+                          const pct = Math.max(
+                            0,
+                            Math.min(100, Math.round(((m.confidence ?? 0) as number) * 100))
+                          );
+                          setEscalationReason(
+                            `Assistant confidence ${pct}%. Visitor opted to reach out for a more certain answer.`
+                          );
+                          setCollectInfo(true);
+                          setCollectInfoMode('soft');
+                        }}
+                        aria-label="Open escalation form"
+                      >
+                        Reach Out to a Staff Member
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))}
@@ -264,7 +272,7 @@ export default function Assistant() {
             )}
             <input
               type="text"
-              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple"
+              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-brand-ink/60 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
               placeholder="Name"
               value={info.name}
               onChange={(e) => setInfo({ ...info, name: e.target.value })}
@@ -273,7 +281,7 @@ export default function Assistant() {
             />
             <input
               type="text"
-              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple"
+              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-brand-ink/60 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
               placeholder="Contact Number"
               value={info.contact}
               onChange={(e) => setInfo({ ...info, contact: e.target.value })}
@@ -282,7 +290,7 @@ export default function Assistant() {
             />
             <input
               type="email"
-              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple"
+              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-brand-ink/60 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
               placeholder="Email"
               value={info.email}
               onChange={(e) => setInfo({ ...info, email: e.target.value })}
@@ -290,7 +298,7 @@ export default function Assistant() {
               required
             />
             <textarea
-              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple"
+              className="border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-brand-ink/60 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
               placeholder="Any extra details"
               value={info.details}
               onChange={(e) => setInfo({ ...info, details: e.target.value })}
@@ -307,7 +315,7 @@ export default function Assistant() {
           <form onSubmit={sendMessage} className="flex gap-2" aria-label="Chat input">
             <input
               type="text"
-              className="flex-1 border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple"
+              className="flex-1 border border-neutral-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-brand-purple bg-neutral-50 text-brand-ink placeholder:text-brand-ink/60 dark:bg-neutral-800 dark:text-neutral-50 dark:placeholder:text-neutral-50/70"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               aria-label="Message"
@@ -338,7 +346,7 @@ export default function Assistant() {
               setOpen(true);
             }
           }}
-          className={`flex h-14 w-14 items-center justify-center rounded-full bg-brand-purple text-neutral-50 shadow-lg cursor-pointer hover:bg-brand-purpleLt ${nudge ? 'animate-shake' : ''}`}
+          className={`flex h-14 w-14 items-center justify-center rounded-full bg-brand-purple text-neutral-50 shadow-lg cursor-pointer hover:bg-brand-purpleLt border border-brand-purple ${nudge ? 'animate-shake' : ''}`}
         >
           <span className="text-2xl">🤖</span>
         </button>
