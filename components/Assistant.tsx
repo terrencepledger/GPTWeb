@@ -190,7 +190,7 @@ export default function Assistant() {
       className={`fixed right-6 bottom-6 z-50 transition-all duration-[1000ms] ease-in-out ${entered ? '' : 'pointer-events-none'}`}
     >
       <div
-        className={`absolute bottom-0 right-0 w-80 rounded-lg border p-4 shadow-lg transition-all duration-700 ease-in-out transform ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
+        className={`absolute bottom-0 right-0 w-80 rounded-lg border pt-8 pr-8 pb-4 pl-4 shadow-lg transition-all duration-700 ease-in-out transform ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
         style={{
           backgroundColor: 'var(--brand-surface)',
           color: 'var(--brand-ink)',
@@ -268,7 +268,7 @@ export default function Assistant() {
                   }`}
                   style={{
                     borderColor: 'var(--brand-border)',
-                    color: 'var(--brand-ink)',
+                    color: 'var(--brand-accent)',
                   }}
                 >
                   {m.role === 'assistant' ? 'Assistant' : 'You'}
@@ -281,22 +281,26 @@ export default function Assistant() {
           )}
         </div>
         {collectInfo ? (
-          <form onSubmit={sendInfo} className="flex flex-col gap-2 border rounded p-2" aria-label="Contact form" style={{ borderColor: 'var(--brand-border)' }}>
-            {collectInfoMode === 'soft' && (
-              <button
-                type="button"
-                onClick={() => { setCollectInfo(false); setCollectInfoMode(null); }}
-                aria-label="Go back to chat"
-                className="self-start -mb-1 underline focus:outline-none focus:ring-1 cursor-pointer hover:opacity-80"
-                style={{
-                  color: 'var(--brand-ink)',
-                  '--tw-ring-color': 'var(--brand-ink)',
-                } as CSSProperties}
-              >
-                Back
-              </button>
-            )}
-            <input
+          <>
+            <h2 className="mb-2 text-lg font-semibold" style={{ color: 'var(--brand-accent)' }}>
+              Contact a Staff Member
+            </h2>
+            <form onSubmit={sendInfo} className="flex flex-col gap-2 border rounded p-2" aria-label="Contact form" style={{ borderColor: 'var(--brand-border)' }}>
+              {collectInfoMode === 'soft' && (
+                <button
+                  type="button"
+                  onClick={() => { setCollectInfo(false); setCollectInfoMode(null); }}
+                  aria-label="Go back to chat"
+                  className="self-start -mb-1 underline focus:outline-none focus:ring-1 cursor-pointer hover:opacity-80"
+                  style={{
+                    color: 'var(--brand-ink)',
+                    '--tw-ring-color': 'var(--brand-ink)',
+                  } as CSSProperties}
+                >
+                  Back
+                </button>
+              )}
+              <input
               type="text"
               className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
               style={{
@@ -365,7 +369,8 @@ export default function Assistant() {
             >
               Send
             </button>
-          </form>
+            </form>
+          </>
         ) : (
           <form onSubmit={sendMessage} className="flex gap-2" aria-label="Chat input">
             <input
@@ -426,7 +431,12 @@ export default function Assistant() {
             type="button"
             aria-label="Dismiss assistant"
             onClick={dock}
-            className="absolute -top-3 -right-3 hidden h-5 w-5 items-center justify-center rounded-full border bg-brand-gold text-xs text-brand-ink group-hover:flex cursor-pointer" style={{ borderColor: 'var(--brand-border)' }}
+            className="absolute -top-3 -right-3 hidden h-5 w-5 items-center justify-center rounded-full border text-xs leading-none group-hover:flex cursor-pointer"
+            style={{
+              borderColor: 'var(--brand-border)',
+              backgroundColor: 'var(--brand-accent)',
+              color: 'var(--brand-ink)',
+            }}
           >
             ×
           </button>
