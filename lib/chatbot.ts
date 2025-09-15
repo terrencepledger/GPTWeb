@@ -63,6 +63,65 @@ function getClient(client?: OpenAI): OpenAI {
   return defaultClient;
 }
 
+// Build a simple sitemap from the Next.js app directory so the assistant knows exact page paths.
+function buildAppSitemap(): string {
+  try {
+    const appDir = path.join(process.cwd(), 'app');
+    if (!fs.existsSync(appDir)) return '';
+
+    const routes: string[] = [];
+
+    const isPageDir = (dir: string) => fs.existsSync(path.join(dir, 'page.tsx')) || fs.existsSync(path.join(dir, 'page.jsx'));
+
+    const shouldSkipSegment = (seg: string) => {
+      // Skip API, route groups (in parentheses), and internal catch-alls like [...missing]
+      if (seg === 'api') return true;
+      if (/^\(.*\)$/.test(seg)) return true;
+      if (/^\[\.\.\.[^\]]+]$/.test(seg)) return true; // e.g., [...missing]
+      return false;
+    };
+
+    const displaySegment = (seg: string) => seg; // keep [slug] visible so assistant knows it's dynamic
+
+    function walk(dir: string, baseSegments: string[]) {
+      // If this directory has a page file, record its path
+      if (isPageDir(dir)) {
+        const p = '/' + baseSegments.map(displaySegment).join('/');
+        routes.push(p === '/' + '' ? '/' : p);
+      }
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+      for (const e of entries) {
+        if (!e.isDirectory()) continue;
+        const seg = e.name;
+        if (shouldSkipSegment(seg)) continue;
+        const nextDir = path.join(dir, seg);
+        const nextSegments = [...baseSegments, seg];
+        walk(nextDir, nextSegments);
+      }
+    }
+
+    // root index
+    if (fs.existsSync(path.join(appDir, 'page.tsx')) || fs.existsSync(path.join(appDir, 'page.jsx'))) {
+      routes.push('/');
+    }
+    // descend into subfolders
+    const top = fs.readdirSync(appDir, { withFileTypes: true });
+    for (const e of top) {
+      if (!e.isDirectory()) continue;
+      const seg = e.name;
+      if (shouldSkipSegment(seg)) continue;
+      walk(path.join(appDir, seg), [seg]);
+    }
+
+    // Prefer a stable ordering for readability
+    const unique = Array.from(new Set(routes));
+    unique.sort((a, b) => a.localeCompare(b));
+    return unique.join('; ');
+  } catch {
+    return '';
+  }
+}
+
 async function buildSiteContext(): Promise<string> {
   if (!process.env.SANITY_STUDIO_PROJECT_ID || !process.env.SANITY_STUDIO_DATASET) {
     return '';
@@ -88,6 +147,7 @@ async function buildSiteContext(): Promise<string> {
     let context = '';
     const tz = process.env.TZ || 'UTC';
     const dateFmt = new Intl.DateTimeFormat('en-US', { timeZone: tz, dateStyle: 'medium', timeStyle: 'short' });
+    const sitemap = buildAppSitemap();
     if (settings) {
       context += `Site title: ${settings.title}. `;
       if (settings.address) context += `Address: ${settings.address}. `;
@@ -134,6 +194,9 @@ async function buildSiteContext(): Promise<string> {
           .join('; ') +
         '. ';
     }
+    if (sitemap) {
+      context += `Navigation (site map paths): ${sitemap}. `;
+    }
     return context.trim();
   } catch {
     return '';
@@ -175,9 +238,11 @@ export async function generateChatbotReply(
           'If a visitor uses "you", "your", or makes a vague reference, reinterpret it to be about the church or its website and answer in that framework. ' +
           'If a question is unrelated to the site, respond that you can only assist with website information. ' +
           'If the question is about the church or website but the answer is not present in the site content, say you are sorry and unsure, set confidence to 0, and suggest reaching out for further help. ' +
-          'When referencing a page on this site, include its path starting with "/". ' +
+          'When it would genuinely help the visitor accomplish their goal, suggest one or two specific relevant pages on this site and include their path(s) starting with "/". Do not add links unless they clearly improve the answer. ' +
+          'Use the paths listed in the "Navigation (site map paths)" section exactly as provided when referencing internal pages; do not guess paths, including for nested pages such as About and Contact. ' +
           'Only provide external links that already appear in the site content and include the full URL. ' +
           'If the user requests to speak to a person or otherwise asks for escalation, set "escalate" to true and provide the trigger in "escalateReason". Avoid copy-paste escalation text; any escalation notice should reference the user\'s situation and kindly explain that providing their contact information is necessary for staff to reach out. ' +
+          'Write "escalateReason" as if you are speaking to a staff member: a concise internal note that clearly explains why this conversation was escalated, referencing the visitor\'s context. Do not address the visitor directly in this field. ' +
           'Count how many times so far the user has asked this same or a very similar question, including the current attempt. Do not increase the count for new or different questions. Include this number as "similarityCount". Allow a visitor to repeat a question only twice; on the third time, set "escalate" to true with a friendly "escalateReason" indicating the question has been asked multiple times and a team member can follow up if they share contact details. ' +
           `The current date is ${dateStr}. ` +
           `Site content:\n${context}\n` +
