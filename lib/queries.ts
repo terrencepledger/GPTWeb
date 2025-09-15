@@ -185,6 +185,7 @@ export interface Product {
   _id: string;
   title: string;
   price: number;
+  description?: string;
   image?: string;
 }
 
@@ -194,6 +195,7 @@ export const productsAll = () =>
       _id,
       title,
       price,
+      description,
       "image": image.asset->url
     }`
   );
