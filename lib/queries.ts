@@ -180,3 +180,20 @@ export const eventDetailBySlug = (slug: string, preview = false) => {
   );
 };
 
+export interface Product {
+  _id: string;
+  title: string;
+  price: number;
+  image?: string;
+}
+
+export const productsAll = () =>
+  sanity.fetch<Product[]>(
+    groq`*[_type == "product"] | order(_createdAt desc){
+      _id,
+      title,
+      price,
+      "image": image.asset->url
+    }`
+  );
+
