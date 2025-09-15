@@ -18,6 +18,14 @@ export default defineType({
       },
     }),
     defineField({
+      name: "extraContext",
+      title: "Extra Context",
+      type: "text",
+      rows: 6,
+      description:
+        "Optional additional background/context the assistant should consider for every conversation (e.g., corrections, policies, irregular hours).",
+    }),
+    defineField({
       name: "escalationFrom",
       title: "Escalation From (sender email)",
       type: "string",

@@ -6,6 +6,8 @@ export type ChatMessage = {
   /** ISO timestamp when the message was created */
   timestamp: string;
   confidence?: number;
+  /** If the assistant suggests optional escalation (low confidence), show link */
+  softEscalate?: boolean;
 };
 
 export type EscalationInfo = {

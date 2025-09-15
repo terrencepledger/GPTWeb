@@ -23,6 +23,7 @@ export default function Assistant() {
   const NUDGE_MS = 2400;
   const [thinking, setThinking] = useState(false);
   const [escalationReason, setEscalationReason] = useState('');
+  const [collectInfoMode, setCollectInfoMode] = useState<'soft' | 'hard' | null>(null);
   const logRef = useRef<HTMLDivElement>(null);
 
   function renderContent(text: string) {
@@ -129,11 +130,14 @@ export default function Assistant() {
         role: 'assistant',
         content: data.reply,
         confidence: data.confidence,
+        softEscalate: Boolean(data.softEscalate),
         timestamp: new Date().toISOString(),
       },
     ]);
     if (data.escalate) {
+      // Hard escalation: auto-open the contact form
       setCollectInfo(true);
+      setCollectInfoMode('hard');
       setEscalationReason(data.reason || '');
     }
     setThinking(false);
@@ -203,8 +207,24 @@ export default function Assistant() {
         <div role="log" aria-label="Chat messages" className="mb-2 max-h-60 overflow-y-auto" ref={logRef}>
           {messages.map((m, i) => (
             <div key={i} className="mb-1">
-              <span className="font-bold">{m.role === 'assistant' ? 'Assistant' : 'You'}:</span>{' '}
-              {renderContent(m.content)}
+              <span className="font-bold">{m.role === 'assistant' ? 'Assistant' : 'You'}:</span> {renderContent(m.content)}
+              {m.role === 'assistant' && m.softEscalate && !collectInfo && (
+                <div className="mt-1 text-sm">
+                  <button
+                    type="button"
+                    className="underline text-brand-purple hover:text-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold cursor-pointer bg-transparent p-0 font-normal"
+                    onClick={() => {
+                      const pct = Math.max(0, Math.min(100, Math.round(((m.confidence ?? 0) as number) * 100)));
+                      setEscalationReason(`Assistant confidence ${pct}%. Visitor opted to reach out for a more certain answer.`);
+                      setCollectInfo(true);
+                      setCollectInfoMode('soft');
+                    }}
+                    aria-label="Open escalation form"
+                  >
+                    Reach Out to a Staff Member
+                  </button>
+                </div>
+              )}
             </div>
           ))}
           {thinking && !collectInfo && (
@@ -213,6 +233,16 @@ export default function Assistant() {
         </div>
         {collectInfo ? (
           <form onSubmit={sendInfo} className="flex flex-col gap-2" aria-label="Contact form">
+            {collectInfoMode === 'soft' && (
+              <button
+                type="button"
+                onClick={() => { setCollectInfo(false); setCollectInfoMode(null); }}
+                aria-label="Go back to chat"
+                className="self-start -mb-1 text-brand-ink hover:text-brand-ink/70 underline focus:outline-none focus:ring-1 focus:ring-brand-ink/40 cursor-pointer"
+              >
+                Back
+              </button>
+            )}
             <input
               type="text"
               className="border p-1"
