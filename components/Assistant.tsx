@@ -62,7 +62,7 @@ export default function Assistant() {
             href={part}
             target="_blank"
             rel="noopener noreferrer"
-            className="underline"
+            className="underline hover:opacity-80 text-[var(--brand-accent)]"
           >
             {label}
           </a>
@@ -70,7 +70,11 @@ export default function Assistant() {
       }
       if (/^\//.test(part)) {
         return (
-          <Link key={idx} href={part} className="underline">
+          <Link
+            key={idx}
+            href={part}
+            className="underline hover:opacity-80 text-[var(--brand-accent)]"
+          >
             {part}
           </Link>
         );
@@ -263,52 +267,56 @@ export default function Assistant() {
               key={i}
               className={`mb-2 flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`max-w-[85%] flex flex-col ${m.role === 'assistant' ? 'items-start' : 'items-end'} relative`}>
-                <div
-                  className="relative z-10 rounded-2xl border px-3 py-2 whitespace-pre-wrap"
-                  style={{
-                    backgroundColor:
-                      m.role === 'assistant'
-                        ? 'var(--brand-primary)'
-                        : 'var(--brand-accent)',
-                    color: 'var(--brand-ink)',
-                    borderColor: 'var(--brand-border)',
-                  }}
-                >
-                  {renderContent(m.content)}
-                  {m.role === 'assistant' && m.softEscalate && !collectInfo && (
-                    <div className="mt-1 text-sm">
-                      <button
-                        type="button"
-                        className="underline hover:text-brand-gold focus:outline-none focus:ring-1 focus:ring-brand-gold cursor-pointer bg-transparent p-0 font-normal" style={{ color: 'var(--brand-ink)' }}
-                        onClick={() => {
-                          const pct = Math.max(
-                            0,
-                            Math.min(100, Math.round(((m.confidence ?? 0) as number) * 100))
-                          );
-                          setEscalationReason(
-                            `Assistant confidence ${pct}%. Visitor opted to reach out for a more certain answer.`
-                          );
-                          setCollectInfo(true);
-                          setCollectInfoMode('soft');
-                        }}
-                        aria-label="Open escalation form"
-                      >
-                        Reach Out to a Staff Member
-                      </button>
-                    </div>
-                  )}
+              <div className={`max-w-[85%] flex flex-col ${m.role === 'assistant' ? 'items-start' : 'items-end'}`}>
+                <div className="relative">
+                  <div
+                    className="relative z-10 rounded-2xl border px-3 py-2 whitespace-pre-wrap"
+                    style={{
+                      backgroundColor:
+                        m.role === 'assistant'
+                          ? 'var(--brand-primary)'
+                          : 'var(--brand-accent)',
+                      color: 'var(--brand-ink)',
+                      borderColor: 'var(--brand-border)',
+                    }}
+                  >
+                    {renderContent(m.content)}
+                    {m.role === 'assistant' && m.softEscalate && !collectInfo && (
+                      <div className="mt-1 text-sm">
+                        <button
+                          type="button"
+                          className="underline hover:opacity-80 focus:outline-none focus:ring-1 cursor-pointer bg-transparent p-0 font-normal"
+                          style={{ color: 'var(--brand-accent)', '--tw-ring-color': 'var(--brand-accent)' } as CSSProperties}
+                          onClick={() => {
+                            const pct = Math.max(
+                              0,
+                              Math.min(100, Math.round(((m.confidence ?? 0) as number) * 100))
+                            );
+                            setEscalationReason(
+                              `Assistant confidence ${pct}%. Visitor opted to reach out for a more certain answer.`
+                            );
+                            setCollectInfo(true);
+                            setCollectInfoMode('soft');
+                          }}
+                          aria-label="Open escalation form"
+                        >
+                          Reach Out to a Staff Member
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <div
+                    className={`absolute h-3 w-3 rotate-45 border-b ${m.role === 'assistant' ? 'border-l left-3' : 'border-r right-3'}`}
+                    style={{
+                      bottom: -3,
+                      backgroundColor:
+                        m.role === 'assistant'
+                          ? 'var(--brand-primary)'
+                          : 'var(--brand-accent)',
+                      borderColor: 'var(--brand-border)',
+                    }}
+                  />
                 </div>
-                <div
-                  className={`absolute -bottom-2 h-3 w-3 rotate-45 border-b z-0 ${m.role === 'assistant' ? 'border-l left-3' : 'border-r right-3'}`}
-                  style={{
-                    backgroundColor:
-                      m.role === 'assistant'
-                        ? 'var(--brand-primary)'
-                        : 'var(--brand-accent)',
-                    borderColor: 'var(--brand-border)',
-                  }}
-                />
                 <div
                   className={`mt-3 inline-block rounded border px-3 py-1 text-base font-semibold ${
                     m.role === 'assistant'
@@ -338,8 +346,8 @@ export default function Assistant() {
                 aria-label="Go back to chat"
                 className="self-start -mb-1 underline focus:outline-none focus:ring-1 cursor-pointer hover:opacity-80"
                 style={{
-                  color: 'var(--brand-ink)',
-                  '--tw-ring-color': 'var(--brand-ink)',
+                  color: 'var(--brand-accent)',
+                  '--tw-ring-color': 'var(--brand-accent)',
                 } as CSSProperties}
               >
                 Back
