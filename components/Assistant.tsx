@@ -247,7 +247,7 @@ export default function Assistant() {
               key={i}
               className={`mb-2 flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`max-w-[85%] flex flex-col ${m.role === 'assistant' ? 'items-start' : 'items-end'} relative`}>
+              <div className={`max-w-[85%] flex flex-col ${m.role === 'assistant' ? 'items-start' : 'items-end'}`}>
                 <div
                   className="relative z-10 rounded-2xl border px-3 py-2 whitespace-pre-wrap"
                   style={{
@@ -283,17 +283,18 @@ export default function Assistant() {
                       </button>
                     </div>
                   )}
+                  <div
+                    className={`absolute h-3 w-3 rotate-45 border-b ${m.role === 'assistant' ? 'border-l left-3' : 'border-r right-3'}`}
+                    style={{
+                      bottom: -6,
+                      backgroundColor:
+                        m.role === 'assistant'
+                          ? 'var(--brand-primary)'
+                          : 'var(--brand-accent)',
+                      borderColor: 'var(--brand-border)',
+                    }}
+                  />
                 </div>
-                <div
-                  className={`absolute -bottom-2 h-3 w-3 rotate-45 border-b z-0 ${m.role === 'assistant' ? 'border-l left-3' : 'border-r right-3'}`}
-                  style={{
-                    backgroundColor:
-                      m.role === 'assistant'
-                        ? 'var(--brand-primary)'
-                        : 'var(--brand-accent)',
-                    borderColor: 'var(--brand-border)',
-                  }}
-                />
                 <div
                   className={`mt-3 inline-block rounded border px-3 py-1 text-base font-semibold ${
                     m.role === 'assistant'
