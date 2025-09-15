@@ -156,7 +156,7 @@ export default function Assistant() {
       className={`fixed right-6 bottom-6 z-50 transition-all duration-[1000ms] ease-in-out ${entered ? '' : 'pointer-events-none'}`}
     >
         <div
-          className={`absolute bottom-0 right-0 w-80 rounded border border-brand-gold bg-brand-purple p-4 text-neutral-50 shadow-lg transition-all duration-700 ease-in-out transform dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100 ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
+          className={`absolute bottom-0 right-0 w-80 rounded border border-brand-gold bg-brand-ink p-4 text-neutral-50 shadow-lg transition-all duration-700 ease-in-out transform dark:border-brand-gold dark:bg-brand-ink dark:text-neutral-100 ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
         >
           <button
             type="button"
@@ -165,7 +165,7 @@ export default function Assistant() {
               setOpen(false);
               resetNudge();
             }}
-            className="absolute right-2 top-2 text-xl leading-none cursor-pointer text-brand-gold hover:text-brand-gold/80 dark:text-brand-gold dark:hover:text-brand-gold/80"
+            className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-purple text-neutral-50 hover:bg-brand-purpleLt dark:bg-brand-gold dark:text-brand-ink dark:hover:bg-brand-gold/80"
           >
             ×
           </button>
@@ -180,7 +180,7 @@ export default function Assistant() {
               key={i}
               className={`w-fit rounded px-2 py-1 ${
                 m.role === 'assistant'
-                  ? 'self-start bg-brand-purpleLt text-brand-ink dark:bg-brand-purple dark:text-neutral-100'
+                  ? 'self-start bg-brand-purple text-neutral-100 dark:bg-brand-purple'
                   : 'self-end bg-brand-gold text-brand-ink dark:bg-brand-gold'
               }`}
             >
@@ -188,7 +188,7 @@ export default function Assistant() {
             </div>
           ))}
           {thinking && !collectInfo && (
-            <div className="self-start w-fit rounded bg-brand-purpleLt px-2 py-1 text-brand-ink dark:bg-brand-purple dark:text-neutral-100">
+            <div className="self-start w-fit rounded bg-brand-purple px-2 py-1 text-neutral-100 dark:bg-brand-purple">
               Assistant is thinking…
             </div>
           )}
@@ -197,7 +197,7 @@ export default function Assistant() {
           <form onSubmit={sendInfo} className="flex flex-col gap-2" aria-label="Contact form">
               <input
                 type="text"
-                className="border border-brand-purple bg-neutral-50 p-1 text-brand-ink placeholder-brand-purple focus:border-brand-gold focus:outline-none dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100 dark:placeholder-brand-purpleLt"
+                className="border border-brand-purple bg-brand-purpleLt p-1 text-brand-ink placeholder-brand-purple focus:border-brand-gold focus:outline-none dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100 dark:placeholder-brand-purpleLt"
                 placeholder="Name"
                 value={info.name}
                 onChange={(e) => setInfo({ ...info, name: e.target.value })}
@@ -206,7 +206,7 @@ export default function Assistant() {
               />
               <input
                 type="text"
-                className="border border-brand-purple bg-neutral-50 p-1 text-brand-ink placeholder-brand-purple focus:border-brand-gold focus:outline-none dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100 dark:placeholder-brand-purpleLt"
+                className="border border-brand-purple bg-brand-purpleLt p-1 text-brand-ink placeholder-brand-purple focus:border-brand-gold focus:outline-none dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100 dark:placeholder-brand-purpleLt"
                 placeholder="Contact Number"
                 value={info.contact}
                 onChange={(e) => setInfo({ ...info, contact: e.target.value })}
@@ -215,7 +215,7 @@ export default function Assistant() {
               />
               <input
                 type="email"
-                className="border border-brand-purple bg-neutral-50 p-1 text-brand-ink placeholder-brand-purple focus:border-brand-gold focus:outline-none dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100 dark:placeholder-brand-purpleLt"
+                className="border border-brand-purple bg-brand-purpleLt p-1 text-brand-ink placeholder-brand-purple focus:border-brand-gold focus:outline-none dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100 dark:placeholder-brand-purpleLt"
                 placeholder="Email"
                 value={info.email}
                 onChange={(e) => setInfo({ ...info, email: e.target.value })}
@@ -223,7 +223,7 @@ export default function Assistant() {
                 required
               />
               <textarea
-                className="border border-brand-purple bg-neutral-50 p-1 text-brand-ink placeholder-brand-purple focus:border-brand-gold focus:outline-none dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100 dark:placeholder-brand-purpleLt"
+                className="border border-brand-purple bg-brand-purpleLt p-1 text-brand-ink placeholder-brand-purple focus:border-brand-gold focus:outline-none dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100 dark:placeholder-brand-purpleLt"
                 placeholder="Any extra details"
                 value={info.details}
                 onChange={(e) => setInfo({ ...info, details: e.target.value })}
@@ -235,7 +235,7 @@ export default function Assistant() {
             <form onSubmit={sendMessage} className="flex gap-2" aria-label="Chat input">
               <input
                 type="text"
-                className="flex-1 border border-brand-purple bg-neutral-50 p-1 text-brand-ink placeholder-brand-purple focus:border-brand-gold focus:outline-none dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100 dark:placeholder-brand-purpleLt"
+                className="flex-1 border border-brand-purple bg-brand-purpleLt p-1 text-brand-ink placeholder-brand-purple focus:border-brand-gold focus:outline-none dark:border-brand-purple dark:bg-brand-ink dark:text-neutral-100 dark:placeholder-brand-purpleLt"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 aria-label="Message"
@@ -261,7 +261,7 @@ export default function Assistant() {
                 setOpen(true);
               }
             }}
-            className={`flex h-14 w-14 items-center justify-center rounded-full bg-brand-gold text-brand-ink shadow-lg hover:bg-brand-gold/90 cursor-pointer dark:bg-brand-purple dark:text-neutral-100 dark:hover:bg-brand-purpleLt ${nudge ? 'animate-shake' : ''}`}
+            className={`flex h-14 w-14 items-center justify-center rounded-full border border-brand-purple bg-brand-gold text-brand-ink shadow-lg hover:bg-brand-gold/90 cursor-pointer dark:border-brand-gold dark:bg-brand-purple dark:text-neutral-100 dark:hover:bg-brand-purpleLt ${nudge ? 'animate-shake' : ''}`}
           >
             <span className="text-2xl">🤖</span>
           </button>
@@ -270,7 +270,7 @@ export default function Assistant() {
               type="button"
               aria-label="Dismiss assistant"
               onClick={dock}
-              className="absolute -top-3 -right-3 hidden h-5 w-5 items-center justify-center rounded-full bg-brand-purple text-xs text-neutral-50 group-hover:flex cursor-pointer dark:bg-brand-gold dark:text-brand-ink"
+              className="absolute -top-3 -right-3 hidden h-5 w-5 items-center justify-center rounded-full border border-brand-gold bg-brand-purple text-xs text-neutral-50 group-hover:flex cursor-pointer dark:border-brand-purple dark:bg-brand-gold dark:text-brand-ink"
             >
               ×
             </button>
