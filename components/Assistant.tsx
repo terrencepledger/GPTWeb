@@ -45,7 +45,12 @@ export default function Assistant() {
   }, []);
 
   function renderContent(text: string) {
-    const regex = /(https?:\/\/[^\s]+|\/[A-Za-z0-9\-_/]+)/g;
+    const emailRegex = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
+    const phoneRegex = /\+?\d[\d\s().-]{7,}\d/;
+    const regex = new RegExp(
+      `(https?:\/\/[^\s]+|\/[A-Za-z0-9\-_/]+|${emailRegex.source}|${phoneRegex.source})`,
+      'g',
+    );
     const parts = text.split(regex).filter(Boolean);
     return parts.map((part, idx) => {
       if (/^https?:\/\//.test(part)) {
@@ -68,6 +73,21 @@ export default function Assistant() {
           <Link key={idx} href={part} className="underline">
             {part}
           </Link>
+        );
+      }
+      if (emailRegex.test(part)) {
+        return (
+          <a key={idx} href={`mailto:${part}`} className="underline">
+            {part}
+          </a>
+        );
+      }
+      if (phoneRegex.test(part)) {
+        const tel = part.replace(/[^\d+]/g, '');
+        return (
+          <a key={idx} href={`tel:${tel}`} className="underline">
+            {part}
+          </a>
         );
       }
       return <span key={idx}>{part}</span>;
