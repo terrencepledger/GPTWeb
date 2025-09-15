@@ -189,7 +189,7 @@ export const productsAll = () =>
       _id,
       title,
       price,
-      "image": images[0].asset->url
+      "image": images[0].asset->url,
       description,
     }`
   );
