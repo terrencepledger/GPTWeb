@@ -285,8 +285,7 @@ export default function Assistant() {
                       <div className="mt-1 text-sm">
                         <button
                           type="button"
-                          className="underline hover:opacity-80 focus:outline-none focus:ring-1 cursor-pointer bg-transparent p-0 font-normal"
-                          style={{ color: 'var(--brand-accent)', '--tw-ring-color': 'var(--brand-accent)' } as CSSProperties}
+                          className="underline hover:opacity-80 focus:outline-none focus:ring-1 cursor-pointer bg-transparent p-0 font-normal text-[var(--brand-accent)] focus:ring-[var(--brand-accent)] dark:text-[var(--brand-primary-contrast)] dark:focus:ring-[var(--brand-primary-contrast)]"
                           onClick={() => {
                             const pct = Math.max(
                               0,
