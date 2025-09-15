@@ -231,7 +231,13 @@ export default function Assistant() {
         >
           ×
         </button>
-        <div role="log" aria-label="Chat messages" className="mb-2 max-h-60 overflow-y-auto" ref={logRef}>
+        <div
+          role="log"
+          aria-label="Chat messages"
+          className="mb-2 max-h-60 overflow-y-auto pr-2"
+          style={{ scrollbarGutter: 'stable' } as CSSProperties}
+          ref={logRef}
+        >
           {messages.map((m, i) => (
             <div
               key={i}
@@ -396,7 +402,7 @@ export default function Assistant() {
           <form onSubmit={sendMessage} className="flex gap-2" aria-label="Chat input">
             <input
               type="text"
-              className="flex-1 border rounded px-2 py-1 focus:outline-none focus:ring-2"
+              className="flex-1 min-w-0 border rounded px-2 py-1 focus:outline-none focus:ring-2"
               style={{
                 backgroundColor: 'var(--brand-alt)',
                 color: 'var(--brand-ink)',
