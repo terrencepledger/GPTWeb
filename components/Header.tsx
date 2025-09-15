@@ -19,6 +19,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
     { href: "/ministries", label: "Ministries" },
     { href: "/events", label: "Events" },
     { href: "/livestreams", label: "Livestreams" },
+    { href: "/store", label: "Store" },
     { href: "/giving", label: "Giving" },
   ];
 
