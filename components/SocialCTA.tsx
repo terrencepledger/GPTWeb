@@ -91,7 +91,7 @@ export default async function SocialCTA() {
     .filter(Boolean) as SocialItem[];
 
   const left = socials.slice(0, 2);
-  const right = socials.slice(2);
+  const right = socials.slice(2, 4);
 
   return (
     <section className="w-full">
@@ -99,6 +99,11 @@ export default async function SocialCTA() {
         {left[0] && (
           <div className="h-full md:col-start-1 md:row-start-1">
             <SocialCard key={left[0].label} {...left[0]} />
+          </div>
+        )}
+        {left[1] && (
+          <div className="h-full md:col-start-1 md:row-start-2">
+            <SocialCard key={left[1].label} {...left[1]} />
           </div>
         )}
         {embedUrl ? (
@@ -150,11 +155,6 @@ export default async function SocialCTA() {
               </div>
             </a>
           ) : null
-        )}
-        {left[1] && (
-          <div className="h-full md:col-start-1 md:row-start-2">
-            <SocialCard key={left[1].label} {...left[1]} />
-          </div>
         )}
         {right.map((s, i) => (
           <div
