@@ -193,9 +193,9 @@ export default function Assistant() {
       <div
         className={`absolute bottom-0 right-0 w-80 rounded-lg border p-4 shadow-lg transition-all duration-700 ease-in-out transform ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
         style={{
-          backgroundColor: 'var(--brand-alt)',
-          color: 'var(--brand-ink)',
-          borderColor: 'var(--brand-primary)',
+          backgroundColor: 'var(--brand-surface)',
+          color: 'var(--brand-surface-contrast)',
+          borderColor: 'var(--brand-border)',
         }}
       >
         <button
@@ -217,7 +217,7 @@ export default function Assistant() {
             >
               <div className="max-w-[85%] flex flex-col">
                 <div
-                  className="rounded-2xl px-3 py-2 whitespace-pre-wrap"
+                  className="relative rounded-2xl border px-3 py-2 whitespace-pre-wrap"
                   style={{
                     backgroundColor:
                       m.role === 'assistant'
@@ -227,6 +227,7 @@ export default function Assistant() {
                       m.role === 'assistant'
                         ? 'var(--brand-primary-contrast)'
                         : 'var(--brand-ink)',
+                    borderColor: 'var(--brand-border)',
                   }}
                 >
                   {renderContent(m.content)}
@@ -252,18 +253,25 @@ export default function Assistant() {
                       </button>
                     </div>
                   )}
+                  <div
+                    className="absolute left-1/2 -bottom-2 h-3 w-3 -translate-x-1/2 rotate-45 border-b border-r"
+                    style={{
+                      backgroundColor:
+                        m.role === 'assistant'
+                          ? 'var(--brand-primary)'
+                          : 'var(--brand-accent)',
+                      borderColor: 'var(--brand-border)',
+                    }}
+                  />
                 </div>
                 <div
-                  className={`mt-1 inline-block rounded border px-3 py-1 text-base font-semibold ${
+                  className={`mt-3 inline-block rounded border px-3 py-1 text-base font-semibold ${
                     m.role === 'assistant'
                       ? 'self-start'
                       : 'self-end'
                   }`}
                   style={{
-                    borderColor:
-                      m.role === 'assistant'
-                        ? 'var(--brand-primary)'
-                        : 'var(--brand-accent)',
+                    borderColor: 'var(--brand-border)',
                     color:
                       m.role === 'assistant'
                         ? 'var(--brand-primary)'
@@ -276,7 +284,7 @@ export default function Assistant() {
             </div>
           ))}
           {thinking && !collectInfo && (
-            <div className="mb-1 text-neutral-500">Assistant is thinking…</div>
+            <div className="mb-1" style={{ color: 'var(--brand-muted)' }}>Assistant is thinking…</div>
           )}
         </div>
         {collectInfo ? (
@@ -288,8 +296,8 @@ export default function Assistant() {
                 aria-label="Go back to chat"
                 className="self-start -mb-1 underline focus:outline-none focus:ring-1 cursor-pointer hover:opacity-80"
                 style={{
-                  color: 'var(--brand-ink)',
-                  '--tw-ring-color': 'var(--brand-ink)',
+                  color: 'var(--brand-surface-contrast)',
+                  '--tw-ring-color': 'var(--brand-surface-contrast)',
                 } as CSSProperties}
               >
                 Back
@@ -413,9 +421,9 @@ export default function Assistant() {
           }}
           className={`flex h-14 w-14 items-center justify-center rounded-full shadow-lg cursor-pointer border hover:opacity-90 ${nudge ? 'animate-shake' : ''}`}
           style={{
-            backgroundColor: 'var(--brand-primary)',
-            color: 'var(--brand-primary-contrast)',
-            borderColor: 'var(--brand-primary)',
+            backgroundColor: 'var(--brand-accent)',
+            color: 'var(--brand-ink)',
+            borderColor: 'var(--brand-border)',
           }}
         >
           <span className="text-2xl">🤖</span>
