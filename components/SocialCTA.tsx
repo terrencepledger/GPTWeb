@@ -95,14 +95,14 @@ export default async function SocialCTA() {
 
   return (
     <section className="w-full">
-      <div className="grid gap-4 md:grid-cols-[1fr_2fr_1fr]">
-        <div className="order-2 grid h-full grid-rows-2 gap-4 md:order-1">
-          {left.map((s) => (
-            <SocialCard key={s.label} {...s} />
-          ))}
-        </div>
+      <div className="flex flex-col gap-4 md:grid md:grid-cols-[1fr_2fr_1fr] md:grid-rows-2">
+        {left[0] && (
+          <div className="h-full md:col-start-1 md:row-start-1">
+            <SocialCard key={left[0].label} {...left[0]} />
+          </div>
+        )}
         {embedUrl ? (
-          <div className="order-1 relative aspect-video w-full overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] md:order-2">
+          <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] md:col-start-2 md:row-span-2">
             {latest && (
               <div className="absolute left-2 top-2 rounded bg-[var(--brand-primary)]/80 px-2 py-1 text-sm font-semibold text-[var(--brand-primary-contrast)]">
                 {latest.published.toLocaleDateString("en-US", {
@@ -128,7 +128,7 @@ export default async function SocialCTA() {
               href={`https://www.youtube.com/channel/${channelId}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="order-1 relative aspect-video w-full overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)] md:order-2 flex items-center justify-center group transition-colors hover:bg-[color:color-mix(in_oklab,var(--brand-surface)_85%,white_15%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] no-underline hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
+              className="relative aspect-video w-full overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)] flex items-center justify-center group transition-colors hover:bg-[color:color-mix(in_oklab,var(--brand-surface)_85%,white_15%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] no-underline hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)] md:col-start-2 md:row-span-2"
               aria-label="Visit our YouTube channel"
             >
               {settings?.logo && (
@@ -151,11 +151,19 @@ export default async function SocialCTA() {
             </a>
           ) : null
         )}
-        <div className="order-3 grid h-full grid-rows-2 gap-4 md:order-3">
-          {right.map((s) => (
-            <SocialCard key={s.label} {...s} />
-          ))}
-        </div>
+        {left[1] && (
+          <div className="h-full md:col-start-1 md:row-start-2">
+            <SocialCard key={left[1].label} {...left[1]} />
+          </div>
+        )}
+        {right.map((s, i) => (
+          <div
+            key={s.label}
+            className={`h-full md:col-start-3 ${i === 0 ? "md:row-start-1" : "md:row-start-2"}`}
+          >
+            <SocialCard {...s} />
+          </div>
+        ))}
       </div>
     </section>
   );
