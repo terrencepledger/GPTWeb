@@ -248,9 +248,9 @@ export default function Assistant() {
           }}
           className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full border text-2xl leading-none cursor-pointer"
           style={{
-            backgroundColor: 'var(--brand-accent)',
+            backgroundColor: 'var(--brand-alt)',
             color: 'var(--brand-ink)',
-            borderColor: 'var(--brand-border)',
+            borderColor: 'var(--brand-alt)',
           }}
         >
           ×
