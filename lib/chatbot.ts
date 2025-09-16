@@ -64,6 +64,119 @@ function getClient(client?: OpenAI): OpenAI {
   return defaultClient;
 }
 
+const REPEAT_ESCALATION_REASON = 'User repeated the question multiple times.';
+
+type RepetitionAnalysis = {
+  similarityCount: number;
+  escalate: boolean;
+};
+
+const SIMILARITY_THRESHOLD = 0.6;
+
+function normalizeForSimilarity(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[\u2019']/g, '')
+    .replace(/[^\p{L}\p{N}\s]+/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function toBigrams(text: string): string[] {
+  const result: string[] = [];
+  for (let i = 0; i < text.length - 1; i++) {
+    result.push(text.slice(i, i + 2));
+  }
+  return result;
+}
+
+function diceCoefficient(a: string, b: string): number {
+  const aBigrams = toBigrams(a);
+  const bBigrams = toBigrams(b);
+  if (!aBigrams.length || !bBigrams.length) {
+    return a && a === b ? 1 : 0;
+  }
+  const counts = new Map<string, number>();
+  for (const bg of aBigrams) {
+    counts.set(bg, (counts.get(bg) || 0) + 1);
+  }
+  let matches = 0;
+  for (const bg of bBigrams) {
+    const count = counts.get(bg) || 0;
+    if (count > 0) {
+      counts.set(bg, count - 1);
+      matches++;
+    }
+  }
+  return (2 * matches) / (aBigrams.length + bBigrams.length);
+}
+
+function canonicalizeToken(token: string): string {
+  if (token.length > 4 && token.endsWith('es')) {
+    return token.slice(0, -2);
+  }
+  if (token.length > 3 && token.endsWith('s')) {
+    return token.slice(0, -1);
+  }
+  return token;
+}
+
+function tokenize(text: string): string[] {
+  if (!text) return [];
+  return text
+    .split(' ')
+    .map((part) => canonicalizeToken(part))
+    .filter((part) => part.length >= 2);
+}
+
+function jaccardSimilarity(aTokens: string[], bTokens: string[]): number {
+  if (!aTokens.length || !bTokens.length) return 0;
+  const aSet = new Set(aTokens);
+  const bSet = new Set(bTokens);
+  let intersection = 0;
+  for (const token of aSet) {
+    if (bSet.has(token)) {
+      intersection++;
+    }
+  }
+  const union = new Set([...aSet, ...bSet]).size;
+  return union === 0 ? 0 : intersection / union;
+}
+
+function computeSimilarityScore(a: string, b: string): number {
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  const dice = diceCoefficient(a, b);
+  const tokensA = tokenize(a);
+  const tokensB = tokenize(b);
+  const jaccard = jaccardSimilarity(tokensA, tokensB);
+  return Math.max(dice, jaccard);
+}
+
+function analyzeRepetition(messages: Message[]): RepetitionAnalysis {
+  const userMessages = messages.filter(
+    (msg) => msg.role === 'user' && typeof msg.content === 'string' && msg.content.trim(),
+  );
+  if (!userMessages.length) {
+    return { similarityCount: 0, escalate: false };
+  }
+  const normalized = userMessages.map((msg) => normalizeForSimilarity(msg.content));
+  const latest = normalized[normalized.length - 1];
+  if (!latest) {
+    return { similarityCount: 0, escalate: false };
+  }
+  let count = 1;
+  for (let i = 0; i < normalized.length - 1; i++) {
+    const current = normalized[i];
+    if (!current) continue;
+    const similarity = computeSimilarityScore(current, latest);
+    if (similarity >= SIMILARITY_THRESHOLD) {
+      count++;
+    }
+  }
+  return { similarityCount: count, escalate: count >= 3 };
+}
+
 // Build a simple sitemap from the Next.js app directory so the assistant knows exact page paths.
 function buildAppSitemap(): string {
   try {
@@ -224,6 +337,7 @@ export async function generateChatbotReply(
   escalateReason: string;
 }> {
   const openai = getClient(client);
+  const { similarityCount: computedSimilarityCount, escalate: autoEscalate } = analyzeRepetition(messages);
   const [context, extra] = await Promise.all([
     buildSiteContext(),
     getChatbotExtraContext(),
@@ -252,11 +366,17 @@ export async function generateChatbotReply(
           'Only provide external links that already appear in the site content and include the full URL. ' +
           'If the user requests to speak to a person or otherwise asks for escalation, set "escalate" to true and provide the trigger in "escalateReason". Avoid copy-paste escalation text; any escalation notice should reference the user\'s situation and kindly explain that providing their contact information is necessary for staff to reach out. ' +
           'Write "escalateReason" as if you are speaking to a staff member: a concise internal note that clearly explains why this conversation was escalated, referencing the visitor\'s context. Do not address the visitor directly in this field. ' +
-          'Count how many times so far the user has asked this same or a very similar question, including the current attempt. Do not increase the count for new or different questions. Include this number as "similarityCount". Allow a visitor to repeat a question only twice; on the third time, set "escalate" to true with a friendly "escalateReason" indicating the question has been asked multiple times and a team member can follow up if they share contact details. ' +
+          'A preprocessing step already analyzed how often the visitor has repeated the current question. Use the dedicated "Repetition analysis" system message to set "similarityCount" exactly. If it indicates autoEscalate is true, set "escalate" to true and explain that the visitor has asked the same question multiple times so a team member can follow up. Otherwise, only set "escalate" to true when the visitor explicitly asks or another rule requires it. ' +
           `The current date is ${dateStr}. ` +
           `Site content:\n${context}\n` +
           'Calibrate "confidence" strictly between 0 and 1, where 1 means the answer is clearly supported by the provided site content and 0 means the information is missing or uncertain; decrease confidence proportionally when context is weak or ambiguous, and never invent facts beyond the provided content. ' +
           'Respond in JSON with keys "reply", "confidence", "similarityCount" (number), "escalate" (boolean), and "escalateReason" (string).',
+      },
+      {
+        role: 'system',
+        content: `Repetition analysis: {"similarityCount": ${computedSimilarityCount}, "autoEscalate": ${
+          autoEscalate ? 'true' : 'false'
+        }}`,
       },
       ...messages.map(({ role, content }) => ({ role, content } as any)),
     ],
@@ -265,21 +385,29 @@ export async function generateChatbotReply(
   const raw = completion.choices[0].message?.content ?? '{}';
   try {
     const parsed = JSON.parse(raw);
+    const reply = typeof parsed.reply === 'string' ? parsed.reply : '';
+    const confidence =
+      typeof parsed.confidence === 'number' ? parsed.confidence : 0;
+    const parsedReason =
+      typeof parsed.escalateReason === 'string' ? parsed.escalateReason : '';
+    const finalEscalate = Boolean(parsed.escalate) || autoEscalate;
+    const finalReason = finalEscalate
+      ? parsedReason || (autoEscalate ? REPEAT_ESCALATION_REASON : '')
+      : '';
     return {
-      reply: parsed.reply ?? '',
-      confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0,
-      similarityCount:
-        typeof parsed.similarityCount === 'number' ? parsed.similarityCount : 0,
-      escalate: Boolean(parsed.escalate),
-      escalateReason: typeof parsed.escalateReason === 'string' ? parsed.escalateReason : '',
+      reply,
+      confidence,
+      similarityCount: computedSimilarityCount,
+      escalate: finalEscalate,
+      escalateReason: finalReason,
     };
   } catch {
     return {
       reply: '',
       confidence: 0,
-      similarityCount: 0,
-      escalate: false,
-      escalateReason: '',
+      similarityCount: computedSimilarityCount,
+      escalate: autoEscalate,
+      escalateReason: autoEscalate ? REPEAT_ESCALATION_REASON : '',
     };
   }
 }
