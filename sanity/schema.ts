@@ -12,6 +12,7 @@ import gallerySection from './schemas/sections/gallerySection';
 import subscriptionSection from './schemas/sections/subscriptionSection';
 import mapSection from './schemas/sections/mapSection';
 import linkSection from './schemas/sections/linkSection';
+import page from './schemas/page';
 
 export const schemaTypes = [
   announcement,
@@ -28,4 +29,5 @@ export const schemaTypes = [
   mapSection,
   linkSection,
   chatbot,
+  page,
 ];

@@ -44,10 +44,13 @@
   ],
   "exclude": [
     "node_modules",
-    "sanity"
+    "sanity",
+    ".next"
   ],
   "references": [
-    { "path": "./sanity" }
+    {
+      "path": "./sanity"
+    }
   ],
   "ts-node": {
     "compilerOptions": {
