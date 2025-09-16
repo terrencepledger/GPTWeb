@@ -84,6 +84,14 @@ export const contactFormSettings = () =>
     }`
   );
 
+export const prayerRequestFormSettings = () =>
+  sanity.fetch<FormSettings | null>(
+    groq`*[_type == "formSettings" && page->slug.current == "prayer-requests"][0]{
+      _id,
+      "slug": slug.current
+    }`
+  );
+
 export interface Ministry {
   _id: string;
   name: string;
