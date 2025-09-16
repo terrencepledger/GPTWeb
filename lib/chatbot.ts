@@ -375,9 +375,17 @@ export async function sendEscalationEmail(
   }
 
   // Fallback to environment variables (supports PEM or full JSON blob)
-  if (!svcEmail) svcEmail = process.env.GMAIL_SERVICE_ACCOUNT_EMAIL || '';
+  if (!svcEmail) {
+    svcEmail =
+      process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ||
+      process.env.GMAIL_SERVICE_ACCOUNT_EMAIL ||
+      '';
+  }
   if (!svcKeyRaw) {
-    const envRaw = process.env.GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY || '';
+    const envRaw =
+      process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY ||
+      process.env.GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY ||
+      '';
     if (envRaw.trim().startsWith('{')) {
       try {
         const creds = JSON.parse(envRaw);
@@ -406,7 +414,7 @@ export async function sendEscalationEmail(
       return;
     }
     elog('Missing Gmail service account credentials.');
-    throw new Error('Missing Gmail service account credentials. Provide JSON at config/gmail-service-account.json (or set GMAIL_SERVICE_ACCOUNT_KEY_FILE), or set GMAIL_SERVICE_ACCOUNT_EMAIL and GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY (PEM or JSON).');
+    throw new Error('Missing Google service account credentials. Provide JSON at config/gmail-service-account.json (or set GMAIL_SERVICE_ACCOUNT_KEY_FILE), or set GOOGLE_SERVICE_ACCOUNT_EMAIL / GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY (or legacy GMAIL_SERVICE_ACCOUNT_EMAIL / GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY).');
   }
   dlog('Credential source in use:', credsSource);
 

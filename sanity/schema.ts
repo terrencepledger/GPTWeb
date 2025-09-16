@@ -11,6 +11,7 @@ import gallerySection from './schemas/sections/gallerySection';
 import subscriptionSection from './schemas/sections/subscriptionSection';
 import mapSection from './schemas/sections/mapSection';
 import linkSection from './schemas/sections/linkSection';
+import calendarSyncMapping from './schemas/calendarSyncMapping';
 
 export const schemaTypes = [
   announcement,
@@ -26,4 +27,5 @@ export const schemaTypes = [
   mapSection,
   linkSection,
   chatbot,
+  calendarSyncMapping,
 ];
