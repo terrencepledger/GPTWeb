@@ -26,6 +26,13 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'formId',
+      title: 'Form ID',
+      type: 'string',
+      description:
+        'Optional identifier used to target this configuration when submitting forms.',
+    }),
+    defineField({
       name: 'targetEmail',
       title: 'Target Email',
       type: 'string',

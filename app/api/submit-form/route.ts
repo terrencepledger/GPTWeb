@@ -23,7 +23,7 @@ export async function POST(req: Request) {
 
     if (formId) {
       lookups.push({
-        query: `*[_type == "formSettings" && _id == $formId][0]{ targetEmail }`,
+        query: `*[_type == "formSettings" && (formId == $formId || _id == $formId)][0]{ targetEmail, "identifier": coalesce(formId, _id) }`,
         params: { formId },
         identifier: formId,
       });
@@ -31,7 +31,7 @@ export async function POST(req: Request) {
 
     if (pageId) {
       lookups.push({
-        query: `*[_type == "formSettings" && page._ref == $pageId][0]{ targetEmail }`,
+        query: `*[_type == "formSettings" && page._ref == $pageId][0]{ targetEmail, "identifier": coalesce(formId, $pageId) }`,
         params: { pageId },
         identifier: pageId,
       });
@@ -41,14 +41,17 @@ export async function POST(req: Request) {
     let identifierUsed: string | undefined;
 
     for (const lookup of lookups) {
-      const result = await sanity.fetch<{ targetEmail?: string }>(
+      const result = await sanity.fetch<{
+        targetEmail?: string;
+        identifier?: string;
+      }>(
         lookup.query,
         lookup.params,
       );
 
       if (result?.targetEmail) {
         targetEmail = result.targetEmail;
-        identifierUsed = lookup.identifier;
+        identifierUsed = result.identifier ?? lookup.identifier;
         break;
       }
     }
