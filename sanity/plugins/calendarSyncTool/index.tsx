@@ -73,14 +73,15 @@ function normalizeBase(value: string, originHint?: string) {
 }
 
 function resolveApiBase(pref?: string) {
-  const viteEnv = (typeof import.meta !== 'undefined' && (import.meta as any)?.env) || {}
-  const nodeEnv = (typeof process !== 'undefined' && (process as any)?.env) || {}
-  const siteOrigin =
-    (viteEnv.NEXT_PUBLIC_SITE_ORIGIN as string | undefined) || nodeEnv.NEXT_PUBLIC_SITE_ORIGIN
+  const nodeEnv =
+    typeof process !== 'undefined' && typeof process === 'object' && (process as any)?.env
+      ? ((process as any).env as Record<string, string | undefined>)
+      : {}
+
+  const siteOrigin = nodeEnv.NEXT_PUBLIC_SITE_ORIGIN
 
   const candidates: (string | undefined)[] = [
     pref,
-    viteEnv.SANITY_STUDIO_CALENDAR_API_BASE as string | undefined,
     nodeEnv.SANITY_STUDIO_CALENDAR_API_BASE,
     nodeEnv.NEXT_PUBLIC_CALENDAR_API_BASE,
   ]
