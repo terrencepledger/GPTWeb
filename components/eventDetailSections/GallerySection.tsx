@@ -22,12 +22,12 @@ export default function GallerySection({ layout = 'grid', images }: GallerySecti
           alt={img.alt || ''}
           width={600}
           height={400}
-          className="h-60 w-auto rounded border border-[var(--brand-border)] object-cover"
+          className="h-60 w-auto max-w-full flex-shrink-0 rounded border border-[var(--brand-border)] object-cover"
         />
       ))}
     </div>
   ) : (
-    <div className="grid gap-4 grid-cols-2 md:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
       {images.map((img) => (
         <Image
           key={img._key}

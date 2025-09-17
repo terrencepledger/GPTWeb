@@ -50,21 +50,9 @@ export async function getEscalationAddresses(): Promise<{ from: string; to: stri
 import type { ChatMessage, EscalationInfo as SharedEscalationInfo } from '@/types/chat';
 export type Message = ChatMessage;
 
-import OpenAI from 'openai';
+import type OpenAI from 'openai';
 import { google } from 'googleapis';
-
-let defaultClient: OpenAI | null = null;
-
-function getClient(client?: OpenAI): OpenAI {
-  if (client) return client;
-  if (!defaultClient) {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is not set');
-    }
-    defaultClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  }
-  return defaultClient;
-}
+import { getOpenAIClient } from './openaiClient';
 
 // Build a simple sitemap from the Next.js app directory so the assistant knows exact page paths.
 function buildAppSitemap(): string {
@@ -225,7 +213,7 @@ export async function generateChatbotReply(
   escalate: boolean;
   escalateReason: string;
 }> {
-  const openai = getClient(client);
+  const openai = getOpenAIClient(client);
   const [context, extra] = await Promise.all([
     buildSiteContext(),
     getChatbotExtraContext(),
@@ -291,7 +279,7 @@ export async function escalationNotice(
   lastUserMessage: string,
   client?: OpenAI,
 ): Promise<string> {
-  const openai = getClient(client);
+  const openai = getOpenAIClient(client);
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [
