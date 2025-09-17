@@ -172,7 +172,7 @@ export default function ContactForm({ formSlug, formId }: ContactFormProps) {
           <button
             type="submit"
             disabled={isLoading}
-            className="btn-outline-cta pulse-border-soft w-full inline-flex items-center justify-center gap-2 px-6 py-4 shadow-md hover:shadow-lg transform transition-transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)] focus:ring-offset-2 focus:ring-offset-[var(--brand-bg)] disabled:opacity-60 disabled:cursor-not-allowed"
+            className="btn-outline-cta pulse-border-soft w-full inline-flex items-center justify-center gap-2 px-6 py-4 shadow-md cursor-pointer hover:shadow-lg transform transition-transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)] focus:ring-offset-2 focus:ring-offset-[var(--brand-bg)] disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <span>{isLoading ? "Sending..." : "Send Message"}</span>
             <svg
