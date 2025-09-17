@@ -28,9 +28,6 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import type {DatesSetArg, EventClickArg, EventClassNamesArg} from '@fullcalendar/core'
 
-import '@fullcalendar/common/main.css'
-import '@fullcalendar/daygrid/main.css'
-import '@fullcalendar/timegrid/main.css'
 
 import type {
   CalendarDriftNotice,
