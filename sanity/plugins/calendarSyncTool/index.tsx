@@ -52,16 +52,55 @@ interface FormState {
 const DEFAULT_INTERNAL_COLOR = 'color-mix(in oklab, var(--brand-border) 70%, var(--brand-surface) 30%)'
 const DEFAULT_PUBLIC_COLOR = 'var(--brand-accent)'
 
+function normalizeBase(value: string, originHint?: string) {
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed.replace(/\/$/, '')
+  }
+  const fallbackOrigin =
+    originHint?.trim() ||
+    (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '')
+  if (fallbackOrigin) {
+    const base = fallbackOrigin.replace(/\/$/, '')
+    const path = trimmed.startsWith('/') ? trimmed : `/${trimmed}`
+    return `${base}${path}`.replace(/\/$/, '')
+  }
+  if (trimmed.startsWith('/')) {
+    return trimmed.replace(/\/$/, '')
+  }
+  return `/${trimmed}`.replace(/\/$/, '')
+}
+
 function resolveApiBase(pref?: string) {
-  if (pref && pref.trim()) return pref.replace(/\/$/, '')
   const viteEnv = (typeof import.meta !== 'undefined' && (import.meta as any)?.env) || {}
   const nodeEnv = (typeof process !== 'undefined' && (process as any)?.env) || {}
-  return (
-    (viteEnv.SANITY_STUDIO_CALENDAR_API_BASE as string | undefined) ||
-    nodeEnv.SANITY_STUDIO_CALENDAR_API_BASE ||
-    nodeEnv.NEXT_PUBLIC_CALENDAR_API_BASE ||
-    '/api/calendar'
-  ).replace(/\/$/, '')
+  const siteOrigin =
+    (viteEnv.NEXT_PUBLIC_SITE_ORIGIN as string | undefined) || nodeEnv.NEXT_PUBLIC_SITE_ORIGIN
+
+  const candidates: (string | undefined)[] = [
+    pref,
+    viteEnv.SANITY_STUDIO_CALENDAR_API_BASE as string | undefined,
+    nodeEnv.SANITY_STUDIO_CALENDAR_API_BASE,
+    nodeEnv.NEXT_PUBLIC_CALENDAR_API_BASE,
+  ]
+
+  for (const candidate of candidates) {
+    if (candidate && candidate.trim()) {
+      const normalized = normalizeBase(candidate, siteOrigin)
+      if (normalized) return normalized
+    }
+  }
+
+  if (siteOrigin) {
+    return normalizeBase('/api/calendar', siteOrigin)
+  }
+
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return normalizeBase('/api/calendar', window.location.origin)
+  }
+
+  return '/api/calendar'
 }
 
 function joinApiPath(base: string, segment: string) {
@@ -154,7 +193,8 @@ const calendarStyles = `
     display: flex;
     flex-direction: column;
     height: 100%;
-    width: 100%;
+    width: min(1280px, 100%);
+    margin: 0 auto;
   }
   .calendar-sync-content {
     display: flex;
@@ -165,6 +205,16 @@ const calendarStyles = `
     flex: 2 1 0;
     min-width: 0;
     position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    padding: 1.5rem;
+  }
+  .calendar-sync-calendarInner {
+    flex: 1 1 960px;
+    max-width: 960px;
+    width: 100%;
+    min-width: 0;
   }
   .calendar-sync-sidebar {
     flex: 1 1 320px;
@@ -174,7 +224,7 @@ const calendarStyles = `
     flex-direction: column;
     min-height: 0;
   }
-  .calendar-sync-calendar .fc {
+  .calendar-sync-calendarInner .fc {
     height: 100%;
   }
   .calendar-event-selected {
@@ -182,6 +232,17 @@ const calendarStyles = `
   }
   .calendar-event-drift {
     border-style: dashed !important;
+  }
+  @media (max-width: 1200px) {
+    .calendar-sync-root {
+      width: 100%;
+    }
+    .calendar-sync-calendar {
+      padding: 1rem;
+    }
+    .calendar-sync-calendarInner {
+      max-width: 100%;
+    }
   }
 `
 
@@ -209,7 +270,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         : new URL(endpoint, window.location.origin)
       url.searchParams.set('timeMin', params.start)
       url.searchParams.set('timeMax', params.end)
-      const res = await fetch(url.toString(), {credentials: 'include'})
+      const res = await fetch(url.toString(), {credentials: 'same-origin'})
       if (!res.ok) {
         const payload = await res.json().catch(() => ({}))
         const message = (payload as any).error || res.statusText || 'Request failed'
@@ -410,7 +471,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         const res = await fetch(endpoint, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          credentials: 'include',
+          credentials: 'same-origin',
           body: JSON.stringify(body),
         })
         if (!res.ok) {
@@ -458,16 +519,18 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       </Card>
       <div className="calendar-sync-content">
         <Card className="calendar-sync-calendar" radius={0} padding={0}>
-          <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView="dayGridMonth"
-            headerToolbar={{left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay'}}
-            height="100%"
-            events={events}
-            datesSet={handleDatesSet}
-            eventClick={handleEventClick}
-            eventClassNames={eventClassNames}
-          />
+          <div className="calendar-sync-calendarInner">
+            <FullCalendar
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+              initialView="dayGridMonth"
+              headerToolbar={{left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay'}}
+              height="100%"
+              events={events}
+              datesSet={handleDatesSet}
+              eventClick={handleEventClick}
+              eventClassNames={eventClassNames}
+            />
+          </div>
           {loading && (
             <Flex align="center" justify="center" style={{position: 'absolute', inset: 0}}>
               <Spinner />

@@ -101,6 +101,24 @@ function getWorkspaceGroups(user) {
     return groups
 }
 
+async function fetchWorkspaceGroupsFromApi(client) {
+    const groups = new Set()
+    if (!client) return groups
+    try {
+        const response = await client.request({uri: '/users/me/groups'})
+        extractGroupEmails(response, groups, new WeakSet())
+    } catch (error) {
+        console.warn('Failed to load workspace groups from API', error)
+    }
+    return groups
+}
+
+const calendarApiBaseEnv =
+    (viteEnv && (viteEnv).SANITY_STUDIO_CALENDAR_API_BASE) ||
+    nodeEnv.SANITY_STUDIO_CALENDAR_API_BASE ||
+    nodeEnv.NEXT_PUBLIC_CALENDAR_API_BASE ||
+    undefined
+
 export default defineConfig({
     name: 'default',
     title: 'GPTWeb Studio',
@@ -121,18 +139,22 @@ export default defineConfig({
             url: (viteEnv && (viteEnv).SANITY_STUDIO_GA_DASHBOARD_URL) || nodeEnv.SANITY_STUDIO_GA_DASHBOARD_URL || nodeEnv.NEXT_PUBLIC_GA_DASHBOARD_URL,
         }),
         calendarSyncTool({
-            apiBaseUrl: (viteEnv && (viteEnv).SANITY_STUDIO_CALENDAR_API_BASE) || nodeEnv.SANITY_STUDIO_CALENDAR_API_BASE || nodeEnv.NEXT_PUBLIC_CALENDAR_API_BASE || '/api/calendar',
+            apiBaseUrl: calendarApiBaseEnv,
             internalColor: 'color-mix(in oklab, var(--brand-border) 70%, var(--brand-surface) 30%)',
             publicColor: 'var(--brand-accent)',
         }),
     ],
     // Hide the Vision tool for non-admin users (e.g., editors)
     // currentUser is available in the context when using a function form of `tools`
-    tools: (prev, context) => {
+    tools: async (prev, context) => {
         const roles = context.currentUser?.roles?.map(r => r.name?.toLowerCase?.() ?? '') || [];
         const email = context.currentUser?.email?.toLowerCase() || '';
         const isAdmin = roles.includes('administrator') || roles.includes('developer');
         const workspaceGroups = getWorkspaceGroups(context.currentUser);
+        if (!workspaceGroups.has(MEDIA_GROUP_EMAIL)) {
+            const apiGroups = await fetchWorkspaceGroupsFromApi(context.client);
+            apiGroups.forEach(groupEmail => workspaceGroups.add(groupEmail));
+        }
         const isMediaGroupMember = workspaceGroups.has(MEDIA_GROUP_EMAIL);
         const isMedia = isMediaGroupMember || email === MEDIA_GROUP_EMAIL;
         return prev.filter(tool => {
