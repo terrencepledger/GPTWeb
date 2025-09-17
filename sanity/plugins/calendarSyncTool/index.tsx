@@ -212,7 +212,10 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       const res = await fetch(url.toString(), {credentials: 'include'})
       if (!res.ok) {
         const payload = await res.json().catch(() => ({}))
-        throw new Error(payload.error || res.statusText)
+        const message = (payload as any).error || res.statusText || 'Request failed'
+        setError(message)
+        setLoading(false)
+        return
       }
       const payload = (await res.json()) as CalendarSyncResponse
       setData(payload)
@@ -354,7 +357,9 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
             ? relatedInternal.mappingSourceId
             : undefined
           if (!body.sourceEventId) {
-            throw new Error('Unable to resolve internal event to publish')
+            toast.push({status: 'error', title: 'Unable to resolve internal event to publish'})
+            setActionLoading(false)
+            return
           }
           if (formState) {
             body.payload = {
@@ -375,7 +380,9 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
             body.publicEventId = selectedEvent.mapping?.publicEventId || relatedPublic?.id
           }
           if (!body.publicEventId && !body.sourceEventId) {
-            throw new Error('Unable to resolve event to update')
+            toast.push({status: 'error', title: 'Unable to resolve event to update'})
+            setActionLoading(false)
+            return
           }
           body.payload = {
             title: formState?.title ?? '',
@@ -394,7 +401,9 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
             body.publicEventId = selectedEvent.mapping?.publicEventId || relatedPublic?.id
           }
           if (!body.publicEventId && !body.sourceEventId) {
-            throw new Error('Unable to resolve event to unpublish')
+            toast.push({status: 'error', title: 'Unable to resolve event to unpublish'})
+            setActionLoading(false)
+            return
           }
         }
 
@@ -406,7 +415,10 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         })
         if (!res.ok) {
           const payload = await res.json().catch(() => ({}))
-          throw new Error(payload.error || res.statusText)
+          const message = (payload as any).error || res.statusText || 'Request failed'
+          toast.push({status: 'error', title: message})
+          setActionLoading(false)
+          return
         }
         await refresh()
         toast.push({status: 'success', title: `${actionLabels[action]} complete`})
@@ -494,11 +506,11 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                   {formatDateRange(selectedEvent)}
                 </Text>
                 {selectedEvent.mapping?.status ? (
-                  <Badge mode="outline" tone={selectedEvent.mapping.status === 'published' ? 'positive' : selectedEvent.mapping.status === 'unpublished' ? 'critical' : 'default'}>
+                  <Badge tone={selectedEvent.mapping.status === 'published' ? 'positive' : selectedEvent.mapping.status === 'unpublished' ? 'critical' : 'default'}>
                     {selectedEvent.mapping.status === 'published' ? 'Published' : selectedEvent.mapping.status === 'unpublished' ? 'Unpublished' : 'Not yet published'}
                   </Badge>
                 ) : (
-                  <Badge mode="outline">Draft only</Badge>
+                  <Badge>Draft only</Badge>
                 )}
                 <DriftList items={selectedEvent.drift} />
               </Stack>
