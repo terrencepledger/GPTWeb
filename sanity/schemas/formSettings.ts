@@ -16,16 +16,6 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'slug',
-      title: 'Slug',
-      type: 'slug',
-      options: {
-        source: 'title',
-        maxLength: 96,
-      },
-      validation: (Rule) => Rule.required(),
-    }),
-    defineField({
       name: 'page',
       title: 'Page',
       type: 'reference',
@@ -34,6 +24,13 @@ export default defineType({
         disableNew: true,
       },
       validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: 'formId',
+      title: 'Form ID',
+      type: 'string',
+      description:
+        'Optional identifier used to target this configuration when submitting forms.',
     }),
     defineField({
       name: 'targetEmail',

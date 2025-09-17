@@ -1,5 +1,8 @@
 export type FormSettings = {
   title: string;
-  slug: string;
+  formId?: string;
+  page: {
+    _ref: string;
+  };
   targetEmail: string;
 };
