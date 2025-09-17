@@ -86,6 +86,8 @@ export async function POST(req: Request) {
     const entryBlockHtml = entryLines.length
       ? `<pre style="font-family:'Courier New',monospace;background-color:rgb(238,238,238);padding:8px;">${escapeHtml(entryBlockText)}</pre>`
       : '';
+    const htmlContainerStart = `<div style="font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;font-size:14px;">`;
+    const htmlContainerEnd = '</div>';
 
     const subjectTitle = sanitizeHeader(
       title || (typeof slug === 'string' ? slug : typeof id === 'string' ? id : 'form'),
@@ -93,14 +95,17 @@ export async function POST(req: Request) {
     const submitterName = sanitizeHeader(formData.name || replyTo || 'Visitor');
     const staffSubject = sanitizeHeader(`New ${subjectTitle} submission from ${submitterName}`);
 
+    const normalizedSlug = typeof slug === 'string' ? sanitizeHeader(slug) : '';
+    const normalizedId = typeof id === 'string' ? sanitizeHeader(id) : '';
+
     const staffLines: string[] = [
       `Form: ${subjectTitle}`,
       `Submitted At: ${submittedAtText}`,
     ];
-    if (slug) {
-      staffLines.push(`Form Slug: ${sanitizeHeader(slug)}`);
-    } else if (id) {
-      staffLines.push(`Form ID: ${sanitizeHeader(id)}`);
+    if (normalizedSlug) {
+      staffLines.push(`Form Slug: ${normalizedSlug}`);
+    } else if (normalizedId) {
+      staffLines.push(`Form ID: ${normalizedId}`);
     }
     if (entryLines.length) {
       staffLines.push('');
@@ -108,11 +113,29 @@ export async function POST(req: Request) {
     }
     const staffBody = staffLines.join('\n');
 
+    const staffHtmlParts: string[] = [
+      `<p style="margin:0 0 12px 0;"><strong>Form:</strong> ${escapeHtml(subjectTitle)}</p>`,
+      `<p style="margin:0 0 12px 0;"><strong>Submitted At:</strong> ${escapeHtml(submittedAtText)}</p>`,
+    ];
+    if (normalizedSlug) {
+      staffHtmlParts.push(
+        `<p style="margin:0 0 12px 0;"><strong>Form Slug:</strong> ${escapeHtml(normalizedSlug)}</p>`,
+      );
+    } else if (normalizedId) {
+      staffHtmlParts.push(`<p style="margin:0 0 12px 0;"><strong>Form ID:</strong> ${escapeHtml(normalizedId)}</p>`);
+    }
+    if (entryBlockHtml) {
+      staffHtmlParts.push('<p style="margin:16px 0 12px 0;">Submission details:</p>');
+      staffHtmlParts.push(entryBlockHtml);
+    }
+    const staffHtml = `${htmlContainerStart}${staffHtmlParts.join('')}${htmlContainerEnd}`;
+
     await sendEmail({
       from: impersonationAddress,
       to: targetEmail,
       subject: staffSubject,
       text: staffBody,
+      html: staffHtml,
       replyTo: replyTo || undefined,
     });
 
@@ -145,9 +168,7 @@ export async function POST(req: Request) {
         ackHtmlParts.push(entryBlockHtml);
       }
       ackHtmlParts.push('<p style="margin:16px 0 0 0;">We will get back to you soon.</p>');
-      const ackHtmlContainerStart =
-        `<div style="font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;font-size:14px;">`;
-      const ackHtml = `${ackHtmlContainerStart}${ackHtmlParts.join('')}</div>`;
+      const ackHtml = `${htmlContainerStart}${ackHtmlParts.join('')}${htmlContainerEnd}`;
 
       try {
         await sendEmail({
