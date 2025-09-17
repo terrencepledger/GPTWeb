@@ -61,10 +61,12 @@ export default function ContactForm({ pageId, formId }: ContactFormProps) {
         message: values.message,
       };
 
+      if (formId) {
+        payload.formId = formId;
+      }
+
       if (pageId) {
         payload.pageId = pageId;
-      } else if (formId) {
-        payload.formId = formId;
       }
 
       const response = await fetch("/api/submit-form", {

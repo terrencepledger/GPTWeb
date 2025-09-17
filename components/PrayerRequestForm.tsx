@@ -71,10 +71,12 @@ export default function PrayerRequestForm({
         request: values.request,
       };
 
+      if (formId) {
+        payload.formId = formId;
+      }
+
       if (pageId) {
         payload.pageId = pageId;
-      } else if (formId) {
-        payload.formId = formId;
       }
 
       const response = await fetch("/api/submit-form", {

@@ -15,13 +15,43 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing page identifier' }, { status: 400 });
     }
 
-    const query = pageId
-      ? `*[_type == "formSettings" && page._ref == $pageId][0]{ targetEmail }`
-      : `*[_type == "formSettings" && _id == $formId][0]{ targetEmail }`;
-    const params = pageId ? { pageId } : { formId: formId as string };
+    const lookups: {
+      query: string;
+      params: Record<string, string>;
+      identifier: string;
+    }[] = [];
 
-    const result = await sanity.fetch<{ targetEmail?: string }>(query, params);
-    const targetEmail = result?.targetEmail;
+    if (formId) {
+      lookups.push({
+        query: `*[_type == "formSettings" && _id == $formId][0]{ targetEmail }`,
+        params: { formId },
+        identifier: formId,
+      });
+    }
+
+    if (pageId) {
+      lookups.push({
+        query: `*[_type == "formSettings" && page._ref == $pageId][0]{ targetEmail }`,
+        params: { pageId },
+        identifier: pageId,
+      });
+    }
+
+    let targetEmail: string | undefined;
+    let identifierUsed: string | undefined;
+
+    for (const lookup of lookups) {
+      const result = await sanity.fetch<{ targetEmail?: string }>(
+        lookup.query,
+        lookup.params,
+      );
+
+      if (result?.targetEmail) {
+        targetEmail = result.targetEmail;
+        identifierUsed = lookup.identifier;
+        break;
+      }
+    }
 
     if (!targetEmail) {
       return NextResponse.json({ error: 'Form settings not found' }, { status: 404 });
@@ -32,7 +62,7 @@ export async function POST(req: Request) {
     await sendEmail({
       from,
       to: targetEmail,
-      subject: `New form submission from ${pageId || formId}`,
+      subject: `New form submission from ${identifierUsed ?? formId ?? pageId}`,
       text: JSON.stringify(formData, null, 2),
       replyTo,
     });
