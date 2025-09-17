@@ -101,18 +101,6 @@ function getWorkspaceGroups(user) {
     return groups
 }
 
-async function fetchWorkspaceGroupsFromApi(client) {
-    const groups = new Set()
-    if (!client) return groups
-    try {
-        const response = await client.request({uri: '/users/me/groups'})
-        extractGroupEmails(response, groups, new WeakSet())
-    } catch (error) {
-        console.warn('Failed to load workspace groups from API', error)
-    }
-    return groups
-}
-
 const calendarApiBaseEnv =
     (viteEnv && (viteEnv).SANITY_STUDIO_CALENDAR_API_BASE) ||
     nodeEnv.SANITY_STUDIO_CALENDAR_API_BASE ||
@@ -146,15 +134,11 @@ export default defineConfig({
     ],
     // Hide the Vision tool for non-admin users (e.g., editors)
     // currentUser is available in the context when using a function form of `tools`
-    tools: async (prev, context) => {
+    tools: (prev, context) => {
         const roles = context.currentUser?.roles?.map(r => r.name?.toLowerCase?.() ?? '') || [];
         const email = context.currentUser?.email?.toLowerCase() || '';
         const isAdmin = roles.includes('administrator') || roles.includes('developer');
         const workspaceGroups = getWorkspaceGroups(context.currentUser);
-        if (!workspaceGroups.has(MEDIA_GROUP_EMAIL)) {
-            const apiGroups = await fetchWorkspaceGroupsFromApi(context.client);
-            apiGroups.forEach(groupEmail => workspaceGroups.add(groupEmail));
-        }
         const isMediaGroupMember = workspaceGroups.has(MEDIA_GROUP_EMAIL);
         const isMedia = isMediaGroupMember || email === MEDIA_GROUP_EMAIL;
         return prev.filter(tool => {
