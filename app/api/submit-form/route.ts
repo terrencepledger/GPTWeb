@@ -99,11 +99,11 @@ export async function POST(req: Request) {
     const normalizedId = typeof id === 'string' ? sanitizeHeader(id) : '';
 
     const staffLines: string[] = [
-      `Form: ${subjectTitle}`,
+      `Page: ${subjectTitle}`,
       `Submitted At: ${submittedAtText}`,
     ];
     if (normalizedSlug) {
-      staffLines.push(`Form Slug: ${normalizedSlug}`);
+      staffLines.push(`Form ID: ${normalizedSlug}`);
     } else if (normalizedId) {
       staffLines.push(`Form ID: ${normalizedId}`);
     }
@@ -114,12 +114,12 @@ export async function POST(req: Request) {
     const staffBody = staffLines.join('\n');
 
     const staffHtmlParts: string[] = [
-      `<p style="margin:0 0 12px 0;"><strong>Form:</strong> ${escapeHtml(subjectTitle)}</p>`,
+      `<p style="margin:0 0 12px 0;"><strong>Page:</strong> ${escapeHtml(subjectTitle)}</p>`,
       `<p style="margin:0 0 12px 0;"><strong>Submitted At:</strong> ${escapeHtml(submittedAtText)}</p>`,
     ];
     if (normalizedSlug) {
       staffHtmlParts.push(
-        `<p style="margin:0 0 12px 0;"><strong>Form Slug:</strong> ${escapeHtml(normalizedSlug)}</p>`,
+        `<p style="margin:0 0 12px 0;"><strong>Form ID:</strong> ${escapeHtml(normalizedSlug)}</p>`,
       );
     } else if (normalizedId) {
       staffHtmlParts.push(`<p style="margin:0 0 12px 0;"><strong>Form ID:</strong> ${escapeHtml(normalizedId)}</p>`);
