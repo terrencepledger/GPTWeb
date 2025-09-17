@@ -15,7 +15,7 @@ type FormValues = {
 type SubmissionStatus = "idle" | "loading" | "success" | "error";
 
 interface PrayerRequestFormProps {
-  formSlug?: string;
+  pageId?: string;
   formId?: string;
 }
 
@@ -26,7 +26,7 @@ const initialValues: FormValues = {
 };
 
 export default function PrayerRequestForm({
-  formSlug,
+  pageId,
   formId,
 }: PrayerRequestFormProps) {
   const [values, setValues] = useState<FormValues>(initialValues);
@@ -53,7 +53,7 @@ export default function PrayerRequestForm({
       return;
     }
 
-    if (!formSlug && !formId) {
+    if (!pageId && !formId) {
       setErrorMessage(
         "Form configuration is missing. Please try again later.",
       );
@@ -71,10 +71,10 @@ export default function PrayerRequestForm({
         request: values.request,
       };
 
-      if (formSlug) {
-        payload.slug = formSlug;
+      if (pageId) {
+        payload.pageId = pageId;
       } else if (formId) {
-        payload.id = formId;
+        payload.formId = formId;
       }
 
       const response = await fetch("/api/submit-form", {

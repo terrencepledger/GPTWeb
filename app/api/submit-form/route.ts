@@ -7,16 +7,18 @@ import { sendEmail } from '@/lib/gmail';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { slug, id, ...formData } = body || {};
+    const { pageId: rawPageId, formId: rawFormId, ...formData } = body || {};
+    const pageId = typeof rawPageId === 'string' ? rawPageId : undefined;
+    const formId = typeof rawFormId === 'string' ? rawFormId : undefined;
 
-    if (!slug && !id) {
+    if (!pageId && !formId) {
       return NextResponse.json({ error: 'Missing page identifier' }, { status: 400 });
     }
 
-    const params = slug ? { slug } : { id };
-    const query = slug
-      ? `*[_type == "formSettings" && slug.current == $slug][0]{ targetEmail }`
-      : `*[_type == "formSettings" && _id == $id][0]{ targetEmail }`;
+    const query = pageId
+      ? `*[_type == "formSettings" && page._ref == $pageId][0]{ targetEmail }`
+      : `*[_type == "formSettings" && _id == $formId][0]{ targetEmail }`;
+    const params = pageId ? { pageId } : { formId: formId as string };
 
     const result = await sanity.fetch<{ targetEmail?: string }>(query, params);
     const targetEmail = result?.targetEmail;
@@ -30,7 +32,7 @@ export async function POST(req: Request) {
     await sendEmail({
       from,
       to: targetEmail,
-      subject: `New form submission from ${slug || id}`,
+      subject: `New form submission from ${pageId || formId}`,
       text: JSON.stringify(formData, null, 2),
       replyTo,
     });

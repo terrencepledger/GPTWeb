@@ -73,14 +73,14 @@ export const siteSettings = () =>
 
 export interface FormSettings {
   _id: string;
-  slug?: string;
+  pageId?: string;
 }
 
 export const contactFormSettings = () =>
   sanity.fetch<FormSettings | null>(
     groq`*[_type == "formSettings" && page->slug.current == "contact"][0]{
       _id,
-      "slug": slug.current
+      "pageId": page->_ref
     }`
   );
 
@@ -88,7 +88,7 @@ export const prayerRequestFormSettings = () =>
   sanity.fetch<FormSettings | null>(
     groq`*[_type == "formSettings" && page->slug.current == "prayer-requests"][0]{
       _id,
-      "slug": slug.current
+      "pageId": page->_ref
     }`
   );
 

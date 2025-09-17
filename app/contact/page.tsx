@@ -13,7 +13,7 @@ export default async function Page() {
           Get in touch with us using the contact form below.
         </p>
       </div>
-      <ContactForm formSlug={formSettings?.slug} formId={formSettings?._id} />
+      <ContactForm pageId={formSettings?.pageId} formId={formSettings?._id} />
     </div>
   );
 }

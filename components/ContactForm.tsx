@@ -11,7 +11,7 @@ type FormValues = {
 type SubmissionStatus = "idle" | "loading" | "success" | "error";
 
 interface ContactFormProps {
-  formSlug?: string;
+  pageId?: string;
   formId?: string;
 }
 
@@ -21,7 +21,7 @@ const initialValues: FormValues = {
   message: "",
 };
 
-export default function ContactForm({ formSlug, formId }: ContactFormProps) {
+export default function ContactForm({ pageId, formId }: ContactFormProps) {
   const [values, setValues] = useState<FormValues>(initialValues);
   const [status, setStatus] = useState<SubmissionStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -45,7 +45,7 @@ export default function ContactForm({ formSlug, formId }: ContactFormProps) {
       return;
     }
 
-    if (!formSlug && !formId) {
+    if (!pageId && !formId) {
       setErrorMessage("Form configuration is missing. Please try again later.");
       setStatus("error");
       return;
@@ -61,10 +61,10 @@ export default function ContactForm({ formSlug, formId }: ContactFormProps) {
         message: values.message,
       };
 
-      if (formSlug) {
-        payload.slug = formSlug;
+      if (pageId) {
+        payload.pageId = pageId;
       } else if (formId) {
-        payload.id = formId;
+        payload.formId = formId;
       }
 
       const response = await fetch("/api/submit-form", {

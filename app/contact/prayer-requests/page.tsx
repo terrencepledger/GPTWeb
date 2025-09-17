@@ -13,7 +13,7 @@ export default async function Page() {
       </h1>
 
       <PrayerRequestForm
-        formSlug={formSettings?.slug}
+        pageId={formSettings?.pageId}
         formId={formSettings?._id}
       />
     </div>
