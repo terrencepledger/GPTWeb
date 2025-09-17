@@ -1,4 +1,4 @@
-import React, {ChangeEvent, useCallback, useEffect, useMemo, useState} from 'react'
+import React, {useCallback, useEffect, useMemo, useState} from 'react'
 import {definePlugin} from 'sanity'
 import {
   Badge,
@@ -26,7 +26,7 @@ import FullCalendar from '@fullcalendar/react'
 import interactionPlugin from '@fullcalendar/interaction'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import type {DatesSetArg, EventClickArg, EventClassNamesArg} from '@fullcalendar/core'
+import type {DatesSetArg, EventClickArg} from '@fullcalendar/core'
 
 
 import type {
@@ -34,7 +34,7 @@ import type {
   CalendarSyncEvent,
   CalendarSyncResponse,
   PublicEventPayload,
-} from '@/types/calendar'
+} from '../../types/calendar'
 
 interface CalendarSyncToolOptions {
   apiBaseUrl?: string
@@ -303,7 +303,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     }
   }, [])
 
-  const eventClassNames = useCallback((arg: EventClassNamesArg) => {
+  const eventClassNames = useCallback((arg: any) => {
     const event: CalendarSyncEvent | undefined = (arg.event.extendedProps as any)?.event
     const classes: string[] = []
     if (event) {
@@ -323,7 +323,12 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     }
   }, [fetchSnapshot, range])
 
-  const handleFormChange = useCallback((field: keyof FormState) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = useCallback((field: keyof FormState) => (event: React.FormEvent<HTMLInputElement>) => {
+    const value = event.currentTarget.value
+    setFormState((prev) => ({...(prev || {title: '', blurb: '', location: '', displayNotes: ''}), [field]: value}))
+  }, [])
+
+  const handleTextAreaChange = useCallback((field: keyof FormState) => (event: React.FormEvent<HTMLTextAreaElement>) => {
     const value = event.currentTarget.value
     setFormState((prev) => ({...(prev || {title: '', blurb: '', location: '', displayNotes: ''}), [field]: value}))
   }, [])
@@ -471,7 +476,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         <Card className="calendar-sync-sidebar" padding={4} radius={0}>
           {!selectedEvent ? (
             <Flex flex={1} align="center" justify="center">
-              <Stack space={3} align="center">
+              <Stack space={3}>
                 <CalendarIcon />
                 <Text size={1} muted>
                   Select an event in the calendar to review and publish it.
@@ -508,7 +513,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                     </Text>
                     <TextInput
                       value={formState?.title || ''}
-                      onChange={handleFormChange('title')}
+                      onChange={handleInputChange('title')}
                       aria-label="Public title"
                       placeholder="Event title"
                     />
@@ -519,7 +524,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                     </Text>
                     <TextArea
                       value={formState?.blurb || ''}
-                      onChange={handleFormChange('blurb')}
+                      onChange={handleTextAreaChange('blurb')}
                       rows={4}
                       aria-label="Public blurb"
                       placeholder="Public blurb"
@@ -532,7 +537,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                     </Text>
                     <TextInput
                       value={formState?.location || ''}
-                      onChange={handleFormChange('location')}
+                      onChange={handleInputChange('location')}
                       aria-label="Public location"
                       placeholder="Location"
                     />
@@ -543,7 +548,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                     </Text>
                     <TextArea
                       value={formState?.displayNotes || ''}
-                      onChange={handleFormChange('displayNotes')}
+                      onChange={handleTextAreaChange('displayNotes')}
                       rows={3}
                       aria-label="Display notes"
                       placeholder="Display notes"
@@ -595,7 +600,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                     {relatedInternal.rawLocation && (
                       <Text size={1}>Location: {relatedInternal.rawLocation}</Text>
                     )}
-                    <Box padding={3} radius={2} style={{backgroundColor: 'var(--card-muted-bg-color)'}}>
+                    <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)'}}>
                       <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
                         {relatedInternal.rawDescription || 'No private notes provided.'}
                       </Text>
@@ -611,14 +616,14 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                       <Text size={1}>Location suggestion: {sanitizedSuggestion.location}</Text>
                     )}
                     {sanitizedSuggestion.blurb && (
-                      <Box padding={3} radius={2} style={{backgroundColor: 'var(--card-muted-bg-color)'}}>
+                      <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)'}}>
                         <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
                           {sanitizedSuggestion.blurb}
                         </Text>
                       </Box>
                     )}
                     {sanitizedSuggestion.displayNotes && (
-                      <Box padding={3} radius={2} style={{backgroundColor: 'var(--card-muted-bg-color)'}}>
+                      <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)'}}>
                         <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
                           Display notes: {sanitizedSuggestion.displayNotes}
                         </Text>
