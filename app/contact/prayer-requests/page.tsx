@@ -14,7 +14,7 @@ export default async function Page() {
 
       <PrayerRequestForm
         pageId={formSettings?.pageId}
-        formId={formSettings?.formId ?? formSettings?._id}
+        formId={formSettings?.formId}
       />
     </div>
   );

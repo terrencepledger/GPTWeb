@@ -88,7 +88,7 @@ export const contactFormSettings = () =>
 
 export const prayerRequestFormSettings = () =>
   sanity.fetch<FormSettings | null>(
-    groq`*[_type == "formSettings" && page->slug.current == "prayer-requests"][0]{
+    groq`*[_type == "formSettings" && page->slug.current == "contact-prayer-requests"][0]{
       _id,
       formId,
       "pageId": page._ref

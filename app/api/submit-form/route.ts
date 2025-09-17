@@ -47,147 +47,160 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { pageId: rawPageId, formId: rawFormId, ...formData } = body || {};
     const pageId = typeof rawPageId === 'string' ? rawPageId : undefined;
-    const formId = typeof rawFormId === 'string' ? rawFormId : undefined;
+    const submittedFormId = typeof rawFormId === 'string' ? rawFormId : undefined;
 
-    if (!pageId && !formId) {
-      return NextResponse.json({ error: 'Missing page identifier' }, { status: 400 });
+    if (!pageId && !submittedFormId) {
+      return NextResponse.json({ error: 'Missing form identifier' }, { status: 400 });
     }
 
-    const params = slug ? { slug } : { id };
-    const query = slug
-      ? `*[_type == "formSettings" && slug.current == $slug][0]{ targetEmail, title }`
-      : `*[_type == "formSettings" && _id == $id][0]{ targetEmail, title }`;
+    // Prefer matching by formId (from Sanity Studio), fallback to page reference
+    const queryByFormId = `*[_type == "formSettings" && defined(formId) && formId == $formId][0]{ targetEmail, title, formId, "pageId": page._ref }`;
+    const queryByPageId = `*[_type == "formSettings" && defined(page) && page._ref == $pageId][0]{ targetEmail, title, formId, "pageId": page._ref }`;
 
-    const result = await sanity.fetch<{ targetEmail?: string; title?: string }>(query, params);
-    const targetEmail = sanitizeHeader(result?.targetEmail);
-    const title = sanitizeHeader(result?.title);
+    const result = submittedFormId
+      ? await sanity.fetch<{ targetEmail?: string; title?: string; formId?: string; pageId?: string }>(
+          queryByFormId,
+          { formId: submittedFormId },
+        )
+      : await sanity.fetch<{ targetEmail?: string; title?: string; formId?: string; pageId?: string }>(
+          queryByPageId,
+          { pageId },
+        );
 
-    if (!targetEmail) {
-      return NextResponse.json({ error: 'Form settings not found' }, { status: 404 });
-    }
+    // If not found by formId, try fallback to pageId when available
+    const resolved = result || (pageId
+      ? await sanity.fetch<{ targetEmail?: string; title?: string; formId?: string; pageId?: string }>(
+          queryByPageId,
+          { pageId },
+        )
+      : null);
 
-    const impersonationAddress = getImpersonationAddress();
-    const replyTo = safeEmail(formData.email);
-    const submittedAt = new Date();
-    const tz = process.env.TZ || 'UTC';
-    const timestampFormatter = new Intl.DateTimeFormat('en-US', {
-      timeZone: tz,
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    });
-    const submittedAtText = timestampFormatter.format(submittedAt);
+    const targetEmail = sanitizeHeader(resolved?.targetEmail);
+    const title = sanitizeHeader(resolved?.title);
+    const resolvedFormId = sanitizeHeader(resolved?.formId);
+      sanitizeHeader(resolved?.pageId);
 
-    const entryLines = Object.entries(formData)
-      .map(([key, value]) => {
-        const formatted = formatValue(value);
-        if (!formatted) return null;
-        return `${formatLabel(key)}: ${formatted}`;
-      })
-      .filter((line): line is string => Boolean(line));
-    const entryBlockText = entryLines.join('\n');
-    const entryBlockHtml = entryLines.length
-      ? `<pre style="font-family:'Courier New',monospace;background-color:rgb(238,238,238);padding:8px;">${escapeHtml(entryBlockText)}</pre>`
-      : '';
-    const htmlContainerStart = `<div style="font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;font-size:14px;">`;
-    const htmlContainerEnd = '</div>';
+      if (!targetEmail) {
+          return NextResponse.json({ error: 'Form settings not found' }, { status: 404 });
+      }
 
-    const subjectTitle = sanitizeHeader(
-      title || (typeof slug === 'string' ? slug : typeof id === 'string' ? id : 'form'),
-    );
-    const submitterName = sanitizeHeader(formData.name || replyTo || 'Visitor');
-    const staffSubject = sanitizeHeader(`New ${subjectTitle} submission from ${submitterName}`);
+      const impersonationAddress = getImpersonationAddress();
+      const replyTo = safeEmail((formData as any).email);
+      const submittedAt = new Date();
+      const tz = process.env.TZ || 'UTC';
+      const timestampFormatter = new Intl.DateTimeFormat('en-US', {
+          timeZone: tz,
+          dateStyle: 'medium',
+          timeStyle: 'short',
+      });
+      const submittedAtText = timestampFormatter.format(submittedAt);
 
-    const normalizedSlug = typeof slug === 'string' ? sanitizeHeader(slug) : '';
-    const normalizedId = typeof id === 'string' ? sanitizeHeader(id) : '';
+      const entryLines = Object.entries(formData)
+          .map(([key, value]) => {
+              const formatted = formatValue(value);
+              if (!formatted) return null;
+              return `${formatLabel(key)}: ${formatted}`;
+          })
+          .filter((line): line is string => Boolean(line));
+      const entryBlockText = entryLines.join('\n');
+      const entryBlockHtml = entryLines.length
+          ? `<pre style="font-family:'Courier New',monospace;background-color:rgb(238,238,238);padding:8px;">${escapeHtml(entryBlockText)}</pre>`
+          : '';
+      const htmlContainerStart = `<div style="font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;font-size:14px;">`;
+      const htmlContainerEnd = '</div>';
 
-    const staffLines: string[] = [
-      `Page: ${subjectTitle}`,
-      `Submitted At: ${submittedAtText}`,
-    ];
-    if (normalizedSlug) {
-      staffLines.push(`Form ID: ${normalizedSlug}`);
-    } else if (normalizedId) {
-      staffLines.push(`Form ID: ${normalizedId}`);
-    }
-    if (entryLines.length) {
-      staffLines.push('');
-      staffLines.push(...entryLines);
-    }
-    const staffBody = staffLines.join('\n');
+      const subjectTitle = sanitizeHeader(title || 'Form');
+      const submitterName = sanitizeHeader((formData as any).name || replyTo || 'Visitor');
+      const staffSubject = sanitizeHeader(`New ${subjectTitle} submission from ${submitterName}`);
 
-    const staffHtmlParts: string[] = [
-      `<p style="margin:0 0 12px 0;"><strong>Page:</strong> ${escapeHtml(subjectTitle)}</p>`,
-      `<p style="margin:0 0 12px 0;"><strong>Submitted At:</strong> ${escapeHtml(submittedAtText)}</p>`,
-    ];
-    if (normalizedSlug) {
-      staffHtmlParts.push(
-        `<p style="margin:0 0 12px 0;"><strong>Form ID:</strong> ${escapeHtml(normalizedSlug)}</p>`,
-      );
-    } else if (normalizedId) {
-      staffHtmlParts.push(`<p style="margin:0 0 12px 0;"><strong>Form ID:</strong> ${escapeHtml(normalizedId)}</p>`);
-    }
-    if (entryBlockHtml) {
-      staffHtmlParts.push('<p style="margin:16px 0 12px 0;">Submission details:</p>');
-      staffHtmlParts.push(entryBlockHtml);
-    }
-    const staffHtml = `${htmlContainerStart}${staffHtmlParts.join('')}${htmlContainerEnd}`;
+      // Only include Form ID when it's defined in Sanity Studio (resolvedFormId)
+      const displayFormId = resolvedFormId || '';
 
-    await sendEmail({
-      from: impersonationAddress,
-      to: targetEmail,
-      subject: staffSubject,
-      text: staffBody,
-      html: staffHtml,
-      replyTo: replyTo || undefined,
-    });
-
-    if (replyTo) {
-      const ackName = sanitizeHeader(formData.name || 'there');
-      const ackSubject = sanitizeHeader(`We received your ${subjectTitle} submission`);
-      const ackLines: string[] = [
-        `Hi ${ackName},`,
-        '',
-        `Thanks for reaching out! We've received your ${subjectTitle} submission on ${submittedAtText}.`,
+      const staffLines: string[] = [
+          `Page: ${subjectTitle}`,
+          `Submitted At: ${submittedAtText}`,
       ];
+      if (displayFormId) {
+          staffLines.push(`Form ID: ${displayFormId}`);
+      }
       if (entryLines.length) {
-        ackLines.push('');
-        ackLines.push('Here is a copy of what you sent:');
-        ackLines.push('');
-        ackLines.push(...entryLines);
+          staffLines.push('');
+          staffLines.push(...entryLines);
       }
-      ackLines.push('');
-      ackLines.push('We will get back to you soon.');
-      const ackBody = ackLines.join('\n');
+      const staffBody = staffLines.join('\n');
 
-      const ackHtmlParts: string[] = [
-        `<p style="margin:0 0 16px 0;">Hi ${escapeHtml(ackName)},</p>`,
-        `<p style="margin:0 0 16px 0;">Thanks for reaching out! We've received your ${escapeHtml(
-          subjectTitle,
-        )} submission on ${escapeHtml(submittedAtText)}.</p>`,
+      const staffHtmlParts: string[] = [
+          `<p style=\"margin:0 0 12px 0;\"><strong>Page:</strong> ${escapeHtml(subjectTitle)}</p>`,
+          `<p style=\"margin:0 0 12px 0;\"><strong>Submitted At:</strong> ${escapeHtml(submittedAtText)}</p>`,
       ];
+      if (displayFormId) {
+          staffHtmlParts.push(
+              `<p style=\"margin:0 0 12px 0;\"><strong>Form ID:</strong> ${escapeHtml(displayFormId)}</p>`,
+          );
+      }
       if (entryBlockHtml) {
-        ackHtmlParts.push('<p style="margin:0 0 12px 0;">Here is a copy of what you sent:</p>');
-        ackHtmlParts.push(entryBlockHtml);
+          staffHtmlParts.push('<p style="margin:16px 0 12px 0;">Submission details:</p>');
+          staffHtmlParts.push(entryBlockHtml);
       }
-      ackHtmlParts.push('<p style="margin:16px 0 0 0;">We will get back to you soon.</p>');
-      const ackHtml = `${htmlContainerStart}${ackHtmlParts.join('')}${htmlContainerEnd}`;
+      const staffHtml = `${htmlContainerStart}${staffHtmlParts.join('')}${htmlContainerEnd}`;
 
-      try {
-        await sendEmail({
+      await sendEmail({
           from: impersonationAddress,
-          to: replyTo,
-          subject: ackSubject,
-          text: ackBody,
-          html: ackHtml,
-          replyTo: targetEmail,
-        });
-      } catch (copyError) {
-        console.warn('Failed to send confirmation copy to submitter', copyError);
-      }
-    }
+          to: targetEmail,
+          subject: staffSubject,
+          text: staffBody,
+          html: staffHtml,
+          replyTo: replyTo || undefined,
+      });
 
-    return NextResponse.json({ success: true });
-  } catch (err) {
+      if (replyTo) {
+          const ackName = sanitizeHeader((formData as any).name || 'there');
+          const ackSubject = sanitizeHeader(`We received your ${subjectTitle} submission`);
+          const ackLines: string[] = [
+              `Hi ${ackName},`,
+              '',
+              `Thanks for reaching out! We've received your ${subjectTitle} submission on ${submittedAtText}.`,
+          ];
+          if (entryLines.length) {
+              ackLines.push('');
+              ackLines.push('Here is a copy of what you sent:');
+              ackLines.push('');
+              ackLines.push(...entryLines);
+          }
+          ackLines.push('');
+          ackLines.push('We will get back to you soon.');
+          const ackBody = ackLines.join('\n');
+
+          const ackHtmlParts: string[] = [
+              `<p style="margin:0 0 16px 0;">Hi ${escapeHtml(ackName)},</p>`,
+              `<p style="margin:0 0 16px 0;">Thanks for reaching out! We've received your ${escapeHtml(
+                  subjectTitle,
+              )} submission on ${escapeHtml(submittedAtText)}.</p>`,
+          ];
+          if (entryBlockHtml) {
+              ackHtmlParts.push('<p style="margin:0 0 12px 0;">Here is a copy of what you sent:</p>');
+              ackHtmlParts.push(entryBlockHtml);
+          }
+          ackHtmlParts.push('<p style="margin:16px 0 0 0;">We will get back to you soon.</p>');
+          const ackHtml = `${htmlContainerStart}${ackHtmlParts.join('')}${htmlContainerEnd}`;
+
+          try {
+              await sendEmail({
+                  from: impersonationAddress,
+                  to: replyTo,
+                  subject: ackSubject,
+                  text: ackBody,
+                  html: ackHtml,
+                  replyTo: targetEmail,
+              });
+          } catch (copyError) {
+              console.warn('Failed to send confirmation copy to submitter', copyError);
+          }
+      }
+
+      return NextResponse.json({ success: true });
+  }
+  catch (err) {
     console.error('Form submission error', err);
     return NextResponse.json({ error: 'Failed to submit form' }, { status: 500 });
   }

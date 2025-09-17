@@ -15,7 +15,7 @@ export default async function Page() {
       </div>
       <ContactForm
         pageId={formSettings?.pageId}
-        formId={formSettings?.formId ?? formSettings?._id}
+        formId={formSettings?.formId}
       />
     </div>
   );
