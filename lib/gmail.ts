@@ -6,7 +6,8 @@ interface SendEmailOptions {
   to: string;
   from?: string;
   subject: string;
-  text: string;
+  text?: string;
+  html?: string;
   replyTo?: string;
 }
 
@@ -96,7 +97,7 @@ function loadCredentials(): { svcEmail: string; svcKey: string } {
   return { svcEmail, svcKey };
 }
 
-export async function sendEmail({ to, from, subject, text, replyTo }: SendEmailOptions) {
+export async function sendEmail({ to, from, subject, text, html, replyTo }: SendEmailOptions) {
   const { svcEmail, svcKey } = loadCredentials();
 
   const fromHeader = sanitizeHeader(from || getImpersonationAddress());
@@ -117,17 +118,48 @@ export async function sendEmail({ to, from, subject, text, replyTo }: SendEmailO
 
   const gmail = google.gmail({ version: 'v1', auth });
 
+  if (!text && !html) {
+    throw new Error('Email payload must include text or html content.');
+  }
+
+  const normalizeBody = (value: string) => value.replace(/\r?\n/g, '\n').replace(/\n/g, '\r\n');
+
   const headers = [
     `To: ${sanitizeHeader(to)}`,
     `Subject: ${subjectHeader}`,
     `From: ${fromHeader}`,
     'MIME-Version: 1.0',
-    'Content-Type: text/plain; charset="UTF-8"',
   ];
   if (replyTo) {
     headers.push(`Reply-To: ${sanitizeHeader(replyTo)}`);
   }
-  const message = headers.join('\r\n') + '\r\n\r\n' + text;
+
+  let message: string;
+  if (html) {
+    const boundary = `=_Part_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+    headers.push(`Content-Type: multipart/alternative; boundary="${boundary}"`);
+    const parts: string[] = [];
+    const boundaryLine = `--${boundary}`;
+    if (text) {
+      parts.push(boundaryLine);
+      parts.push('Content-Type: text/plain; charset="UTF-8"');
+      parts.push('Content-Transfer-Encoding: 8bit');
+      parts.push('');
+      parts.push(normalizeBody(text));
+    }
+    parts.push(boundaryLine);
+    parts.push('Content-Type: text/html; charset="UTF-8"');
+    parts.push('Content-Transfer-Encoding: 8bit');
+    parts.push('');
+    parts.push(normalizeBody(html));
+    parts.push(`${boundaryLine}--`);
+    parts.push('');
+    message = headers.join('\r\n') + '\r\n\r\n' + parts.join('\r\n');
+  } else {
+    headers.push('Content-Type: text/plain; charset="UTF-8"');
+    headers.push('Content-Transfer-Encoding: 8bit');
+    message = headers.join('\r\n') + '\r\n\r\n' + normalizeBody(text || '');
+  }
   const raw = Buffer.from(message)
     .toString('base64')
     .replace(/\+/g, '-')
