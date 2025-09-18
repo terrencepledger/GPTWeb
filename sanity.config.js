@@ -36,71 +36,6 @@ try {
 const projectId = nodeEnv.SANITY_STUDIO_PROJECT_ID || nodeEnv.NEXT_PUBLIC_SANITY_PROJECT_ID || viteEnv.SANITY_STUDIO_PROJECT_ID
 const dataset = nodeEnv.SANITY_STUDIO_DATASET || nodeEnv.NEXT_PUBLIC_SANITY_DATASET || viteEnv.SANITY_STUDIO_DATASET
 
-const MEDIA_GROUP_EMAIL = 'media@gptchurch.org'
-
-const groupCandidateKeys = ['email', 'groupEmail', 'group', 'value', 'id', 'name']
-const groupNestedKeys = ['groups', 'memberships', 'items', 'values', 'entries']
-
-function extractGroupEmails(input, target, seen) {
-    if (!input) return
-    if (typeof input === 'string') {
-        const normalized = input.trim().toLowerCase()
-        if (normalized && normalized.includes('@')) {
-            target.add(normalized)
-        }
-        return
-    }
-    if (Array.isArray(input)) {
-        input.forEach(item => extractGroupEmails(item, target, seen))
-        return
-    }
-    if (input instanceof Set) {
-        input.forEach(item => extractGroupEmails(item, target, seen))
-        return
-    }
-    if (input instanceof Map) {
-        input.forEach((value, key) => {
-            extractGroupEmails(key, target, seen)
-            extractGroupEmails(value, target, seen)
-        })
-        return
-    }
-    if (typeof input === 'object') {
-        if (!seen) {
-            seen = new WeakSet()
-        }
-        if (seen.has(input)) {
-            return
-        }
-        seen.add(input)
-        groupCandidateKeys.forEach(key => {
-            if (key in input) {
-                extractGroupEmails(input[key], target, seen)
-            }
-        })
-        groupNestedKeys.forEach(key => {
-            if (key in input) {
-                extractGroupEmails(input[key], target, seen)
-            }
-        })
-    }
-}
-
-function getWorkspaceGroups(user) {
-    const groups = new Set()
-    if (!user) return groups
-    const seen = new WeakSet()
-    extractGroupEmails(user.groups, groups, seen)
-    extractGroupEmails(user.identity && user.identity.groups, groups, seen)
-    extractGroupEmails(user.provider && user.provider.groups, groups, seen)
-    extractGroupEmails(user.profile && user.profile.groups, groups, seen)
-    extractGroupEmails(user.memberships, groups, seen)
-    extractGroupEmails(user.externalGroups, groups, seen)
-    extractGroupEmails(user.providerIdentities, groups, seen)
-    extractGroupEmails(user.ssoGroups, groups, seen)
-    return groups
-}
-
 const calendarApiBaseEnv =
     (viteEnv && (viteEnv).SANITY_STUDIO_CALENDAR_API_BASE) ||
     nodeEnv.SANITY_STUDIO_CALENDAR_API_BASE ||
@@ -136,17 +71,10 @@ export default defineConfig({
     // currentUser is available in the context when using a function form of `tools`
     tools: (prev, context) => {
         const roles = context.currentUser?.roles?.map(r => r.name?.toLowerCase?.() ?? '') || [];
-        const email = context.currentUser?.email?.toLowerCase() || '';
         const isAdmin = roles.includes('administrator') || roles.includes('developer');
-        const workspaceGroups = getWorkspaceGroups(context.currentUser);
-        const isMediaGroupMember = workspaceGroups.has(MEDIA_GROUP_EMAIL);
-        const isMedia = isMediaGroupMember || email === MEDIA_GROUP_EMAIL;
         return prev.filter(tool => {
             if (tool.name === 'vision') {
                 return isAdmin;
-            }
-            if (tool.name === 'calendar-sync') {
-                return isAdmin || isMedia;
             }
             return true;
         });

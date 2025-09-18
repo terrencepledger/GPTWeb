@@ -1,5 +1,5 @@
 import React, {ChangeEvent, useCallback, useEffect, useMemo, useState} from 'react'
-import {definePlugin} from 'sanity'
+import {definePlugin, useCurrentUser} from 'sanity'
 import {
   Badge,
   Box,
@@ -33,11 +33,13 @@ import '@fullcalendar/daygrid/main.css'
 import '@fullcalendar/timegrid/main.css'
 
 import type {
+  CalendarAccessResponse,
   CalendarDriftNotice,
   CalendarSyncEvent,
   CalendarSyncResponse,
   PublicEventPayload,
 } from '@/types/calendar'
+import {DEFAULT_MEDIA_GROUP_EMAIL, MEDIA_GROUP_HEADER} from '@/types/calendar'
 
 interface CalendarSyncToolOptions {
   apiBaseUrl?: string
@@ -256,6 +258,20 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   const internalColor = props.internalColor || DEFAULT_INTERNAL_COLOR
   const publicColor = props.publicColor || DEFAULT_PUBLIC_COLOR
 
+  const currentUser = useCurrentUser()
+  const hasCurrentUser = Boolean(currentUser)
+  const normalizedUserEmail = useMemo(() => {
+    const email = currentUser?.email || ''
+    return email.trim().toLowerCase()
+  }, [currentUser?.email])
+
+  const [accessState, setAccessState] = useState<'pending' | 'authorized' | 'denied' | 'error'>('pending')
+  const [accessReason, setAccessReason] = useState<string | null>(null)
+  const [accessGroup, setAccessGroup] = useState<string>(DEFAULT_MEDIA_GROUP_EMAIL)
+  const [authorizedEmail, setAuthorizedEmail] = useState<string>('')
+  const [accessNonce, setAccessNonce] = useState(0)
+  const triggerAccessCheck = useCallback(() => setAccessNonce((value) => value + 1), [])
+
   const [range, setRange] = useState<{start: string; end: string} | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -264,7 +280,78 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   const [formState, setFormState] = useState<FormState | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
 
+  useEffect(() => {
+    let cancelled = false
+    if (!hasCurrentUser) {
+      setAccessState('pending')
+      setAccessReason(null)
+      setAuthorizedEmail('')
+      return () => {
+        cancelled = true
+      }
+    }
+    if (!normalizedUserEmail) {
+      setAccessState('denied')
+      setAccessReason('Your Sanity account is missing an email address.')
+      setAuthorizedEmail('')
+      return () => {
+        cancelled = true
+      }
+    }
+
+    setAccessState('pending')
+    setAccessReason(null)
+
+    const verify = async () => {
+      try {
+        const endpoint = joinApiPath(apiBase, 'access')
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({email: normalizedUserEmail}),
+        })
+        const payload = (await res.json().catch(() => ({}))) as CalendarAccessResponse & {error?: string}
+        if (cancelled) return
+        if (payload.group) {
+          setAccessGroup(payload.group)
+        }
+        if (!res.ok) {
+          setAccessState('error')
+          setAccessReason(payload.reason || payload.error || res.statusText || 'Unable to verify Media access.')
+          setAuthorizedEmail('')
+          return
+        }
+        if (payload.allowed) {
+          setAccessState('authorized')
+          setAccessReason(null)
+          setAuthorizedEmail(normalizedUserEmail)
+        } else {
+          setAccessState('denied')
+          setAccessReason(
+            payload.reason || `You must belong to ${payload.group || DEFAULT_MEDIA_GROUP_EMAIL} to use this tool.`,
+          )
+          setAuthorizedEmail('')
+        }
+      } catch (err) {
+        if (cancelled) return
+        const message = err instanceof Error ? err.message : 'Unable to verify Media access.'
+        setAccessState('error')
+        setAccessReason(message)
+        setAuthorizedEmail('')
+      }
+    }
+
+    verify()
+    return () => {
+      cancelled = true
+    }
+  }, [apiBase, hasCurrentUser, normalizedUserEmail, accessNonce])
+
   const fetchSnapshot = useCallback(async (params: {start: string; end: string}) => {
+    if (!authorizedEmail) {
+      return
+    }
     setLoading(true)
     setError(null)
     try {
@@ -274,7 +361,9 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         : new URL(endpoint, window.location.origin)
       url.searchParams.set('timeMin', params.start)
       url.searchParams.set('timeMax', params.end)
-      const res = await fetch(url.toString(), {credentials: 'same-origin'})
+      const headers: Record<string, string> = {}
+      headers[MEDIA_GROUP_HEADER] = authorizedEmail
+      const res = await fetch(url.toString(), {credentials: 'same-origin', headers})
       if (!res.ok) {
         const payload = await res.json().catch(() => ({}))
         throw new Error(payload.error || res.statusText)
@@ -287,13 +376,22 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     } finally {
       setLoading(false)
     }
-  }, [apiBase])
+  }, [apiBase, authorizedEmail])
 
   useEffect(() => {
-    if (range) {
+    if (range && accessState === 'authorized') {
       fetchSnapshot(range)
     }
-  }, [range, fetchSnapshot])
+  }, [range, fetchSnapshot, accessState])
+
+  useEffect(() => {
+    if (accessState !== 'authorized') {
+      setRange(null)
+      setData(null)
+      setSelectedKey(null)
+      setFormState(null)
+    }
+  }, [accessState])
 
   const events = useMemo(() => {
     if (!data) return []
@@ -383,10 +481,10 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   }, [selectedKey])
 
   const refresh = useCallback(async () => {
-    if (range) {
+    if (range && accessState === 'authorized') {
       await fetchSnapshot(range)
     }
-  }, [fetchSnapshot, range])
+  }, [fetchSnapshot, range, accessState])
 
   const handleFormChange = useCallback((field: keyof FormState) => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const value = event.currentTarget.value
@@ -396,6 +494,10 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   const runAction = useCallback(
     async (action: 'publish' | 'update' | 'unpublish') => {
       if (!selectedEvent) return
+      if (!authorizedEmail) {
+        toast.push({status: 'error', title: 'Media access expired. Refresh the page to continue.'})
+        return
+      }
       setActionLoading(true)
       try {
         const actionLabels: Record<typeof action, string> = {
@@ -458,9 +560,11 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
           }
         }
 
+        const headers: Record<string, string> = {'Content-Type': 'application/json'}
+        headers[MEDIA_GROUP_HEADER] = authorizedEmail
         const res = await fetch(endpoint, {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
+          headers,
           credentials: 'same-origin',
           body: JSON.stringify(body),
         })
@@ -477,8 +581,63 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         setActionLoading(false)
       }
     },
-    [apiBase, formState, refresh, relatedInternal, relatedPublic, selectedEvent, toast]
+    [apiBase, authorizedEmail, formState, refresh, relatedInternal, relatedPublic, selectedEvent, toast]
   )
+
+  if (accessState !== 'authorized') {
+    const gatingTone = accessState === 'error' || accessState === 'denied' ? 'critical' : 'default'
+    const gatingMessage =
+      accessState === 'pending'
+        ? 'Confirming Media access…'
+        : accessReason ||
+          (accessState === 'denied'
+            ? `You must belong to ${accessGroup} to use this tool.`
+            : 'Unable to verify Media access at the moment.')
+
+    return (
+      <div className="calendar-sync-root">
+        <style>{calendarStyles}</style>
+        <Card padding={4} radius={0} shadow={1}>
+          <Stack space={3}>
+            <Heading size={2}>Calendar Sync</Heading>
+            <Text size={1} muted>
+              Manage the public calendar once your Media team membership is confirmed.
+            </Text>
+          </Stack>
+        </Card>
+        <Flex align="center" justify="center" style={{flex: '1 1 auto', padding: '2rem'}}>
+          <Card padding={4} radius={2} tone={gatingTone} shadow={1} style={{maxWidth: 420, width: '100%'}}>
+            <Stack space={3} align="center">
+              {accessState === 'pending' ? (
+                <>
+                  <Spinner />
+                  <Text size={1}>Confirming Media access…</Text>
+                </>
+              ) : (
+                <>
+                  <WarningOutlineIcon />
+                  <Text size={1} style={{textAlign: 'center'}}>
+                    {gatingMessage}
+                  </Text>
+                  <Button
+                    icon={RefreshIcon}
+                    text="Retry check"
+                    tone={accessState === 'error' ? 'critical' : 'primary'}
+                    onClick={triggerAccessCheck}
+                  />
+                </>
+              )}
+              {accessState === 'denied' && (
+                <Text size={1} muted style={{textAlign: 'center'}}>
+                  Ask an administrator to add you to {accessGroup}.
+                </Text>
+              )}
+            </Stack>
+          </Card>
+        </Flex>
+      </div>
+    )
+  }
 
   const canPublish = selectedEvent?.source === 'internal'
   const canUpdate = Boolean(

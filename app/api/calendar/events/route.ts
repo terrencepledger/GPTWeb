@@ -1,5 +1,6 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {getCalendarSnapshot} from '@/lib/calendarSync';
+import {requireMediaGroupMember} from '@/lib/googleWorkspace';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,6 +22,15 @@ export async function OPTIONS() {
 }
 
 export async function GET(request: NextRequest) {
+  try {
+    await requireMediaGroupMember(request.headers);
+  } catch (error) {
+    const status = (error as any)?.statusCode === 403 ? 403 : 401;
+    const message = error instanceof Error ? error.message : 'Media access is required.';
+    console.warn('[api/calendar/events] denied', {message});
+    return NextResponse.json({error: message}, {status, headers: buildHeaders()});
+  }
+
   const url = new URL(request.url);
   const timeMin = url.searchParams.get('timeMin') || undefined;
   const timeMax = url.searchParams.get('timeMax') || undefined;
