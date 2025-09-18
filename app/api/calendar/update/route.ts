@@ -1,5 +1,6 @@
 import {NextRequest, NextResponse} from 'next/server';
 import {updatePublicEvent} from '@/lib/calendarSync';
+import {requireMediaGroupMember} from '@/lib/googleWorkspace';
 import type {UpdateEventBody} from '@/types/calendar';
 
 export const dynamic = 'force-dynamic';
@@ -23,6 +24,8 @@ export async function OPTIONS() {
 
 export async function POST(request: NextRequest) {
   try {
+    await requireMediaGroupMember(request.headers);
+
     const body = (await request.json()) as UpdateEventBody | undefined;
     if (!body?.publicEventId && !body?.sourceEventId) {
       return NextResponse.json(
@@ -34,13 +37,14 @@ export async function POST(request: NextRequest) {
     const result = await updatePublicEvent(body);
     return NextResponse.json(result, {status: 200, headers: buildHeaders()});
   } catch (error) {
+    const status = (error as any)?.statusCode === 403 ? 403 : 500;
     const message = error instanceof Error ? error.message : 'Unexpected error';
     const normalized = message.toLowerCase();
-    const status = normalized.includes('token') ? 401 : 500;
+    const adjustedStatus = status === 500 && normalized.includes('token') ? 401 : status;
     console.error('[api/calendar/update] error', error);
     return NextResponse.json(
       {error: message},
-      {status, headers: buildHeaders()}
+      {status: adjustedStatus, headers: buildHeaders()}
     );
   }
 }
