@@ -3,6 +3,7 @@ import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
 import {analyticsTool} from './sanity/plugins/analyticsTool'
+import {calendarSyncTool} from './sanity/plugins/calendarSyncTool'
 
 // Schemas
 import announcement from './sanity/schemas/announcement'
@@ -18,6 +19,7 @@ import subscriptionSection from './sanity/schemas/sections/subscriptionSection'
 import mapSection from './sanity/schemas/sections/mapSection'
 import linkSection from './sanity/schemas/sections/linkSection'
 import chatbot from './sanity/schemas/chatbot'
+import calendarSyncMapping from './sanity/schemas/calendarSyncMapping'
 import formSettings from './sanity/schemas/formSettings'
 import page from './sanity/schemas/page'
 
@@ -36,13 +38,54 @@ try {
 const projectId = nodeEnv.SANITY_STUDIO_PROJECT_ID || nodeEnv.NEXT_PUBLIC_SANITY_PROJECT_ID || viteEnv.SANITY_STUDIO_PROJECT_ID
 const dataset = nodeEnv.SANITY_STUDIO_DATASET || nodeEnv.NEXT_PUBLIC_SANITY_DATASET || viteEnv.SANITY_STUDIO_DATASET
 
+function pickFirstString(values) {
+    for (const value of values) {
+        if (typeof value === 'string') {
+            const trimmed = value.trim()
+            if (trimmed) {
+                return trimmed
+            }
+        }
+    }
+    return undefined
+}
+
+function stripTrailingSlash(value) {
+    return value.replace(/\/$/, '')
+}
+
+function withCalendarPath(value) {
+    if (!value) return undefined
+    const normalized = stripTrailingSlash(value)
+    return /\/calendar$/i.test(normalized) ? normalized : `${normalized}/api/calendar`
+}
+
+const siteOrigin = pickFirstString([
+    (viteEnv && (viteEnv).SANITY_STUDIO_SITE_ORIGIN),
+    (viteEnv && (viteEnv).NEXT_PUBLIC_SITE_ORIGIN),
+    nodeEnv.SANITY_STUDIO_SITE_ORIGIN,
+    nodeEnv.NEXT_PUBLIC_SITE_ORIGIN,
+    nodeEnv.NEXT_PUBLIC_SITE_BASE_URL,
+    nodeEnv.VERCEL_URL ? `https://${stripTrailingSlash(nodeEnv.VERCEL_URL)}` : undefined,
+]) || 'http://localhost:3000'
+
+const explicitCalendarBase = pickFirstString([
+    (viteEnv && (viteEnv).SANITY_STUDIO_CALENDAR_API_BASE),
+    nodeEnv.SANITY_STUDIO_CALENDAR_API_BASE,
+    nodeEnv.NEXT_PUBLIC_CALENDAR_API_BASE,
+])
+
+const calendarApiBaseEnv = explicitCalendarBase
+    ? stripTrailingSlash(explicitCalendarBase)
+    : withCalendarPath(siteOrigin)
+
 export default defineConfig({
     name: 'default',
     title: 'GPTWeb Studio',
     projectId,
     dataset,
     schema: {
-        types: [announcement, siteSettings, staff, ministry, heroSlide, missionStatement, eventDetail, heroSection, gallerySection, subscriptionSection, mapSection, linkSection, chatbot, formSettings, page],
+        types: [announcement, siteSettings, staff, ministry, heroSlide, missionStatement, eventDetail, heroSection, gallerySection, subscriptionSection, mapSection, linkSection, chatbot, calendarSyncMapping, formSettings, page],
     },
     plugins: [
         structureTool({
@@ -55,13 +98,23 @@ export default defineConfig({
         analyticsTool({
             url: (viteEnv && (viteEnv).SANITY_STUDIO_GA_DASHBOARD_URL) || nodeEnv.SANITY_STUDIO_GA_DASHBOARD_URL || nodeEnv.NEXT_PUBLIC_GA_DASHBOARD_URL,
         }),
+        calendarSyncTool({
+            apiBaseUrl: calendarApiBaseEnv,
+            internalColor: 'color-mix(in oklab, var(--brand-border) 70%, var(--brand-surface) 30%)',
+            publicColor: 'var(--brand-accent)',
+        }),
     ],
     // Hide the Vision tool for non-admin users (e.g., editors)
     // currentUser is available in the context when using a function form of `tools`
     tools: (prev, context) => {
-        const roles = context.currentUser?.roles?.map(r => r.name) || [];
+        const roles = context.currentUser?.roles?.map(r => r.name?.toLowerCase?.() ?? '') || [];
         const isAdmin = roles.includes('administrator') || roles.includes('developer');
-        return isAdmin ? prev : prev.filter(tool => tool.name !== 'vision');
+        return prev.filter(tool => {
+            if (tool.name === 'vision') {
+                return isAdmin;
+            }
+            return true;
+        });
     },
     vite: {
         define: {

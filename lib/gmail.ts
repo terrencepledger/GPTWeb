@@ -41,7 +41,7 @@ function loadCredentials(): { svcEmail: string; svcKey: string } {
   let svcEmail = '';
   let svcKeyRaw = '';
 
-  const defaultKeyPath = path.join(process.cwd(), 'config', 'gmail-service-account.json');
+  const defaultKeyPath = path.join(process.cwd(), 'config', 'google-service-account.json');
   const keyFilePath = process.env.GMAIL_SERVICE_ACCOUNT_KEY_FILE || defaultKeyPath;
   if (fs.existsSync(keyFilePath)) {
     try {
@@ -81,7 +81,7 @@ function loadCredentials(): { svcEmail: string; svcKey: string } {
 
   if (!svcEmail || !svcKeyRaw) {
     throw new Error(
-      'Missing Gmail service account credentials. Provide JSON at config/gmail-service-account.json (or set GMAIL_SERVICE_ACCOUNT_KEY_FILE), or set GMAIL_SERVICE_ACCOUNT_EMAIL and GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY (PEM or JSON).',
+      'Missing Gmail service account credentials. Provide JSON at config/google-service-account.json (or set GMAIL_SERVICE_ACCOUNT_KEY_FILE), or set GMAIL_SERVICE_ACCOUNT_EMAIL and GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY (PEM or JSON).',
     );
   }
 
@@ -89,7 +89,7 @@ function loadCredentials(): { svcEmail: string; svcKey: string } {
   const hasPemHeader = /BEGIN [A-Z ]*PRIVATE KEY/.test(svcKeyRaw);
   if (looksPlaceholder || !hasPemHeader) {
     throw new Error(
-      'Gmail service account private key appears invalid or placeholder. Place a valid credentials file at config/gmail-service-account.json (or set GMAIL_SERVICE_ACCOUNT_KEY_FILE), or provide GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY with a real PEM.',
+      'Gmail service account private key appears invalid or placeholder. Place a valid credentials file at config/google-service-account.json (or set GMAIL_SERVICE_ACCOUNT_KEY_FILE), or provide GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY with a real PEM.',
     );
   }
 

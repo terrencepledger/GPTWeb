@@ -343,7 +343,7 @@ export async function sendEscalationEmail(
   let credsSource: 'file' | 'env' | 'env-json' | 'env-pem' | 'unknown' = 'unknown';
 
   // Prefer file-based credentials first
-  const defaultKeyPath = path.join(process.cwd(), 'config', 'gmail-service-account.json');
+  const defaultKeyPath = path.join(process.cwd(), 'config', 'google-service-account.json');
   const keyFilePath = process.env.GMAIL_SERVICE_ACCOUNT_KEY_FILE || defaultKeyPath;
   const keyFileExists = fs.existsSync(keyFilePath);
   dlog('Credential key file check', { keyFilePath, exists: keyFileExists });
@@ -365,9 +365,17 @@ export async function sendEscalationEmail(
   }
 
   // Fallback to environment variables (supports PEM or full JSON blob)
-  if (!svcEmail) svcEmail = process.env.GMAIL_SERVICE_ACCOUNT_EMAIL || '';
+  if (!svcEmail) {
+    svcEmail =
+      process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ||
+      process.env.GMAIL_SERVICE_ACCOUNT_EMAIL ||
+      '';
+  }
   if (!svcKeyRaw) {
-    const envRaw = process.env.GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY || '';
+    const envRaw =
+      process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY ||
+      process.env.GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY ||
+      '';
     if (envRaw.trim().startsWith('{')) {
       try {
         const creds = JSON.parse(envRaw);
