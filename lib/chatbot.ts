@@ -12,6 +12,7 @@ import { getUpcomingEvents } from './googleCalendar';
 import fs from 'fs';
 import path from 'path';
 import { givingOptions } from './giving';
+import { getImpersonationAddress } from './gmail';
 
 export async function getChatbotTone(): Promise<string> {
   const tone = await sanity.fetch(groq`*[_type == "chatbotSettings"][0].tone`);
@@ -33,15 +34,16 @@ export async function getChatbotExtraContext(): Promise<string> {
 }
 
 export async function getEscalationAddresses(): Promise<{ from: string; to: string }> {
-  const result = await sanity.fetch(groq`*[_type == "chatbotSettings"][0]{
-    "from": escalationFrom,
-    "to": escalationTo,
-  }`);
-  const from = result?.from?.trim();
+  const result = await sanity.fetch(
+    groq`*[_type == "chatbotSettings"][0]{
+      "to": escalationTo,
+    }`,
+  );
   const to = result?.to?.trim();
-  if (!from || !to) {
-    throw new Error('Chatbot escalation email settings are missing in Sanity (escalationFrom/escalationTo)');
+  if (!to) {
+    throw new Error('Chatbot escalation email settings are missing in Sanity (escalationTo)');
   }
+  const from = getImpersonationAddress();
   return { from, to };
 }
 
@@ -301,7 +303,7 @@ export async function sendEscalationEmail(
   reason: string,
 ) {
   // Require server-to-server auth via a Google Workspace Service Account with
-  // domain-wide delegation, impersonating a fixed sender account sourced from Sanity.
+  // domain-wide delegation, impersonating a fixed sender account from configuration.
   // Allow disabling email sending only via an explicit flag.
   const emailsDisabled = String(process.env.DISABLE_ESCALATION_EMAILS || '').toLowerCase() === 'true';
 
@@ -406,18 +408,24 @@ export async function sendEscalationEmail(
   }
   dlog('Credential source in use:', credsSource);
 
-  // Get sender and recipient from Sanity
+  // Get impersonated sender from config and recipient from Sanity
   const { from, to } = await getEscalationAddresses();
-  dlog('Fetched escalation addresses from Sanity', { from: maskEmail(from), to: maskEmail(to) });
-  // Sanity check parsed mailbox portions (handles "Name <email@...>")
   const parsedFrom = extractAngleEmail(from);
   const parsedTo = extractAngleEmail(to);
-  dlog('Escalation address parsing', {
+  dlog('Fetched escalation addresses from configuration', {
+    fromHeader: maskEmail(from),
     fromParsed: maskEmail(parsedFrom),
     toParsed: maskEmail(parsedTo),
+  });
+  dlog('Escalation address validation', {
     fromValid: isValidEmail(parsedFrom),
     toValid: isValidEmail(parsedTo),
   });
+  if (!isValidEmail(parsedFrom) || !isValidEmail(parsedTo)) {
+    throw new Error(
+      'Escalation email configuration is invalid. Verify EMAIL_IMPERSONATION_ADDRESS and the escalationTo field in Sanity.',
+    );
+  }
 
   // If emails are disabled by flag, skip sending.
   if (emailsDisabled) {
@@ -440,9 +448,9 @@ export async function sendEscalationEmail(
     email: svcEmail,
     key: svcKey,
     scopes: ['https://www.googleapis.com/auth/gmail.send','https://mail.google.com/'],
-    subject: from, // act as this user
+    subject: parsedFrom, // act as this user
   } as any);
-  dlog('Authorizing Gmail client as subject', maskEmail(from));
+  dlog('Authorizing Gmail client as subject', maskEmail(parsedFrom));
   await auth.authorize();
   dlog('Gmail authorization successful');
 

@@ -71,6 +71,30 @@ export const siteSettings = () =>
     groq`*[_id == "siteSettings"][0]{_id, title, email, phone, address, serviceTimes, "logo": logo.asset->url, "socialLinks": socialLinks[]{label, href, description, icon}}`
   );
 
+export interface FormSettings {
+  _id: string;
+  formId?: string;
+  pageId?: string;
+}
+
+export const contactFormSettings = () =>
+  sanity.fetch<FormSettings | null>(
+    groq`*[_type == "formSettings" && page->slug.current == "contact"][0]{
+      _id,
+      formId,
+      "pageId": page._ref
+    }`
+  );
+
+export const prayerRequestFormSettings = () =>
+  sanity.fetch<FormSettings | null>(
+    groq`*[_type == "formSettings" && page->slug.current == "contact-prayer-requests"][0]{
+      _id,
+      formId,
+      "pageId": page._ref
+    }`
+  );
+
 export interface Ministry {
   _id: string;
   name: string;
