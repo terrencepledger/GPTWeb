@@ -1,5 +1,8 @@
 import type {calendar_v3} from 'googleapis'
 
+export const MEDIA_GROUP_HEADER = 'x-gpt-media-email'
+export const DEFAULT_MEDIA_GROUP_EMAIL = 'media@gptchurch.org'
+
 export type CalendarSource = 'internal' | 'public'
 
 export type CalendarSyncStatus = 'draft' | 'published' | 'unpublished'
@@ -85,4 +88,11 @@ export interface UpdateEventBody {
   sourceEventId?: string
   recurringEventId?: string | null
   payload: Partial<Pick<PublicEventPayload, 'title' | 'blurb' | 'location' | 'displayNotes'>>
+}
+
+
+export interface CalendarAccessResponse {
+  allowed: boolean
+  group: string
+  reason?: string
 }

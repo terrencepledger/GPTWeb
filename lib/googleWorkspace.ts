@@ -3,19 +3,28 @@ import groq from 'groq'
 import type {GaxiosError} from 'gaxios'
 import {sanity} from './sanity'
 import {DEFAULT_MEDIA_GROUP_EMAIL, MEDIA_GROUP_HEADER} from '@/types/calendar'
+import fs from 'fs'
+import path from 'path'
 
-const SERVICE_ACCOUNT_EMAIL =
-  process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ||
-  process.env.GMAIL_SERVICE_ACCOUNT_EMAIL ||
-  process.env.GOOGLE_CLIENT_EMAIL ||
-  ''
+const SERVICE_ACCOUNT_CONFIG_PATH = path.join(process.cwd(), 'config', 'google-service-account.json')
 
-const SERVICE_ACCOUNT_KEY = (
-  process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY ||
-  process.env.GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY ||
-  process.env.GOOGLE_PRIVATE_KEY ||
-  ''
-).replace(/\\n/g, '\n')
+type ServiceAccountConfig = { client_email?: string; private_key?: string }
+
+let serviceAccountCache: ServiceAccountConfig | null = null
+
+function loadServiceAccount(): ServiceAccountConfig {
+  if (serviceAccountCache) return serviceAccountCache
+  try {
+    const raw = fs.readFileSync(SERVICE_ACCOUNT_CONFIG_PATH, 'utf8')
+    serviceAccountCache = JSON.parse(raw)
+  } catch {
+    serviceAccountCache = {}
+  }
+  return serviceAccountCache as ServiceAccountConfig
+}
+
+const SERVICE_ACCOUNT_EMAIL = loadServiceAccount().client_email || ''
+const SERVICE_ACCOUNT_KEY = (loadServiceAccount().private_key || '').replace(/\\n/g, '\n')
 
 const DIRECTORY_SCOPES = [
   'https://www.googleapis.com/auth/admin.directory.group.readonly',
@@ -29,6 +38,7 @@ let cachedDirectorySubject: string | null = null
 let resolvedSubject: string | null | undefined
 
 const membershipCache = new Map<string, {allowed: boolean; expiresAt: number}>()
+
 
 function normalizeEmail(value?: string | null): string | null {
   if (!value) return null
@@ -46,10 +56,6 @@ function coerceStatus(error: unknown): number | undefined {
     if (!Number.isNaN(parsed)) return parsed
   }
   if (typeof err.status === 'number') return err.status
-  if (typeof err.status === 'string') {
-    const parsed = Number(err.status)
-    if (!Number.isNaN(parsed)) return parsed
-  }
   if (err.response?.status) return err.response.status
   return undefined
 }
@@ -90,17 +96,17 @@ function resolveMediaGroupEmail(): string {
 async function resolveDirectorySubject(): Promise<string | null> {
   if (resolvedSubject !== undefined) return resolvedSubject
 
-  const envCandidates = [
-    process.env.GOOGLE_WORKSPACE_DIRECTORY_SUBJECT,
-    process.env.GOOGLE_WORKSPACE_ADMIN_EMAIL,
-    process.env.GOOGLE_WORKSPACE_IMPERSONATION_EMAIL,
-    process.env.GOOGLE_SERVICE_ACCOUNT_SUBJECT,
-    process.env.GOOGLE_ADMIN_EMAIL,
-    process.env.GMAIL_SERVICE_ACCOUNT_SUBJECT,
+  const envMap: Array<{name: string; value?: string}> = [
+    {name: 'GOOGLE_WORKSPACE_DIRECTORY_SUBJECT', value: process.env.GOOGLE_WORKSPACE_DIRECTORY_SUBJECT},
+    {name: 'GOOGLE_WORKSPACE_ADMIN_EMAIL', value: process.env.GOOGLE_WORKSPACE_ADMIN_EMAIL},
+    {name: 'GOOGLE_WORKSPACE_IMPERSONATION_EMAIL', value: process.env.GOOGLE_WORKSPACE_IMPERSONATION_EMAIL},
+    {name: 'GOOGLE_SERVICE_ACCOUNT_SUBJECT', value: process.env.GOOGLE_SERVICE_ACCOUNT_SUBJECT},
+    {name: 'GOOGLE_ADMIN_EMAIL', value: process.env.GOOGLE_ADMIN_EMAIL},
+    {name: 'GMAIL_SERVICE_ACCOUNT_SUBJECT', value: process.env.GMAIL_SERVICE_ACCOUNT_SUBJECT},
   ]
 
-  for (const candidate of envCandidates) {
-    const normalized = normalizeEmail(candidate)
+  for (const {value} of envMap) {
+    const normalized = normalizeEmail(value)
     if (normalized) {
       resolvedSubject = normalized
       return resolvedSubject
@@ -117,7 +123,7 @@ async function resolveDirectorySubject(): Promise<string | null> {
       return resolvedSubject
     }
   } catch (error) {
-    console.warn('[googleWorkspace] Failed to load escalation sender for directory subject', error)
+    // ignore Sanity lookup errors for subject resolution
   }
 
   resolvedSubject = null
@@ -141,7 +147,11 @@ async function getDirectoryClient(): Promise<admin_directory_v1.Admin> {
     scopes: DIRECTORY_SCOPES,
     subject,
   })
-  await auth.authorize()
+  try {
+    await auth.authorize()
+  } catch (error) {
+    throw error
+  }
   cachedDirectory = google.admin({version: 'directory_v1', auth})
   cachedDirectorySubject = subject
   return cachedDirectory
@@ -172,13 +182,13 @@ export async function checkMediaGroupMembership(
     directory = await getDirectoryClient()
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unable to initialize Google Workspace directory client.'
-    console.error('[googleWorkspace] Directory client init failed', error)
     return {allowed: false, reason: message}
   }
 
   try {
-    const response = await directory.members.has({groupKey: groupEmail, memberKey: normalizedEmail})
-    const allowed = response.data?.isMember === true
+    // Some googleapis versions don’t expose members.has in types; use members.get and treat 404 as not a member
+    await directory.members.get({groupKey: groupEmail, memberKey: normalizedEmail})
+    const allowed = true
     membershipCache.set(cacheKey, {allowed, expiresAt: now + MEMBERSHIP_CACHE_TTL})
     return {allowed}
   } catch (error) {
@@ -190,31 +200,26 @@ export async function checkMediaGroupMembership(
       const message =
         extractGoogleMessage(error) ||
         'The Google service account is not authorized to inspect group memberships.'
-      console.error('[googleWorkspace] Forbidden while checking membership', {email: normalizedEmail, error})
       return {allowed: false, reason: message}
     }
     const message = extractGoogleMessage(error) || 'Failed to verify Google Workspace membership.'
-    console.error('[googleWorkspace] Membership lookup failed', {
-      email: normalizedEmail,
-      groupEmail,
-      error,
-    })
     throw new Error(message)
   }
 }
 
 export async function requireMediaGroupMember(headers: Headers): Promise<string> {
-  const candidate =
+  const rawCandidate =
     headers.get(MEDIA_GROUP_HEADER) ||
     headers.get('x-sanity-user-email') ||
     headers.get('x-sanity-email') ||
     ''
-  const {allowed, reason} = await checkMediaGroupMembership(candidate)
+  const candidate = normalizeEmail(rawCandidate)
+  const {allowed, reason} = await checkMediaGroupMembership(candidate || '')
   if (!allowed) {
     const message = reason || `You must belong to ${resolveMediaGroupEmail()} to use this endpoint.`
     const error = new Error(message)
     ;(error as any).statusCode = 403
     throw error
   }
-  return normalizeEmail(candidate) || ''
+  return candidate || ''
 }

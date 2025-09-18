@@ -36,7 +36,7 @@ import type {
   CalendarSyncResponse,
   PublicEventPayload,
 } from '../../types/calendar'
-import {DEFAULT_MEDIA_GROUP_EMAIL, MEDIA_GROUP_HEADER} from '@/types/calendar'
+import {DEFAULT_MEDIA_GROUP_EMAIL, MEDIA_GROUP_HEADER} from '../../types/calendar'
 
 interface CalendarSyncToolOptions {
   apiBaseUrl?: string
@@ -621,7 +621,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         </Card>
         <Flex align="center" justify="center" style={{flex: '1 1 auto', padding: '2rem'}}>
           <Card padding={4} radius={2} tone={gatingTone} shadow={1} style={{maxWidth: 420, width: '100%'}}>
-            <Stack space={3} align="center">
+            <Stack space={3}>
               {accessState === 'pending' ? (
                 <>
                   <Spinner />

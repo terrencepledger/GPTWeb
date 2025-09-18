@@ -130,13 +130,13 @@ function sanitizeManualPayload(
 }
 
 function getEventTiming(event: calendar_v3.Schema$Event) {
-  const start = event.start?.dateTime || event.start?.date;
+  const start = event.start?.dateTime ?? event.start?.date ?? undefined;
   if (!start) {
     throw new Error('Event is missing a start date');
   }
-  const end = event.end?.dateTime || event.end?.date;
+  const end = event.end?.dateTime ?? event.end?.date ?? undefined;
   const allDay = Boolean(event.start?.date && !event.start?.dateTime);
-  const timeZone = event.start?.timeZone || event.end?.timeZone || DEFAULT_TIMEZONE;
+  const timeZone = event.start?.timeZone ?? event.end?.timeZone ?? DEFAULT_TIMEZONE;
   return {start, end, allDay, timeZone};
 }
 
@@ -229,15 +229,15 @@ async function fetchMappingByPublic(publicEventId: string): Promise<MappingDoc |
   return doc || null;
 }
 
-function toMappingInfo(doc: MappingDoc): CalendarMappingInfo {
+function toMappingInfo(doc: any): CalendarMappingInfo {
   return {
-    id: doc._id,
-    sourceEventId: doc.sourceEventId,
+    id: String(doc._id),
+    sourceEventId: String(doc.sourceEventId || ''),
     publicEventId: doc.publicEventId ?? null,
     lastPublicEventId: doc.lastPublicEventId ?? null,
     lastSyncedAt: doc.lastSyncedAt ?? null,
     payloadHash: doc.payloadHash ?? null,
-    status: doc.status ?? 'draft',
+    status: (doc.status as CalendarSyncStatus) ?? 'draft',
   };
 }
 
@@ -273,7 +273,7 @@ async function updateMapping(
     .patch(_id)
     .set(cleanObject({...updates, sourceEventId}))
     .commit({returnDocuments: true});
-  return toMappingInfo(patched as MappingDoc);
+  return toMappingInfo(patched as any);
 }
 
 async function fetchCalendarEvents(
@@ -500,6 +500,10 @@ export async function getCalendarSnapshot(options: ListOptions = {}): Promise<Ca
 
 function buildGoogleEventPayload(payload: PublicEventPayload): calendar_v3.Schema$Event {
   const {start, end, allDay, timeZone, recurrence, title, blurb, location, displayNotes} = payload;
+  const shared: Record<string, string> = {};
+  if (typeof displayNotes === 'string') {
+    shared.displayNotes = displayNotes;
+  }
   const base: calendar_v3.Schema$Event = {
     summary: title,
     description: blurb,
@@ -510,9 +514,7 @@ function buildGoogleEventPayload(payload: PublicEventPayload): calendar_v3.Schem
     guestsCanModify: false,
     guestsCanSeeOtherGuests: false,
     extendedProperties: {
-      shared: cleanObject({
-        displayNotes,
-      }),
+      shared,
     },
     reminders: {useDefault: false},
   };

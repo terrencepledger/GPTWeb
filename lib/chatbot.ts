@@ -343,7 +343,7 @@ export async function sendEscalationEmail(
   let credsSource: 'file' | 'env' | 'env-json' | 'env-pem' | 'unknown' = 'unknown';
 
   // Prefer file-based credentials first
-  const defaultKeyPath = path.join(process.cwd(), 'config', 'gmail-service-account.json');
+  const defaultKeyPath = path.join(process.cwd(), 'config', 'google-service-account.json');
   const keyFilePath = process.env.GMAIL_SERVICE_ACCOUNT_KEY_FILE || defaultKeyPath;
   const keyFileExists = fs.existsSync(keyFilePath);
   dlog('Credential key file check', { keyFilePath, exists: keyFileExists });
@@ -404,7 +404,7 @@ export async function sendEscalationEmail(
       return;
     }
     elog('Missing Gmail service account credentials.');
-    throw new Error('Missing Google service account credentials. Provide JSON at config/gmail-service-account.json (or set GMAIL_SERVICE_ACCOUNT_KEY_FILE), or set GOOGLE_SERVICE_ACCOUNT_EMAIL / GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY (or legacy GMAIL_SERVICE_ACCOUNT_EMAIL / GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY).');
+    throw new Error('Missing Gmail service account credentials. Provide JSON at config/gmail-service-account.json (or set GMAIL_SERVICE_ACCOUNT_KEY_FILE), or set GMAIL_SERVICE_ACCOUNT_EMAIL and GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY (PEM or JSON).');
   }
   dlog('Credential source in use:', credsSource);
 
