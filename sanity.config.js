@@ -36,11 +36,46 @@ try {
 const projectId = nodeEnv.SANITY_STUDIO_PROJECT_ID || nodeEnv.NEXT_PUBLIC_SANITY_PROJECT_ID || viteEnv.SANITY_STUDIO_PROJECT_ID
 const dataset = nodeEnv.SANITY_STUDIO_DATASET || nodeEnv.NEXT_PUBLIC_SANITY_DATASET || viteEnv.SANITY_STUDIO_DATASET
 
-const calendarApiBaseEnv =
-    (viteEnv && (viteEnv).SANITY_STUDIO_CALENDAR_API_BASE) ||
-    nodeEnv.SANITY_STUDIO_CALENDAR_API_BASE ||
-    nodeEnv.NEXT_PUBLIC_CALENDAR_API_BASE ||
-    undefined
+function pickFirstString(values) {
+    for (const value of values) {
+        if (typeof value === 'string') {
+            const trimmed = value.trim()
+            if (trimmed) {
+                return trimmed
+            }
+        }
+    }
+    return undefined
+}
+
+function stripTrailingSlash(value) {
+    return value.replace(/\/$/, '')
+}
+
+function withCalendarPath(value) {
+    if (!value) return undefined
+    const normalized = stripTrailingSlash(value)
+    return /\/calendar$/i.test(normalized) ? normalized : `${normalized}/api/calendar`
+}
+
+const siteOrigin = pickFirstString([
+    (viteEnv && (viteEnv).SANITY_STUDIO_SITE_ORIGIN),
+    (viteEnv && (viteEnv).NEXT_PUBLIC_SITE_ORIGIN),
+    nodeEnv.SANITY_STUDIO_SITE_ORIGIN,
+    nodeEnv.NEXT_PUBLIC_SITE_ORIGIN,
+    nodeEnv.NEXT_PUBLIC_SITE_BASE_URL,
+    nodeEnv.VERCEL_URL ? `https://${stripTrailingSlash(nodeEnv.VERCEL_URL)}` : undefined,
+]) || 'http://localhost:3000'
+
+const explicitCalendarBase = pickFirstString([
+    (viteEnv && (viteEnv).SANITY_STUDIO_CALENDAR_API_BASE),
+    nodeEnv.SANITY_STUDIO_CALENDAR_API_BASE,
+    nodeEnv.NEXT_PUBLIC_CALENDAR_API_BASE,
+])
+
+const calendarApiBaseEnv = explicitCalendarBase
+    ? stripTrailingSlash(explicitCalendarBase)
+    : withCalendarPath(siteOrigin)
 
 export default defineConfig({
     name: 'default',
