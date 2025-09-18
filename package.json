@@ -6,7 +6,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node scripts/brand-consistency.js"
+    "test": "node scripts/brand-consistency.js",
+    "sync:pages": "node scripts/sync-pages.cjs"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.7",
