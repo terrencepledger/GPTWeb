@@ -121,12 +121,17 @@ function joinApiPath(base: string, segment: string) {
 }
 
 function resolveEventTitle(event: CalendarSyncEvent) {
-  return (
-    event.title ||
-    event.publicPayload?.title ||
-    event.sanitized?.title ||
-    'Untitled event'
-  )
+  const candidates = [
+    event.title,
+    event.publicPayload?.title,
+    event.sanitized?.title,
+  ]
+  for (const candidate of candidates) {
+    if (candidate && candidate.trim()) {
+      return candidate.trim()
+    }
+  }
+  return 'Untitled event'
 }
 
 function formatDateRange(event: CalendarSyncEvent) {
@@ -418,7 +423,7 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     .calendar-tool-inspectorGrid {
       display: grid;
       gap: 1.25rem 1.5rem;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       align-items: start;
     }
     .calendar-tool-emptyState {
@@ -429,33 +434,47 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       text-align: center;
       color: var(--card-muted-fg-color);
     }
+    .fc .calendar-event {
+      border-radius: 6px;
+    }
     .calendar-event-content {
       display: flex;
-      gap: 0.45rem;
+      gap: 0.4rem;
       align-items: center;
       font-size: 0.85rem;
-      line-height: 1.3;
+      line-height: 1.25;
+      max-width: 100%;
     }
     .calendar-event-time {
       font-weight: 600;
       white-space: nowrap;
       letter-spacing: 0.01em;
+      flex-shrink: 0;
     }
     .calendar-event-title {
       flex: 1 1 auto;
       min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
-      white-space: nowrap;
+    }
+    .fc-daygrid-event .calendar-event-title {
+      white-space: normal;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      line-height: 1.2;
+      word-break: break-word;
     }
     .fc-timegrid-event .calendar-event-content {
       flex-direction: column;
       align-items: flex-start;
       gap: 0.25rem;
       font-size: 0.9rem;
+      line-height: 1.35;
     }
     .fc-timegrid-event .calendar-event-title {
       white-space: normal;
+      overflow-wrap: anywhere;
     }
     .calendar-event-internal {
       background-color: var(--calendar-internal-color) !important;
@@ -660,17 +679,20 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   const events = useMemo(() => {
     if (!data) return []
     const items = [...data.internal, ...data.public]
-    return items.map((event) => ({
-      id: `${event.source}:${event.id}`,
-      title: resolveEventTitle(event),
-      start: event.start,
-      end: event.end ?? undefined,
-      allDay: event.allDay,
-      backgroundColor: event.source === 'internal' ? internalColor : publicColor,
-      borderColor: event.source === 'internal' ? internalColor : publicColor,
-      textColor: event.source === 'internal' ? 'var(--card-fg-color)' : 'var(--card-bg-color)',
-      extendedProps: {event},
-    }))
+    return items.map((event) => {
+      const displayTitle = resolveEventTitle(event)
+      return {
+        id: `${event.source}:${event.id}`,
+        title: displayTitle,
+        start: event.start,
+        end: event.end ?? undefined,
+        allDay: event.allDay,
+        backgroundColor: event.source === 'internal' ? internalColor : publicColor,
+        borderColor: event.source === 'internal' ? internalColor : publicColor,
+        textColor: event.source === 'internal' ? 'var(--card-fg-color)' : 'var(--card-bg-color)',
+        extendedProps: {event, displayTitle},
+      }
+    })
   }, [data, internalColor, publicColor])
 
   const selectedEvent = useMemo(() => {
@@ -733,14 +755,24 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   }, [sanitizedSuggestion, selectedEvent])
 
   const renderEventContent = useCallback((arg: EventContentArg) => {
-    const event: CalendarSyncEvent | undefined = (arg.event.extendedProps as any)?.event
-    if (!event) return undefined
-    const showTime = Boolean(arg.timeText && !arg.event.allDay)
-    const title = resolveEventTitle(event)
+    const extended = arg.event.extendedProps as {
+      event?: CalendarSyncEvent
+      displayTitle?: string
+    }
+    const sourceEvent = extended?.event
+    if (!sourceEvent) return undefined
+    const displayTitle = extended?.displayTitle || resolveEventTitle(sourceEvent)
+    const timeText = arg.timeText?.trim()
+    const showTime = Boolean(timeText && !arg.event.allDay)
     return (
-      <div className="calendar-event-content">
-        {showTime ? <span className="calendar-event-time">{arg.timeText}</span> : null}
-        <span className="calendar-event-title">{title}</span>
+      <div
+        className="calendar-event-content"
+        title={displayTitle}
+        aria-label={displayTitle}
+        data-calendar-source={sourceEvent.source}
+      >
+        {showTime ? <span className="calendar-event-time">{timeText}</span> : null}
+        <span className="calendar-event-title">{displayTitle}</span>
       </div>
     )
   }, [])
@@ -897,67 +929,6 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     },
     [apiBase, authorizedEmail, formState, refresh, relatedInternal, relatedPublic, selectedEvent, toast]
   )
-
-  if (accessState !== 'authorized') {
-    const gatingTone = accessState === 'error' || accessState === 'denied' ? 'critical' : 'default'
-    const gatingMessage =
-      accessState === 'pending'
-        ? 'Confirming Media access…'
-        : accessReason ||
-          (accessState === 'denied'
-            ? `You must belong to ${accessGroup} to use this tool.`
-            : 'Unable to verify Media access at the moment.')
-
-    return (
-      <div className="calendar-tool-root">
-        <style>{calendarStyles}</style>
-        <Card padding={4} radius={0} shadow={1}>
-          <Stack space={3}>
-            <Heading size={2}>Calendar</Heading>
-            <Text size={1} muted>
-              Access to this workflow is limited to Media team members.
-            </Text>
-          </Stack>
-        </Card>
-        <Flex align="center" justify="center" style={{flex: '1 1 auto', padding: '2rem'}}>
-          <Card
-            padding={4}
-            radius={3}
-            tone={gatingTone}
-            shadow={1}
-            style={{maxWidth: 420, width: '100%'}}
-          >
-            <Stack space={3}>
-              {accessState === 'pending' ? (
-                <Flex direction="column" align="center" gap={3}>
-                  <Spinner />
-                  <Text size={1}>Confirming Media access…</Text>
-                </Flex>
-              ) : (
-                <Stack space={3} style={{textAlign: 'center'}}>
-                  <Flex align="center" justify="center">
-                    <WarningOutlineIcon />
-                  </Flex>
-                  <Text size={1}>{gatingMessage}</Text>
-                  <Button
-                    icon={RefreshIcon}
-                    text="Retry check"
-                    tone={accessState === 'error' ? 'critical' : 'primary'}
-                    onClick={triggerAccessCheck}
-                  />
-                </Stack>
-              )}
-              {accessState === 'denied' && (
-                <Text size={1} muted style={{textAlign: 'center'}}>
-                  Ask an administrator to add you to {accessGroup}.
-                </Text>
-              )}
-            </Stack>
-          </Card>
-        </Flex>
-      </div>
-    )
-  }
 
   const canPublish = selectedEvent?.source === 'internal'
   const canUpdate = Boolean(
@@ -1149,7 +1120,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
           <Stack space={1}>
             <Text size={1}>
               {selectedEvent.mapping?.publicEventId
-                ? 'Use “Sync schedule from internal calendar” to push timing changes to the linked public event.'
+                ? 'Use “Sync schedule to public calendar” to push timing changes to the linked public event.'
                 : 'Use “Publish to public calendar” to create a matching public event from this internal source.'}
             </Text>
             <Text size={1} muted>Selected event: {selectedEventTitle}</Text>
@@ -1176,7 +1147,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         state: 'ok',
         content: (
           <Text size={1}>
-            Update the public title, blurb, location, and notes, then choose “Apply public copy updates” to publish the text-only changes.
+            Update the public title, blurb, location, and notes, then choose “Publish public text updates” to publish the text-only changes.
           </Text>
         ),
       })
@@ -1240,6 +1211,68 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     selectedEventTitle,
     totalCount,
   ])
+
+
+  if (accessState !== 'authorized') {
+    const gatingTone = accessState === 'error' || accessState === 'denied' ? 'critical' : 'default'
+    const gatingMessage =
+      accessState === 'pending'
+        ? 'Confirming Media access…'
+        : accessReason ||
+          (accessState === 'denied'
+            ? `You must belong to ${accessGroup} to use this tool.`
+            : 'Unable to verify Media access at the moment.')
+
+    return (
+      <div className="calendar-tool-root">
+        <style>{calendarStyles}</style>
+        <Card padding={4} radius={0} shadow={1}>
+          <Stack space={3}>
+            <Heading size={2}>Calendar</Heading>
+            <Text size={1} muted>
+              Access to this workflow is limited to Media team members.
+            </Text>
+          </Stack>
+        </Card>
+        <Flex align="center" justify="center" style={{flex: '1 1 auto', padding: '2rem'}}>
+          <Card
+            padding={4}
+            radius={3}
+            tone={gatingTone}
+            shadow={1}
+            style={{maxWidth: 420, width: '100%'}}
+          >
+            <Stack space={3}>
+              {accessState === 'pending' ? (
+                <Flex direction="column" align="center" gap={3}>
+                  <Spinner />
+                  <Text size={1}>Confirming Media access…</Text>
+                </Flex>
+              ) : (
+                <Stack space={3} style={{textAlign: 'center'}}>
+                  <Flex align="center" justify="center">
+                    <WarningOutlineIcon />
+                  </Flex>
+                  <Text size={1}>{gatingMessage}</Text>
+                  <Button
+                    icon={RefreshIcon}
+                    text="Retry check"
+                    tone={accessState === 'error' ? 'critical' : 'primary'}
+                    onClick={triggerAccessCheck}
+                  />
+                </Stack>
+              )}
+              {accessState === 'denied' && (
+                <Text size={1} muted style={{textAlign: 'center'}}>
+                  Ask an administrator to add you to {accessGroup}.
+                </Text>
+              )}
+            </Stack>
+          </Card>
+        </Flex>
+      </div>
+    )
+  }
 
 
   return (
@@ -1324,6 +1357,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
               events={events}
               eventContent={renderEventContent}
               eventTimeFormat={{hour: 'numeric', minute: '2-digit'}}
+              slotLabelFormat={{hour: 'numeric', minute: '2-digit'}}
               nowIndicator
               dayMaxEventRows={4}
               slotEventOverlap={false}
@@ -1362,17 +1396,18 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
             ) : (
               <div className="calendar-tool-inspectorGrid">
                 <Card padding={4} radius={3} shadow={1}>
-                  <Stack space={3}>
+                  <Stack space={4}>
                     <Stack space={2}>
                       <Heading as="h3" size={1}>
-                        Publishing controls
+                        Event overview
                       </Heading>
-                      <Text size={1} muted>Decide how this event syncs with the public calendar.</Text>
+                      <Text size={1} muted>Publishing status, linked calendars, and drift checks.</Text>
                     </Stack>
-                    <Stack space={3}>
+                    <Stack space={2}>
                       <Stack space={1}>
                         <Heading size={1}>{resolveEventTitle(selectedEvent)}</Heading>
                         <Text size={1} muted>{formatDateRange(selectedEvent)}</Text>
+                        {timezoneLabel && <Text size={1} muted>Time zone: {timezoneLabel}</Text>}
                       </Stack>
                       <Flex gap={1} wrap="wrap">
                         {selectedEvent.htmlLink && (
@@ -1389,18 +1424,23 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                           icon={RefreshIcon}
                           mode="bleed"
                           tone="primary"
-                          text="Refresh"
+                          text="Refresh snapshot"
                           onClick={refresh}
                           disabled={loading || actionLoading}
                         />
                       </Flex>
-                      {canPublish && (
+                    </Stack>
+                    <Stack space={3}>
+                      <Heading as="h4" size={1}>
+                        Publishing actions
+                      </Heading>
+                      {canPublish ? (
                         <Stack space={1}>
                           <Button
                             icon={PublishIcon}
                             text={
                               selectedEvent.mapping?.publicEventId
-                                ? 'Sync schedule from internal calendar'
+                                ? 'Sync schedule to public calendar'
                                 : 'Publish to public calendar'
                             }
                             tone="positive"
@@ -1409,22 +1449,29 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                           />
                           <Text size={1} muted>
                             {selectedEvent.mapping?.publicEventId
-                              ? 'Pushes date, time, and recurrence updates from the internal calendar to the linked public event.'
-                              : 'Creates a matching event on the public calendar using this internal source.'}
+                              ? 'Overwrites the public event dates, times, and recurrence with the internal calendar schedule.'
+                              : 'Creates a public event using this internal schedule and the public details you provide.'}
                           </Text>
                         </Stack>
+                      ) : (
+                        selectedEvent.source === 'public' && (
+                          <Text size={1} muted>
+                            Open the internal source event to manage scheduling. Publishing actions originate from the internal
+                            calendar.
+                          </Text>
+                        )
                       )}
                       {canUpdate && (
                         <Stack space={1}>
                           <Button
                             icon={SyncIcon}
-                            text="Apply public copy updates"
+                            text="Publish public text updates"
                             tone="primary"
                             disabled={actionLoading}
                             onClick={() => runAction('update')}
                           />
                           <Text size={1} muted>
-                            Publishes the public title, blurb, location, and display notes without changing the event schedule.
+                            Updates the public title, blurb, location, and display notes without altering the event schedule.
                           </Text>
                         </Stack>
                       )}
@@ -1444,26 +1491,17 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                       )}
                       {!canPublish && !canUpdate && !canUnpublish && !actionLoading && (
                         <Text size={1} muted>
-                          Publishing actions will appear once the event is linked to the public calendar.
+                          Publishing actions unlock once this event is linked to the public calendar.
                         </Text>
                       )}
                       {actionLoading && <Text size={1} muted>Working…</Text>}
                     </Stack>
-                  </Stack>
-                </Card>
-                <Card padding={4} radius={3} shadow={1}>
-                  <Stack space={3}>
-                    <Stack space={2}>
-                      <Heading as="h3" size={1}>
-                        Event summary
-                      </Heading>
-                      <Text size={1} muted>Key context for this calendar entry.</Text>
-                    </Stack>
                     <Stack space={3}>
+                      <Heading as="h4" size={1}>
+                        Status & context
+                      </Heading>
                       <Stack space={1}>
-                        <Text size={1} weight="medium">
-                          Status
-                        </Text>
+                        <Text size={1} weight="medium">Status</Text>
                         <Flex align="center" gap={2} wrap="wrap">
                           {selectedEvent.mapping?.status ? (
                             <Badge
@@ -1497,9 +1535,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                         </Flex>
                       </Stack>
                       <Stack space={1}>
-                        <Text size={1} weight="medium">
-                          Calendar
-                        </Text>
+                        <Text size={1} weight="medium">Calendar</Text>
                         {calendarSummary ? (
                           <Stack space={1}>
                             <Text size={1} muted>
@@ -1521,9 +1557,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                       </Stack>
                       {selectedEvent.mapping?.publicEventId && (
                         <Stack space={1}>
-                          <Text size={1} weight="medium">
-                            Linked public event ID
-                          </Text>
+                          <Text size={1} weight="medium">Linked public event ID</Text>
                           <Text
                             size={1}
                             style={{fontFamily: 'var(--font-mono, monospace)', wordBreak: 'break-all'}}
@@ -1532,13 +1566,6 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                           </Text>
                         </Stack>
                       )}
-                      <Stack space={1}>
-                        <Text size={1} weight="medium">
-                          When
-                        </Text>
-                        <Text size={1}>{formatDateRange(selectedEvent)}</Text>
-                        {timezoneLabel && <Text size={1} muted>Time zone: {timezoneLabel}</Text>}
-                      </Stack>
                       <DriftList items={selectedEvent.drift} />
                     </Stack>
                   </Stack>
