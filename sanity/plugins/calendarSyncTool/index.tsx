@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react'
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react'
 import {definePlugin, useCurrentUser} from 'sanity'
 import {
   Badge,
@@ -27,8 +27,13 @@ import FullCalendar from '@fullcalendar/react'
 import interactionPlugin from '@fullcalendar/interaction'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import listPlugin from '@fullcalendar/list'
-import type {DatesSetArg, EventClickArg, EventContentArg, SlotLabelContentArg} from '@fullcalendar/core'
+import type {
+  EventClickArg,
+  EventContentArg,
+  EventInput,
+  EventSourceFunc,
+  SlotLabelContentArg,
+} from '@fullcalendar/core'
 
 
 import type {
@@ -379,45 +384,39 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       gap: 1.5rem;
       box-sizing: border-box;
     }
-    .calendar-tool-checklist {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
     .calendar-tool-statusList {
       display: flex;
       flex-direction: column;
       gap: 1rem;
     }
     .calendar-tool-content {
-      display: flex;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
       gap: 1.5rem;
-      min-height: 0;
-      align-items: stretch;
+      align-items: start;
     }
     .calendar-tool-calendarColumn {
-      flex: 1 1 0;
       min-width: 0;
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
     }
     .calendar-tool-detailsColumn {
-      flex: 0 0 360px;
-      min-width: 320px;
-      max-width: 460px;
+      min-width: 0;
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
     }
     .calendar-tool-calendarCard {
       position: relative;
-      flex: 1 1 auto;
-      min-height: 520px;
+      display: flex;
+      flex-direction: column;
+      min-height: 600px;
       overflow: hidden;
     }
     .calendar-tool-calendarCard .fc {
-      height: 100%;
+      flex: 1 1 auto;
+      min-height: 0;
     }
     .calendar-tool-emptyState {
       flex: 1 1 auto;
@@ -438,6 +437,7 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       font-size: 0.85rem;
       line-height: 1.25;
       max-width: 100%;
+      overflow: hidden;
     }
     .calendar-event-time {
       font-weight: 600;
@@ -458,6 +458,11 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       -webkit-box-orient: vertical;
       line-height: 1.25;
       word-break: break-word;
+    }
+    .fc-daygrid-event .calendar-event-content {
+      align-items: flex-start;
+      gap: 0.25rem;
+      flex-direction: column;
     }
     .fc-timegrid-event .calendar-event-content {
       flex-direction: column;
@@ -521,12 +526,7 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     }
     @media (max-width: 1200px) {
       .calendar-tool-content {
-        flex-direction: column;
-      }
-      .calendar-tool-detailsColumn {
-        max-width: none;
-        min-width: 0;
-        flex: 1 1 auto;
+        grid-template-columns: minmax(0, 1fr);
       }
     }
     @media (max-width: 800px) {
@@ -574,13 +574,15 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   const [accessNonce, setAccessNonce] = useState(0)
   const triggerAccessCheck = useCallback(() => setAccessNonce((value) => value + 1), [])
 
-  const [range, setRange] = useState<{start: string; end: string} | null>(null)
   const [loading, setLoading] = useState(false)
   const [errorState, setErrorState] = useState<{message: string; details?: CalendarAccessDetails} | null>(null)
   const [data, setData] = useState<CalendarSyncResponse | null>(null)
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
   const [formState, setFormState] = useState<FormState | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
+  const calendarRef = useRef<FullCalendar | null>(null)
+  const activeFetchRef = useRef<AbortController | null>(null)
+  const fetchIdRef = useRef(0)
 
   useEffect(() => {
     let cancelled = false
@@ -650,13 +652,45 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     }
   }, [apiBase, hasCurrentUser, normalizedUserEmail, accessNonce])
 
-  const fetchSnapshot = useCallback(async (params: {start: string; end: string}) => {
-    if (!authorizedEmail) {
-      return
+  useEffect(() => {
+    if (accessState !== 'authorized') {
+      setData(null)
+      setSelectedKey(null)
+      setFormState(null)
+      setErrorState(null)
+      setLoading(false)
+      if (activeFetchRef.current) {
+        activeFetchRef.current.abort()
+        activeFetchRef.current = null
+      }
     }
-    setLoading(true)
-    setErrorState(null)
-    try {
+  }, [accessState])
+
+  const projectEvents = useCallback(
+    (payload: CalendarSyncResponse): EventInput[] => {
+      const items = [...payload.internal, ...payload.public]
+      return items.map((event) => {
+        const displayTitle = resolveEventTitle(event)
+        const baseColors = event.source === 'internal' ? internalColor : publicColor
+        const textColor = event.source === 'internal' ? 'var(--card-fg-color)' : 'var(--card-bg-color)'
+        return {
+          id: `${event.source}:${event.id}`,
+          title: displayTitle,
+          start: event.start,
+          end: event.end ?? undefined,
+          allDay: event.allDay,
+          backgroundColor: baseColors,
+          borderColor: baseColors,
+          textColor,
+          extendedProps: {event, displayTitle},
+        }
+      })
+    },
+    [internalColor, publicColor],
+  )
+
+  const requestSnapshot = useCallback(
+    async (params: {start: string; end: string}, signal: AbortSignal) => {
       const endpoint = joinApiPath(apiBase, 'events')
       const url = endpoint.startsWith('http://') || endpoint.startsWith('https://')
         ? new URL(endpoint)
@@ -665,61 +699,77 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       url.searchParams.set('timeMax', params.end)
       const headers: Record<string, string> = {}
       headers[MEDIA_GROUP_HEADER] = authorizedEmail
-      const res = await fetch(url.toString(), {credentials: 'same-origin', headers})
+      const res = await fetch(url.toString(), {credentials: 'same-origin', headers, signal})
       if (!res.ok) {
         const payload = (await res.json().catch(() => ({}))) as {
           error?: string
           details?: CalendarAccessDetails
         }
-        const message = payload.error || res.statusText || 'Request failed'
-        setErrorState({message, details: payload.details})
+        const error = new Error(payload.error || res.statusText || 'Request failed') as Error & {
+          details?: CalendarAccessDetails
+        }
+        error.details = payload.details
+        throw error
+      }
+      return (await res.json()) as CalendarSyncResponse
+    },
+    [apiBase, authorizedEmail],
+  )
+
+  const eventSource = useCallback<EventSourceFunc>(
+    (info, successCallback, failureCallback) => {
+      if (accessState !== 'authorized' || !authorizedEmail) {
+        successCallback([])
         return
       }
-      const payload = (await res.json()) as CalendarSyncResponse
-      setData(payload)
-      setErrorState(null)
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load events'
-      setErrorState({message})
-    } finally {
-      setLoading(false)
-    }
-  }, [apiBase, authorizedEmail])
 
-  useEffect(() => {
-    if (range && accessState === 'authorized') {
-      fetchSnapshot(range)
-    }
-  }, [range, fetchSnapshot, accessState])
+      const params = {start: info.start.toISOString(), end: info.end.toISOString()}
 
-  useEffect(() => {
-    if (accessState !== 'authorized') {
-      setRange(null)
-      setData(null)
-      setSelectedKey(null)
-      setFormState(null)
-      setErrorState(null)
-    }
-  }, [accessState])
-
-  const events = useMemo(() => {
-    if (!data) return []
-    const items = [...data.internal, ...data.public]
-    return items.map((event) => {
-      const displayTitle = resolveEventTitle(event)
-      return {
-        id: `${event.source}:${event.id}`,
-        title: displayTitle,
-        start: event.start,
-        end: event.end ?? undefined,
-        allDay: event.allDay,
-        backgroundColor: event.source === 'internal' ? internalColor : publicColor,
-        borderColor: event.source === 'internal' ? internalColor : publicColor,
-        textColor: event.source === 'internal' ? 'var(--card-fg-color)' : 'var(--card-bg-color)',
-        extendedProps: {event, displayTitle},
+      if (activeFetchRef.current) {
+        activeFetchRef.current.abort()
       }
-    })
-  }, [data, internalColor, publicColor])
+
+      const controller = new AbortController()
+      activeFetchRef.current = controller
+      const fetchId = ++fetchIdRef.current
+
+      setLoading(true)
+      setErrorState(null)
+
+      requestSnapshot(params, controller.signal)
+        .then((payload) => {
+          if (controller.signal.aborted) return
+          if (fetchId === fetchIdRef.current) {
+            setData(payload)
+            setErrorState(null)
+          }
+          successCallback(projectEvents(payload))
+        })
+        .catch((err) => {
+          if (controller.signal.aborted) return
+          const message = err instanceof Error ? err.message : 'Failed to load events'
+          const details = err instanceof Error && 'details' in err ? ((err as any).details as CalendarAccessDetails | undefined) : undefined
+          if (fetchId === fetchIdRef.current) {
+            setErrorState({message, details})
+          }
+          if (typeof failureCallback === 'function') {
+            failureCallback(err instanceof Error ? err : new Error(message))
+          } else {
+            successCallback([])
+          }
+        })
+        .finally(() => {
+          if (controller.signal.aborted) return
+          if (fetchId === fetchIdRef.current) {
+            setLoading(false)
+          }
+          if (activeFetchRef.current === controller) {
+            activeFetchRef.current = null
+          }
+        })
+    },
+    [accessState, authorizedEmail, projectEvents, requestSnapshot],
+  )
 
   const selectedEvent = useMemo(() => {
     if (!data || !selectedKey) return undefined
@@ -736,6 +786,26 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       setFormState(null)
     }
   }, [selectedEvent])
+
+  useEffect(() => {
+    if (selectedKey && !selectedEvent) {
+      setSelectedKey(null)
+    }
+  }, [selectedEvent, selectedKey])
+
+  useEffect(() => {
+    if (calendarRef.current) {
+      calendarRef.current.getApi().rerenderEvents()
+    }
+  }, [selectedKey])
+
+  useEffect(() => {
+    return () => {
+      if (activeFetchRef.current) {
+        activeFetchRef.current.abort()
+      }
+    }
+  }, [])
 
   const relatedInternal = useMemo(() => {
     if (!data || !selectedEvent) return undefined
@@ -843,12 +913,6 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     [slotLabelFormatter],
   )
 
-  const handleDatesSet = useCallback((args: DatesSetArg) => {
-    const start = args.start.toISOString()
-    const end = args.end.toISOString()
-    setRange({start, end})
-  }, [])
-
   const handleEventClick = useCallback((arg: EventClickArg) => {
     const event: CalendarSyncEvent | undefined = arg.event.extendedProps.event
     if (event) {
@@ -872,11 +936,12 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     return classes
   }, [selectedKey])
 
-  const refresh = useCallback(async () => {
-    if (range && accessState === 'authorized') {
-      await fetchSnapshot(range)
+  const refresh = useCallback(() => {
+    if (accessState !== 'authorized') return
+    if (calendarRef.current) {
+      calendarRef.current.getApi().refetchEvents()
     }
-  }, [fetchSnapshot, range, accessState])
+  }, [accessState])
 
   const handleOpenInGoogle = useCallback(() => {
     if (selectedEvent?.htmlLink) {
@@ -984,7 +1049,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
           setActionLoading(false)
           return
         }
-        await refresh()
+        refresh()
         toast.push({status: 'success', title: `${actionLabels[action]} complete`})
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Action failed'
@@ -1010,9 +1075,6 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
 
   const internalSummary = data?.calendars.internal
   const publicSummary = data?.calendars.public
-  const internalCount = data?.internal.length ?? 0
-  const publicCount = data?.public.length ?? 0
-  const totalCount = internalCount + publicCount
   const selectedEventTitle = selectedEvent ? resolveEventTitle(selectedEvent) : ''
   const driftNotices = selectedEvent?.drift ?? []
   const driftHasError = driftNotices.some((notice) => notice.level === 'error')
@@ -1035,7 +1097,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
 
   const calendarButtonText = useMemo(
     () => ({
-      listMonth: 'Month schedule',
+      dayGridMonth: 'Month grid',
       timeGridWeek: 'Week grid',
       timeGridDay: 'Day grid',
     }),
@@ -1044,9 +1106,8 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
 
   const calendarViewOptions = useMemo(
     () => ({
-      listMonth: {
-        displayEventTime: true,
-        noEventsText: 'No scheduled events this month.',
+      dayGridMonth: {
+        dayMaxEventRows: 4,
       },
       timeGridWeek: {
         slotLabelFormat: {hour: 'numeric', minute: '2-digit'},
@@ -1100,7 +1161,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       })
     }
 
-    if (errorState?.details) {
+    if (errorState) {
       items.push({
         id: 'access',
         title: 'Public and internal calendar access check',
@@ -1108,7 +1169,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         content: (
           <Stack space={3}>
             <Text size={1}>{errorState.message}</Text>
-            <ErrorDetails details={errorState.details} />
+            {errorState.details && <ErrorDetails details={errorState.details} />}
           </Stack>
         ),
       })
@@ -1126,6 +1187,9 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
               internalMeta={internalSummary}
               publicMeta={publicSummary}
             />
+            {generatedAtLabel && (
+              <Text size={1} muted>Events last refreshed {generatedAtLabel}.</Text>
+            )}
           </Stack>
         ),
       })
@@ -1145,143 +1209,6 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       })
     }
 
-    if (loading && !data) {
-      items.push({
-        id: 'loading',
-        title: 'Internal calendar event loading',
-        state: 'pending',
-        content: <Text size={1}>Loading events from Google Calendar…</Text>,
-      })
-    } else if (errorState && !data) {
-      items.push({
-        id: 'loading',
-        title: 'Internal calendar event loading',
-        state: 'error',
-        content: <Text size={1}>{errorState.message}</Text>,
-      })
-    } else if (totalCount > 0) {
-      items.push({
-        id: 'loading',
-        title: 'Internal calendar event loading',
-        state: 'ok',
-        content: (
-          <Stack space={1}>
-            <Text size={1}>
-              Loaded {internalCount} internal and {publicCount} public events for the selected range.
-            </Text>
-            {generatedAtLabel && <Text size={1} muted>Snapshot updated {generatedAtLabel}.</Text>}
-          </Stack>
-        ),
-      })
-    } else {
-      items.push({
-        id: 'loading',
-        title: 'Internal calendar event loading',
-        state: loading ? 'pending' : 'info',
-        content: <Text size={1}>Use the calendar navigation to request events.</Text>,
-      })
-    }
-
-    if (!selectedEvent) {
-      items.push({
-        id: 'publish',
-        title: 'Publishing from internal calendar to public calendar',
-        state: 'info',
-        content: <Text size={1}>Select an internal event to publish it to the public calendar.</Text>,
-      })
-      items.push({
-        id: 'editing',
-        title: 'Editing public calendar events',
-        state: 'info',
-        content: <Text size={1}>Select a linked event to edit its public-facing copy.</Text>,
-      })
-      items.push({
-        id: 'drift',
-        title: 'Updating both calendars & drift checks',
-        state: 'info',
-        content: <Text size={1}>Choose an event to review sync status between calendars.</Text>,
-      })
-      return items
-    }
-
-    if (selectedEvent.source === 'internal') {
-      items.push({
-        id: 'publish',
-        title: 'Publishing from internal calendar to public calendar',
-        state: 'ok',
-        content: (
-          <Stack space={1}>
-            <Text size={1}>
-              {selectedEvent.mapping?.publicEventId
-                ? 'Use “Sync schedule to public calendar” to push timing changes to the linked public event.'
-                : 'Use “Publish to public calendar” to create a matching public event from this internal source.'}
-            </Text>
-            <Text size={1} muted>Selected event: {selectedEventTitle}</Text>
-          </Stack>
-        ),
-      })
-    } else {
-      items.push({
-        id: 'publish',
-        title: 'Publishing from internal calendar to public calendar',
-        state: 'warn',
-        content: (
-          <Text size={1}>
-            This entry lives on the public calendar. Open its internal source event to publish scheduling changes.
-          </Text>
-        ),
-      })
-    }
-
-    if (selectedEvent.source === 'public' || selectedEvent.mapping?.publicEventId) {
-      items.push({
-        id: 'editing',
-        title: 'Editing public calendar events',
-        state: 'ok',
-        content: (
-          <Text size={1}>
-            Update the public title, blurb, location, and notes, then choose “Publish public text updates” to publish the text-only changes.
-          </Text>
-        ),
-      })
-    } else {
-      items.push({
-        id: 'editing',
-        title: 'Editing public calendar events',
-        state: 'warn',
-        content: (
-          <Text size={1}>
-            Publish this internal event first. Public-only edits unlock after the event is linked to the public calendar.
-          </Text>
-        ),
-      })
-    }
-
-    if (driftNotices.length === 0) {
-      items.push({
-        id: 'drift',
-        title: 'Updating both calendars & drift checks',
-        state: 'ok',
-        content: <Text size={1}>No differences detected between the internal and public copies.</Text>,
-      })
-    } else {
-      items.push({
-        id: 'drift',
-        title: 'Updating both calendars & drift checks',
-        state: driftHasError ? 'error' : driftHasWarning ? 'warn' : 'info',
-        content: (
-          <Stack space={2}>
-            <Text size={1}>
-              {driftHasError
-                ? 'Important: the public calendar no longer matches the internal source. Review the notices below.'
-                : 'Review the notices below to understand how the calendars have diverged.'}
-            </Text>
-            <DriftList items={driftNotices} />
-          </Stack>
-        ),
-      })
-    }
-
     return items
   }, [
     accessGroup,
@@ -1289,20 +1216,13 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     accessState,
     authorizedEmail,
     data,
-    driftHasError,
-    driftHasWarning,
-    driftNotices,
     errorState,
+    generatedAtLabel,
     internalColor,
-    internalCount,
     internalSummary,
     loading,
     publicColor,
-    publicCount,
     publicSummary,
-    selectedEvent,
-    selectedEventTitle,
-    totalCount,
   ])
 
 
@@ -1404,13 +1324,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         </Stack>
       </Card>
       <Card padding={4} radius={3} shadow={1}>
-        <Stack space={4} className="calendar-tool-checklist">
-          <Stack space={2}>
-            <Heading as="h2" size={1}>
-              Workflow checklist
-            </Heading>
-            <Text size={1} muted>Follow these checkpoints to keep both calendars aligned.</Text>
-          </Stack>
+        <Stack space={4}>
           <div className="calendar-tool-statusList">
             {statusItems.map((item) => (
               <StatusItem key={item.id} title={item.title} state={item.state}>
@@ -1441,25 +1355,23 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         <div className="calendar-tool-calendarColumn">
           <Card className="calendar-tool-calendarCard" padding={3} radius={3} shadow={1}>
             <FullCalendar
-              plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
-              initialView="listMonth"
+              ref={calendarRef}
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+              initialView="dayGridMonth"
               headerToolbar={{
                 left: 'prev,next today',
                 center: 'title',
-                right: 'listMonth,timeGridWeek,timeGridDay',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay',
               }}
               buttonText={calendarButtonText}
               views={calendarViewOptions}
-              height="100%"
-              events={events}
+              events={eventSource}
               eventContent={renderEventContent}
               eventTimeFormat={{hour: 'numeric', minute: '2-digit'}}
               slotDuration="00:30:00"
               slotLabelContent={renderSlotLabel}
               nowIndicator
-              dayMaxEventRows={4}
               slotEventOverlap={false}
-              datesSet={handleDatesSet}
               eventClick={handleEventClick}
               eventClassNames={eventClassNames}
             />
@@ -1477,7 +1389,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                       <Text size={1}>{errorState.message}</Text>
                     </Stack>
                     <ErrorDetails details={errorState.details} />
-                    <Button text="Retry" tone="critical" onClick={() => range && fetchSnapshot(range)} />
+                    <Button text="Retry" tone="critical" onClick={refresh} />
                   </Stack>
                 </Card>
               </Flex>
@@ -1533,14 +1445,14 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                     {canPublish ? (
                       <Stack space={1}>
                         <Text size={1} weight="medium">
-                          Sync the schedule
+                          Sync schedule to public calendar
                         </Text>
                         <Button
                           icon={PublishIcon}
                           text={
                             selectedEvent.mapping?.publicEventId
-                              ? 'Sync schedule from internal calendar'
-                              : 'Publish to public calendar'
+                              ? 'Sync schedule to public calendar'
+                              : 'Publish schedule to public calendar'
                           }
                           tone="positive"
                           disabled={actionLoading}
@@ -1548,8 +1460,8 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                         />
                         <Text size={1} muted>
                           {selectedEvent.mapping?.publicEventId
-                            ? 'Pushes start/end times and recurrence from the internal event to the linked public copy.'
-                            : 'Creates a new public event using this internal schedule and the public details below.'}
+                            ? 'Copies start/end times and recurrence from the internal event into the linked public listing.'
+                            : 'Creates a public event using this internal schedule plus the public details you provide below.'}
                         </Text>
                       </Stack>
                     ) : (
@@ -1563,17 +1475,17 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                     {canUpdate && (
                       <Stack space={1}>
                         <Text size={1} weight="medium">
-                          Publish public write-up
+                          Publish public details only
                         </Text>
                         <Button
                           icon={SyncIcon}
-                          text="Publish public write-up updates"
+                          text="Publish public details only"
                           tone="primary"
                           disabled={actionLoading}
                           onClick={() => runAction('update')}
                         />
                         <Text size={1} muted>
-                          Updates the public title, blurb, location, and display notes without modifying the event schedule.
+                          Updates the public title, blurb, location, and display notes while leaving the event schedule untouched.
                         </Text>
                       </Stack>
                     )}
