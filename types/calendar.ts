@@ -72,6 +72,7 @@ export interface CalendarAccessDetails {
   envVar: CalendarEnvVar;
   calendarId: string;
   serviceAccountEmail?: string | null;
+  impersonatedUserEmail?: string | null;
   upstreamStatus?: number;
   upstreamMessage?: string;
 }
@@ -90,6 +91,7 @@ export interface CalendarSyncResponse {
     timezone: string;
     generatedAt: string;
     serviceAccountEmail?: string | null;
+    impersonatedUserEmail?: string | null;
   };
 }
 

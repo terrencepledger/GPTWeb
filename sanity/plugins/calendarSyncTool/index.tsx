@@ -27,7 +27,7 @@ import FullCalendar from '@fullcalendar/react'
 import interactionPlugin from '@fullcalendar/interaction'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import type {DatesSetArg, EventClickArg} from '@fullcalendar/core'
+import type {DatesSetArg, EventClickArg, EventContentArg} from '@fullcalendar/core'
 
 
 import type {
@@ -303,6 +303,9 @@ function ErrorDetails(props: {details?: CalendarAccessDetails}) {
         {props.details.serviceAccountEmail && (
           <Text size={1} muted>Service account: {props.details.serviceAccountEmail}</Text>
         )}
+        {props.details.impersonatedUserEmail && (
+          <Text size={1} muted>Impersonating: {props.details.impersonatedUserEmail}</Text>
+        )}
       </Stack>
     </Card>
   )
@@ -360,6 +363,46 @@ const calendarStyles = `
   }
   .calendar-tool-calendarInner .fc {
     height: 100%;
+  }
+  .calendar-event-content {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    line-height: 1.2;
+  }
+  .calendar-event-time {
+    font-weight: 600;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+  }
+  .calendar-event-title {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .calendar-event-internal .calendar-event-content {
+    color: var(--card-fg-color);
+  }
+  .calendar-event-public .calendar-event-content {
+    color: var(--card-bg-color);
+  }
+  .fc-daygrid-event .calendar-event-content {
+    justify-content: flex-start;
+  }
+  .fc-daygrid-dot-event .calendar-event-content {
+    font-size: 0.8rem;
+  }
+  .fc-timegrid-event .calendar-event-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+  }
+  .fc-timegrid-event .calendar-event-time {
+    font-size: 0.95em;
+  }
+  .fc-timegrid-event .calendar-event-title {
+    font-size: 0.95em;
   }
   .calendar-event-selected {
     box-shadow: 0 0 0 2px var(--card-focus-ring-color) inset !important;
@@ -539,6 +582,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       allDay: event.allDay,
       backgroundColor: event.source === 'internal' ? internalColor : publicColor,
       borderColor: event.source === 'internal' ? internalColor : publicColor,
+      textColor: event.source === 'internal' ? 'var(--card-fg-color)' : 'var(--card-bg-color)',
       extendedProps: {event},
     }))
   }, [data, internalColor, publicColor])
@@ -602,6 +646,18 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     return hasSeriousDrift(selectedEvent.drift)
   }, [sanitizedSuggestion, selectedEvent])
 
+  const renderEventContent = useCallback((arg: EventContentArg) => {
+    const event: CalendarSyncEvent | undefined = (arg.event.extendedProps as any)?.event
+    if (!event) return undefined
+    const showTime = Boolean(arg.timeText && !arg.event.allDay)
+    return (
+      <div className="calendar-event-content">
+        {showTime ? <span className="calendar-event-time">{arg.timeText}</span> : null}
+        <span className="calendar-event-title">{event.title || arg.event.title}</span>
+      </div>
+    )
+  }, [])
+
   const handleDatesSet = useCallback((args: DatesSetArg) => {
     const start = args.start.toISOString()
     const end = args.end.toISOString()
@@ -619,6 +675,8 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     const event: CalendarSyncEvent | undefined = (arg.event.extendedProps as any)?.event
     const classes: string[] = []
     if (event) {
+      classes.push('calendar-event')
+      classes.push(`calendar-event-${event.source}`)
       if (hasSeriousDrift(event.drift)) {
         classes.push('calendar-event-drift')
       }
@@ -846,13 +904,22 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                     {authorizedEmail ? `Signed in as ${authorizedEmail}` : 'Signed-in user unavailable'}
                   </Text>
                 </Flex>
-                <Text size={1} muted>
-                  {data?.meta
-                    ? data.meta.serviceAccountEmail
-                      ? `Service account: ${data.meta.serviceAccountEmail}`
-                      : 'Service account email is not configured.'
-                    : 'Loading service account info…'}
-                </Text>
+                {data?.meta ? (
+                  <Stack space={1}>
+                    <Text size={1} muted>
+                      {data.meta.serviceAccountEmail
+                        ? `Service account: ${data.meta.serviceAccountEmail}`
+                        : 'Service account email is not configured.'}
+                    </Text>
+                    <Text size={1} muted>
+                      {data.meta.impersonatedUserEmail
+                        ? `Impersonating: ${data.meta.impersonatedUserEmail}`
+                        : 'Impersonation email is not configured.'}
+                    </Text>
+                  </Stack>
+                ) : (
+                  <Text size={1} muted>Loading calendar credentials…</Text>
+                )}
               </Stack>
             </Stack>
             <Stack space={2} style={{flex: '1 1 320px', minWidth: 280}}>
@@ -878,6 +945,11 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
               headerToolbar={{left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay'}}
               height="100%"
               events={events}
+              eventContent={renderEventContent}
+              eventTimeFormat={{hour: 'numeric', minute: '2-digit'}}
+              nowIndicator
+              dayMaxEventRows={4}
+              slotEventOverlap={false}
               datesSet={handleDatesSet}
               eventClick={handleEventClick}
               eventClassNames={eventClassNames}
@@ -1225,11 +1297,11 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
 }
 
 export const calendarSyncTool = definePlugin<CalendarSyncToolOptions>((options = {}) => ({
-  name: 'calendar-sync-plugin',
+  name: 'calendar-tool-plugin',
   tools: (prev) => [
     ...prev,
     {
-      name: 'calendar-sync',
+      name: 'calendar',
       title: 'Calendar',
       icon: CalendarIcon,
       component: () => <CalendarSyncToolComponent {...options} />,

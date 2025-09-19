@@ -34,6 +34,40 @@ const DEFAULT_TIMEZONE =
   process.env.NEXT_PUBLIC_DEFAULT_TZ ||
   'America/Chicago';
 
+function extractFirstEmail(value?: string | null): string | null {
+  if (!value) return null;
+  const match = String(value)
+    .trim()
+    .match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+  return match ? match[0].toLowerCase() : null;
+}
+
+function resolveCalendarImpersonationEmail(): string | null {
+  const candidates: Array<string | undefined | null> = [
+    process.env.GOOGLE_CALENDAR_IMPERSONATION_EMAIL,
+    process.env.GOOGLE_CALENDAR_SUBJECT,
+    process.env.GOOGLE_WORKSPACE_CALENDAR_SUBJECT,
+    process.env.GOOGLE_WORKSPACE_IMPERSONATION_EMAIL,
+    process.env.GOOGLE_WORKSPACE_DIRECTORY_SUBJECT,
+    process.env.GOOGLE_WORKSPACE_ADMIN_EMAIL,
+    process.env.GOOGLE_SERVICE_ACCOUNT_SUBJECT,
+    process.env.GOOGLE_ADMIN_EMAIL,
+    process.env.EMAIL_IMPERSONATION_ADDRESS,
+    process.env.FORM_FROM_EMAIL,
+    process.env.GMAIL_SERVICE_ACCOUNT_SUBJECT,
+  ];
+
+  for (const candidate of candidates) {
+    const email = extractFirstEmail(candidate);
+    if (email) {
+      return email;
+    }
+  }
+  return null;
+}
+
+const SERVICE_ACCOUNT_SUBJECT = resolveCalendarImpersonationEmail();
+
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
 
 const CALENDAR_ENV_MAP: Record<CalendarSource, CalendarEnvVar> = {
@@ -97,7 +131,9 @@ export class CalendarAccessError extends Error {
     const envVar = CALENDAR_ENV_MAP[source];
     const label = source === 'internal' ? 'internal' : 'public';
     const reasonSuffix = upstreamMessage ? ` (${upstreamMessage})` : '';
-    const serviceAccountHint = SERVICE_ACCOUNT_EMAIL
+    const serviceAccountHint = SERVICE_ACCOUNT_SUBJECT
+      ? `Ensure the calendar is shared with ${SERVICE_ACCOUNT_SUBJECT} so the service account can impersonate it.`
+      : SERVICE_ACCOUNT_EMAIL
       ? `Share the calendar with ${SERVICE_ACCOUNT_EMAIL} if it is not already.`
       : 'Share the calendar with your configured Google service account.';
     const message = [
@@ -114,6 +150,7 @@ export class CalendarAccessError extends Error {
       envVar,
       calendarId,
       serviceAccountEmail: SERVICE_ACCOUNT_EMAIL || null,
+      impersonatedUserEmail: SERVICE_ACCOUNT_SUBJECT || null,
       upstreamStatus,
       upstreamMessage,
     };
@@ -170,11 +207,15 @@ function getCalendarClient() {
   if (!SERVICE_ACCOUNT_EMAIL || !SERVICE_ACCOUNT_KEY) {
     throw new Error('Google service account credentials are not configured');
   }
-  const auth = new google.auth.JWT({
+  const authConfig: google.auth.JWTOptions = {
     email: SERVICE_ACCOUNT_EMAIL,
     key: SERVICE_ACCOUNT_KEY,
     scopes: SCOPES,
-  });
+  };
+  if (SERVICE_ACCOUNT_SUBJECT) {
+    authConfig.subject = SERVICE_ACCOUNT_SUBJECT;
+  }
+  const auth = new google.auth.JWT(authConfig);
   cachedCalendar = google.calendar({version: 'v3', auth});
   return cachedCalendar;
 }
@@ -600,6 +641,7 @@ export async function getCalendarSnapshot(options: ListOptions = {}): Promise<Ca
       timezone: DEFAULT_TIMEZONE,
       generatedAt: new Date().toISOString(),
       serviceAccountEmail: SERVICE_ACCOUNT_EMAIL || null,
+      impersonatedUserEmail: SERVICE_ACCOUNT_SUBJECT || null,
     },
   };
 }
