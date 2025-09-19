@@ -234,6 +234,53 @@ function formatDateRange(event: CalendarSyncEvent) {
   return `${startLabel} → ${dateFormatter.format(end)} · ${timeFormatter.format(end)}`
 }
 
+function getEventTimezone(event: CalendarSyncEvent, fallback?: string) {
+  return (
+    event.sanitized?.timeZone ||
+    event.publicPayload?.timeZone ||
+    fallback ||
+    undefined
+  )
+}
+
+function formatEventTimeLabel(event: CalendarSyncEvent, fallbackTimezone?: string) {
+  if (event.allDay) return ''
+  const start = new Date(event.start)
+  if (!(start instanceof Date) || Number.isNaN(start.getTime())) return ''
+
+  let end: Date | null = null
+  if (event.end) {
+    const maybeEnd = new Date(event.end)
+    if (!Number.isNaN(maybeEnd.getTime())) {
+      end = maybeEnd
+    }
+  }
+
+  const timeZone = getEventTimezone(event, fallbackTimezone)
+  const options: Intl.DateTimeFormatOptions = {
+    hour: 'numeric',
+    minute: '2-digit',
+  }
+  if (timeZone) {
+    options.timeZone = timeZone
+  }
+
+  let formatter: Intl.DateTimeFormat
+  try {
+    formatter = new Intl.DateTimeFormat(undefined, options)
+  } catch (_err) {
+    formatter = new Intl.DateTimeFormat(undefined, {hour: 'numeric', minute: '2-digit'})
+  }
+
+  const startLabel = formatter.format(start)
+  if (end && end.getTime() !== start.getTime()) {
+    const endLabel = formatter.format(end)
+    return `${startLabel} – ${endLabel}`
+  }
+
+  return startLabel
+}
+
 function buildFormState(event: CalendarSyncEvent): FormState {
   const source = event.publicPayload || event.sanitized || ({} as PublicEventPayload)
   return {
@@ -462,6 +509,8 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       min-width: 0;
       overflow: hidden;
       text-overflow: ellipsis;
+      word-break: break-word;
+      overflow-wrap: anywhere;
     }
     .fc-daygrid-event .calendar-event-title {
       white-space: normal;
@@ -497,6 +546,7 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     .calendar-event-listItemTitle {
       font-weight: 600;
       word-break: break-word;
+      overflow-wrap: anywhere;
     }
     .calendar-event-note {
       font-size: 0.75rem;
@@ -511,12 +561,10 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       border-color: var(--calendar-public-color) !important;
     }
     .calendar-event-internal .calendar-event-content,
-    .calendar-event-internal .calendar-event-listItem {
-      color: var(--card-fg-color);
-    }
+    .calendar-event-internal .calendar-event-listItem,
     .calendar-event-public .calendar-event-content,
     .calendar-event-public .calendar-event-listItem {
-      color: var(--card-bg-color);
+      color: inherit;
     }
     .calendar-event-selected {
       box-shadow: 0 0 0 2px var(--card-focus-ring-color) inset !important;
@@ -527,7 +575,8 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     .calendar-slot-label {
       font-size: 0.75rem;
       font-weight: 600;
-      color: var(--card-muted-fg-color);
+      color: var(--card-fg-color);
+      opacity: 0.85;
       letter-spacing: 0.02em;
     }
     .fc .fc-timegrid-slot-label-cushion {
@@ -672,7 +721,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       return items.map((event) => {
         const displayTitle = resolveEventTitle(event)
         const baseColors = event.source === 'internal' ? internalColor : publicColor
-        const textColor = event.source === 'internal' ? 'var(--card-fg-color)' : 'var(--card-bg-color)'
+        const textColor = 'var(--card-fg-color)'
         return {
           id: `${event.source}:${event.id}`,
           title: displayTitle,
@@ -822,14 +871,16 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     return selectedEvent.source === 'internal' ? data.calendars.internal : data.calendars.public
   }, [data, selectedEvent])
 
+  const calendarTimezone = data?.meta.timezone
+
   const timezoneLabel = useMemo(() => {
     if (!selectedEvent) return undefined
     return (
       selectedEvent.sanitized?.timeZone ||
       selectedEvent.publicPayload?.timeZone ||
-      data?.meta.timezone
+      calendarTimezone
     )
-  }, [data?.meta.timezone, selectedEvent])
+  }, [calendarTimezone, selectedEvent])
 
   const sanitizedSuggestion = useMemo(() => {
     if (!selectedEvent) return undefined
@@ -861,13 +912,13 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       }
       const sourceEvent = extended?.event
       const fallbackTitle = (extended?.displayTitle || arg.event.title || '').trim()
+      const baseTimeText = arg.timeText?.trim()
       if (!sourceEvent) {
         const displayTitle = fallbackTitle || 'Untitled event'
-        const timeText = arg.timeText?.trim()
-        const showTime = Boolean(timeText && !arg.event.allDay)
+        const timeLabel = !arg.event.allDay && baseTimeText ? baseTimeText : ''
         return (
           <div className="calendar-event-content" title={displayTitle} aria-label={displayTitle}>
-            {showTime ? <span className="calendar-event-time">{timeText}</span> : null}
+            {timeLabel ? <span className="calendar-event-time">{timeLabel}</span> : null}
             <span className="calendar-event-title">{displayTitle}</span>
           </div>
         )
@@ -875,10 +926,10 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       const resolvedTitle =
         (extended?.displayTitle && extended.displayTitle.trim()) || resolveEventTitle(sourceEvent) || 'Untitled event'
       const displayTitle = resolvedTitle || 'Untitled event'
-      const timeText = arg.timeText?.trim()
+      const fallbackTime = formatEventTimeLabel(sourceEvent, calendarTimezone)
       const isListView = Boolean(arg.view?.type && arg.view.type.startsWith('list'))
       if (isListView) {
-        const timeLabel = timeText || (arg.event.allDay ? 'All day' : '')
+        const timeLabel = baseTimeText || (arg.event.allDay ? 'All day' : fallbackTime)
         const locationText =
           sourceEvent.publicPayload?.location ||
           sourceEvent.sanitized?.location ||
@@ -897,7 +948,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
           </div>
         )
       }
-      const showTime = Boolean(timeText && !arg.event.allDay)
+      const timeLabel = !arg.event.allDay ? baseTimeText || fallbackTime : ''
       return (
         <div
           className="calendar-event-content"
@@ -905,12 +956,12 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
           aria-label={displayTitle}
           data-calendar-source={sourceEvent.source}
         >
-          {showTime ? <span className="calendar-event-time">{timeText}</span> : null}
+          {timeLabel ? <span className="calendar-event-time">{timeLabel}</span> : null}
           <span className="calendar-event-title">{displayTitle}</span>
         </div>
       )
     },
-    [],
+    [calendarTimezone],
   )
 
   const renderSlotLabel = useCallback(
