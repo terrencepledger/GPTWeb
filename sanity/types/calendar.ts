@@ -59,15 +59,39 @@ export interface CalendarSyncEvent {
   recurrence?: calendar_v3.Schema$Event['recurrence']
 }
 
+export type CalendarEnvVar = 'GOOGLE_CALENDAR_INTERNAL_ID' | 'GOOGLE_CALENDAR_ID'
+
+export interface CalendarConnectionSummary {
+  source: CalendarSource
+  envVar: CalendarEnvVar
+  id: string
+}
+
+export interface CalendarAccessDetails {
+  source: CalendarSource
+  envVar: CalendarEnvVar
+  calendarId: string
+  serviceAccountEmail?: string | null
+  impersonatedUserEmail?: string | null
+  upstreamStatus?: number
+  upstreamMessage?: string
+}
+
 export interface CalendarSyncResponse {
   internal: CalendarSyncEvent[]
   public: CalendarSyncEvent[]
   mappings: CalendarMappingInfo[]
+  calendars: {
+    internal: CalendarConnectionSummary
+    public: CalendarConnectionSummary
+  }
   meta: {
     timeMin?: string
     timeMax?: string
     timezone: string
     generatedAt: string
+    serviceAccountEmail?: string | null
+    impersonatedUserEmail?: string | null
   }
 }
 

@@ -16,6 +16,7 @@ import {
 } from '@sanity/ui'
 import {
   CalendarIcon,
+  LaunchIcon,
   PublishIcon,
   SyncIcon,
   UnpublishIcon,
@@ -26,12 +27,14 @@ import FullCalendar from '@fullcalendar/react'
 import interactionPlugin from '@fullcalendar/interaction'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import type {DatesSetArg, EventClickArg} from '@fullcalendar/core'
+import type {DatesSetArg, EventClickArg, EventContentArg} from '@fullcalendar/core'
 
 
 import type {
+  CalendarAccessDetails,
   CalendarAccessResponse,
   CalendarDriftNotice,
+  CalendarConnectionSummary,
   CalendarSyncEvent,
   CalendarSyncResponse,
   PublicEventPayload,
@@ -166,45 +169,162 @@ function DriftList(props: {items?: CalendarDriftNotice[]}) {
   if (!props.items || props.items.length === 0) return null
   return (
     <Stack space={2}>
-      {props.items.map((item, index) => (
-        <Flex key={`${item.kind}-${index}`} align="center" gap={2}>
-          <WarningOutlineIcon />
-          <Text size={1}>{item.message}</Text>
-        </Flex>
-      ))}
+      {props.items.map((item, index) => {
+        const tone = item.level === 'error' ? 'critical' : item.level === 'warning' ? 'caution' : undefined
+        const badgeTone = item.level === 'error' ? 'critical' : item.level === 'warning' ? 'caution' : 'primary'
+        const badgeLabel =
+          item.level === 'error' ? 'Needs attention' : item.level === 'warning' ? 'Review suggested' : 'Info'
+        return (
+          <Card
+            key={`${item.kind}-${index}`}
+            padding={3}
+            radius={2}
+            tone={tone}
+            shadow={tone ? 1 : 0}
+          >
+            <Flex align="flex-start" gap={3}>
+              <WarningOutlineIcon />
+              <Stack space={2}>
+                <Badge tone={badgeTone}>{badgeLabel}</Badge>
+                <Text size={1}>{item.message}</Text>
+              </Stack>
+            </Flex>
+          </Card>
+        )
+      })}
     </Stack>
   )
 }
 
-function Legend(props: {internalColor: string; publicColor: string}) {
+function LegendItem(props: {
+  label: string
+  envVar: string
+  color: string
+  meta?: CalendarConnectionSummary
+}) {
+  const tone = props.meta ? 'positive' : 'caution'
+  const status = props.meta ? 'Connected' : 'Pending'
+  const calendarId = props.meta?.id
+  const envVar = props.meta?.envVar || props.envVar
   return (
-    <Flex gap={4} wrap="wrap">
-      <Flex align="center" gap={2}>
-        <Box style={{width: 12, height: 12, backgroundColor: props.internalColor, borderRadius: 2}} />
-        <Text size={1}>Internal calendar</Text>
-      </Flex>
-      <Flex align="center" gap={2}>
-        <Box style={{width: 12, height: 12, backgroundColor: props.publicColor, borderRadius: 2}} />
-        <Text size={1}>Public calendar</Text>
-      </Flex>
+    <Card
+      padding={3}
+      radius={2}
+      shadow={1}
+      tone="transparent"
+      style={{flex: '1 1 240px', minWidth: 220}}
+    >
+      <Stack space={3}>
+        <Flex align="center" gap={2} wrap="wrap">
+          <Box
+            style={{
+              width: 14,
+              height: 14,
+              borderRadius: '999px',
+              backgroundColor: props.color,
+              boxShadow: '0 0 0 1px var(--card-border-color) inset',
+            }}
+          />
+          <Text size={1} weight="medium">
+            {props.label}
+          </Text>
+          <Badge tone={tone}>{status}</Badge>
+        </Flex>
+        <Stack space={1}>
+          <Text size={1} muted>
+            <code>{envVar}</code>
+          </Text>
+          <Text
+            size={1}
+            style={{
+              fontFamily: 'var(--font-mono, monospace)',
+              wordBreak: 'break-all',
+            }}
+          >
+            {calendarId || 'Loading…'}
+          </Text>
+        </Stack>
+      </Stack>
+    </Card>
+  )
+}
+
+function Legend(props: {
+  internalColor: string
+  publicColor: string
+  internalMeta?: CalendarConnectionSummary
+  publicMeta?: CalendarConnectionSummary
+}) {
+  return (
+    <Flex gap={3} wrap="wrap">
+      <LegendItem
+        label="Internal calendar"
+        envVar="GOOGLE_CALENDAR_INTERNAL_ID"
+        color={props.internalColor}
+        meta={props.internalMeta}
+      />
+      <LegendItem
+        label="Public calendar"
+        envVar="GOOGLE_CALENDAR_ID"
+        color={props.publicColor}
+        meta={props.publicMeta}
+      />
     </Flex>
   )
 }
 
+function ErrorDetails(props: {details?: CalendarAccessDetails}) {
+  if (!props.details) return null
+  const label = props.details.source === 'internal' ? 'Internal calendar' : 'Public calendar'
+  return (
+    <Card
+      padding={3}
+      radius={2}
+      tone="transparent"
+      shadow={0}
+      style={{backgroundColor: 'var(--card-muted-bg-color)'}}
+    >
+      <Stack space={2}>
+        <Text size={1} weight="medium">
+          {label} ({props.details.envVar})
+        </Text>
+        <Text
+          size={1}
+          style={{fontFamily: 'var(--font-mono, monospace)', wordBreak: 'break-all'}}
+        >
+          {props.details.calendarId}
+        </Text>
+        {props.details.upstreamStatus && (
+          <Text size={1} muted>
+            Google status: {props.details.upstreamStatus}
+            {props.details.upstreamMessage ? ` – ${props.details.upstreamMessage}` : ''}
+          </Text>
+        )}
+        {props.details.serviceAccountEmail && (
+          <Text size={1} muted>Service account: {props.details.serviceAccountEmail}</Text>
+        )}
+        {props.details.impersonatedUserEmail && (
+          <Text size={1} muted>Impersonating: {props.details.impersonatedUserEmail}</Text>
+        )}
+      </Stack>
+    </Card>
+  )
+}
+
 const calendarStyles = `
-  .calendar-sync-root {
+  .calendar-tool-root {
     display: flex;
     flex-direction: column;
     height: 100%;
     width: min(1280px, 100%);
     margin: 0 auto;
   }
-  .calendar-sync-content {
+  .calendar-tool-content {
     display: flex;
     flex: 1 1 auto;
     min-height: 0;
   }
-  .calendar-sync-calendar {
+  .calendar-tool-calendar {
     flex: 2 1 0;
     min-width: 0;
     position: relative;
@@ -213,22 +333,76 @@ const calendarStyles = `
     align-items: stretch;
     padding: 1.5rem;
   }
-  .calendar-sync-calendarInner {
+  .calendar-tool-calendarInner {
     flex: 1 1 960px;
     max-width: 960px;
     width: 100%;
     min-width: 0;
   }
-  .calendar-sync-sidebar {
-    flex: 1 1 320px;
-    min-width: 280px;
+  .calendar-tool-sidebar {
+    flex: 1 1 360px;
+    min-width: 300px;
     border-left: 1px solid var(--card-border-color);
     display: flex;
     flex-direction: column;
     min-height: 0;
+    background-color: var(--card-bg-color);
   }
-  .calendar-sync-calendarInner .fc {
+  .calendar-tool-sidebarContent {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .calendar-tool-sidebarHeader {
+    border-bottom: 1px solid var(--card-border-color);
+  }
+  .calendar-tool-scrollArea {
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+  .calendar-tool-calendarInner .fc {
     height: 100%;
+  }
+  .calendar-event-content {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    line-height: 1.2;
+  }
+  .calendar-event-time {
+    font-weight: 600;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+  }
+  .calendar-event-title {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .calendar-event-internal .calendar-event-content {
+    color: var(--card-fg-color);
+  }
+  .calendar-event-public .calendar-event-content {
+    color: var(--card-bg-color);
+  }
+  .fc-daygrid-event .calendar-event-content {
+    justify-content: flex-start;
+  }
+  .fc-daygrid-dot-event .calendar-event-content {
+    font-size: 0.8rem;
+  }
+  .fc-timegrid-event .calendar-event-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+    font-size: 0.9rem;
+  }
+  .fc-timegrid-event .calendar-event-time {
+    font-size: 0.95em;
+  }
+  .fc-timegrid-event .calendar-event-title {
+    font-size: 0.95em;
   }
   .calendar-event-selected {
     box-shadow: 0 0 0 2px var(--card-focus-ring-color) inset !important;
@@ -237,13 +411,13 @@ const calendarStyles = `
     border-style: dashed !important;
   }
   @media (max-width: 1200px) {
-    .calendar-sync-root {
+    .calendar-tool-root {
       width: 100%;
     }
-    .calendar-sync-calendar {
+    .calendar-tool-calendar {
       padding: 1rem;
     }
-    .calendar-sync-calendarInner {
+    .calendar-tool-calendarInner {
       max-width: 100%;
     }
   }
@@ -271,7 +445,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
 
   const [range, setRange] = useState<{start: string; end: string} | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [errorState, setErrorState] = useState<{message: string; details?: CalendarAccessDetails} | null>(null)
   const [data, setData] = useState<CalendarSyncResponse | null>(null)
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
   const [formState, setFormState] = useState<FormState | null>(null)
@@ -350,7 +524,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       return
     }
     setLoading(true)
-    setError(null)
+    setErrorState(null)
     try {
       const endpoint = joinApiPath(apiBase, 'events')
       const url = endpoint.startsWith('http://') || endpoint.startsWith('https://')
@@ -362,17 +536,20 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       headers[MEDIA_GROUP_HEADER] = authorizedEmail
       const res = await fetch(url.toString(), {credentials: 'same-origin', headers})
       if (!res.ok) {
-        const payload = await res.json().catch(() => ({}))
-        const message = (payload as any).error || res.statusText || 'Request failed'
-        setError(message)
-        setLoading(false)
+        const payload = (await res.json().catch(() => ({}))) as {
+          error?: string
+          details?: CalendarAccessDetails
+        }
+        const message = payload.error || res.statusText || 'Request failed'
+        setErrorState({message, details: payload.details})
         return
       }
       const payload = (await res.json()) as CalendarSyncResponse
       setData(payload)
+      setErrorState(null)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load events'
-      setError(message)
+      setErrorState({message})
     } finally {
       setLoading(false)
     }
@@ -390,6 +567,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       setData(null)
       setSelectedKey(null)
       setFormState(null)
+      setErrorState(null)
     }
   }, [accessState])
 
@@ -404,6 +582,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       allDay: event.allDay,
       backgroundColor: event.source === 'internal' ? internalColor : publicColor,
       borderColor: event.source === 'internal' ? internalColor : publicColor,
+      textColor: event.source === 'internal' ? 'var(--card-fg-color)' : 'var(--card-bg-color)',
       extendedProps: {event},
     }))
   }, [data, internalColor, publicColor])
@@ -440,6 +619,20 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     return data.public.find((item) => item.id === publicId)
   }, [data, selectedEvent])
 
+  const calendarSummary = useMemo(() => {
+    if (!data || !selectedEvent) return undefined
+    return selectedEvent.source === 'internal' ? data.calendars.internal : data.calendars.public
+  }, [data, selectedEvent])
+
+  const timezoneLabel = useMemo(() => {
+    if (!selectedEvent) return undefined
+    return (
+      selectedEvent.sanitized?.timeZone ||
+      selectedEvent.publicPayload?.timeZone ||
+      data?.meta.timezone
+    )
+  }, [data?.meta.timezone, selectedEvent])
+
   const sanitizedSuggestion = useMemo(() => {
     if (!selectedEvent) return undefined
     if (selectedEvent.source === 'internal') return selectedEvent.sanitized
@@ -452,6 +645,18 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     if (!selectedEvent.mapping?.publicEventId) return true
     return hasSeriousDrift(selectedEvent.drift)
   }, [sanitizedSuggestion, selectedEvent])
+
+  const renderEventContent = useCallback((arg: EventContentArg) => {
+    const event: CalendarSyncEvent | undefined = (arg.event.extendedProps as any)?.event
+    if (!event) return undefined
+    const showTime = Boolean(arg.timeText && !arg.event.allDay)
+    return (
+      <div className="calendar-event-content">
+        {showTime ? <span className="calendar-event-time">{arg.timeText}</span> : null}
+        <span className="calendar-event-title">{event.title || arg.event.title}</span>
+      </div>
+    )
+  }, [])
 
   const handleDatesSet = useCallback((args: DatesSetArg) => {
     const start = args.start.toISOString()
@@ -470,6 +675,8 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     const event: CalendarSyncEvent | undefined = (arg.event.extendedProps as any)?.event
     const classes: string[] = []
     if (event) {
+      classes.push('calendar-event')
+      classes.push(`calendar-event-${event.source}`)
       if (hasSeriousDrift(event.drift)) {
         classes.push('calendar-event-drift')
       }
@@ -485,6 +692,12 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       await fetchSnapshot(range)
     }
   }, [fetchSnapshot, range, accessState])
+
+  const handleOpenInGoogle = useCallback(() => {
+    if (selectedEvent?.htmlLink) {
+      window.open(selectedEvent.htmlLink, '_blank', 'noopener,noreferrer')
+    }
+  }, [selectedEvent?.htmlLink])
 
   const handleInputChange = useCallback((field: keyof FormState) => (event: React.FormEvent<HTMLInputElement>) => {
     const value = event.currentTarget.value
@@ -609,37 +822,43 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
             : 'Unable to verify Media access at the moment.')
 
     return (
-      <div className="calendar-sync-root">
+      <div className="calendar-tool-root">
         <style>{calendarStyles}</style>
         <Card padding={4} radius={0} shadow={1}>
           <Stack space={3}>
-            <Heading size={2}>Calendar Sync</Heading>
+            <Heading size={2}>Calendar</Heading>
             <Text size={1} muted>
-              Manage the public calendar once your Media team membership is confirmed.
+              Access to this workflow is limited to Media team members.
             </Text>
           </Stack>
         </Card>
         <Flex align="center" justify="center" style={{flex: '1 1 auto', padding: '2rem'}}>
-          <Card padding={4} radius={2} tone={gatingTone} shadow={1} style={{maxWidth: 420, width: '100%'}}>
+          <Card
+            padding={4}
+            radius={3}
+            tone={gatingTone}
+            shadow={1}
+            style={{maxWidth: 420, width: '100%'}}
+          >
             <Stack space={3}>
               {accessState === 'pending' ? (
-                <>
+                <Flex direction="column" align="center" gap={3}>
                   <Spinner />
                   <Text size={1}>Confirming Media access…</Text>
-                </>
+                </Flex>
               ) : (
-                <>
-                  <WarningOutlineIcon />
-                  <Text size={1} style={{textAlign: 'center'}}>
-                    {gatingMessage}
-                  </Text>
+                <Stack space={3} style={{textAlign: 'center'}}>
+                  <Flex align="center" justify="center">
+                    <WarningOutlineIcon />
+                  </Flex>
+                  <Text size={1}>{gatingMessage}</Text>
                   <Button
                     icon={RefreshIcon}
                     text="Retry check"
                     tone={accessState === 'error' ? 'critical' : 'primary'}
                     onClick={triggerAccessCheck}
                   />
-                </>
+                </Stack>
               )}
               {accessState === 'denied' && (
                 <Text size={1} muted style={{textAlign: 'center'}}>
@@ -666,26 +885,71 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   )
 
   return (
-    <div className="calendar-sync-root">
+    <div className="calendar-tool-root">
       <style>{calendarStyles}</style>
       <Card padding={4} radius={0} shadow={1}>
-        <Stack space={3}>
-          <Heading size={2}>Calendar Sync</Heading>
-          <Text size={1} muted>
-            Review upcoming events from the internal calendar, publish safe copies to the public calendar, and keep both sides in sync.
-          </Text>
-          <Legend internalColor={internalColor} publicColor={publicColor} />
+        <Stack space={4}>
+          <Flex align="flex-start" justify="space-between" gap={4} wrap="wrap">
+            <Stack space={3} style={{flex: '1 1 300px', minWidth: 260}}>
+              <Stack space={2}>
+                <Heading size={2}>Calendar</Heading>
+                <Text size={1} muted>
+                  Review upcoming internal events, prepare public details, and keep both calendars aligned.
+                </Text>
+              </Stack>
+              <Stack space={2}>
+                <Flex align="center" gap={2} wrap="wrap">
+                  <Badge tone="positive">Media access verified</Badge>
+                  <Text size={1} muted>
+                    {authorizedEmail ? `Signed in as ${authorizedEmail}` : 'Signed-in user unavailable'}
+                  </Text>
+                </Flex>
+                {data?.meta ? (
+                  <Stack space={1}>
+                    <Text size={1} muted>
+                      {data.meta.serviceAccountEmail
+                        ? `Service account: ${data.meta.serviceAccountEmail}`
+                        : 'Service account email is not configured.'}
+                    </Text>
+                    <Text size={1} muted>
+                      {data.meta.impersonatedUserEmail
+                        ? `Impersonating: ${data.meta.impersonatedUserEmail}`
+                        : 'Impersonation email is not configured.'}
+                    </Text>
+                  </Stack>
+                ) : (
+                  <Text size={1} muted>Loading calendar credentials…</Text>
+                )}
+              </Stack>
+            </Stack>
+            <Stack space={2} style={{flex: '1 1 320px', minWidth: 280}}>
+              <Text size={1} weight="medium">
+                Calendars in sync
+              </Text>
+              <Legend
+                internalColor={internalColor}
+                publicColor={publicColor}
+                internalMeta={data?.calendars.internal}
+                publicMeta={data?.calendars.public}
+              />
+            </Stack>
+          </Flex>
         </Stack>
       </Card>
-      <div className="calendar-sync-content">
-        <Card className="calendar-sync-calendar" radius={0} padding={0}>
-          <div className="calendar-sync-calendarInner">
+      <div className="calendar-tool-content">
+        <Card className="calendar-tool-calendar" radius={0} padding={0}>
+          <div className="calendar-tool-calendarInner">
             <FullCalendar
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
               initialView="dayGridMonth"
               headerToolbar={{left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay'}}
               height="100%"
               events={events}
+              eventContent={renderEventContent}
+              eventTimeFormat={{hour: 'numeric', minute: '2-digit'}}
+              nowIndicator
+              dayMaxEventRows={4}
+              slotEventOverlap={false}
               datesSet={handleDatesSet}
               eventClick={handleEventClick}
               eventClassNames={eventClassNames}
@@ -696,178 +960,335 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
               <Spinner />
             </Flex>
           )}
-          {error && !loading && (
+          {errorState && !loading && (
             <Flex align="center" justify="center" style={{position: 'absolute', inset: 0}}>
-              <Card padding={4} tone="critical">
+              <Card padding={4} tone="critical" radius={3} shadow={1} style={{maxWidth: 420}}>
                 <Stack space={3}>
-                  <Text weight="semibold">Failed to load events</Text>
-                  <Text size={1}>{error}</Text>
+                  <Stack space={1}>
+                    <Text weight="semibold">Failed to load events</Text>
+                    <Text size={1}>{errorState.message}</Text>
+                  </Stack>
+                  <ErrorDetails details={errorState.details} />
                   <Button text="Retry" tone="critical" onClick={() => range && fetchSnapshot(range)} />
                 </Stack>
               </Card>
             </Flex>
           )}
         </Card>
-        <Card className="calendar-sync-sidebar" padding={4} radius={0}>
+        <Card className="calendar-tool-sidebar" padding={0} radius={0}>
           {!selectedEvent ? (
             <Flex flex={1} align="center" justify="center">
-              <Stack space={3}>
+              <Flex direction="column" align="center" gap={3} style={{textAlign: 'center'}}>
                 <CalendarIcon />
                 <Text size={1} muted>
                   Select an event in the calendar to review and publish it.
                 </Text>
-              </Stack>
+              </Flex>
             </Flex>
           ) : (
-            <Flex direction="column" style={{gap: '1rem', flex: 1, minHeight: 0}}>
-              <Stack space={3}>
-                <Flex align="center" justify="space-between">
-                  <Heading size={1}>{selectedEvent.title || 'Untitled event'}</Heading>
-                  <Button icon={RefreshIcon} mode="bleed" tone="primary" text="Refresh" onClick={refresh} disabled={loading || actionLoading} />
-                </Flex>
-                <Text size={1} muted>
-                  {formatDateRange(selectedEvent)}
-                </Text>
-                {selectedEvent.mapping?.status ? (
-                  <Badge tone={selectedEvent.mapping.status === 'published' ? 'positive' : selectedEvent.mapping.status === 'unpublished' ? 'critical' : 'default'}>
-                    {selectedEvent.mapping.status === 'published' ? 'Published' : selectedEvent.mapping.status === 'unpublished' ? 'Unpublished' : 'Not yet published'}
-                  </Badge>
-                ) : (
-                  <Badge>Draft only</Badge>
-                )}
-                <DriftList items={selectedEvent.drift} />
-              </Stack>
-              <Stack space={4} style={{flex: 1, minHeight: 0}}>
+            <div className="calendar-tool-sidebarContent">
+              <Box padding={4} className="calendar-tool-sidebarHeader">
                 <Stack space={3}>
-                  <Heading as="h2" size={1}>
-                    Public details
-                  </Heading>
-                  <Stack space={2}>
-                    <Text size={1} weight="medium">
-                      Title
-                    </Text>
-                    <TextInput
-                      value={formState?.title || ''}
-                      onChange={handleInputChange('title')}
-                      aria-label="Public title"
-                      placeholder="Event title"
-                    />
-                  </Stack>
-                  <Stack space={2}>
-                    <Text size={1} weight="medium">
-                      Blurb
-                    </Text>
-                    <TextArea
-                      value={formState?.blurb || ''}
-                      onChange={handleTextAreaChange('blurb')}
-                      rows={4}
-                      aria-label="Public blurb"
-                      placeholder="Public blurb"
-                      style={{resize: 'vertical'}}
-                    />
-                  </Stack>
-                  <Stack space={2}>
-                    <Text size={1} weight="medium">
-                      Location
-                    </Text>
-                    <TextInput
-                      value={formState?.location || ''}
-                      onChange={handleInputChange('location')}
-                      aria-label="Public location"
-                      placeholder="Location"
-                    />
-                  </Stack>
-                  <Stack space={2}>
-                    <Text size={1} weight="medium">
-                      Display notes
-                    </Text>
-                    <TextArea
-                      value={formState?.displayNotes || ''}
-                      onChange={handleTextAreaChange('displayNotes')}
-                      rows={3}
-                      aria-label="Display notes"
-                      placeholder="Display notes"
-                      style={{resize: 'vertical'}}
-                    />
-                  </Stack>
-                </Stack>
-                <Stack space={2}>
-                  <Flex gap={2} wrap="wrap">
-                    {canPublish && (
+                  <Flex align="flex-start" justify="space-between" gap={3} wrap="wrap">
+                    <Stack space={2}>
+                      <Heading size={1}>{selectedEvent.title || 'Untitled event'}</Heading>
+                      <Text size={1} muted>{formatDateRange(selectedEvent)}</Text>
+                    </Stack>
+                    <Flex gap={1} wrap="wrap" justify="flex-end">
+                      {selectedEvent.htmlLink && (
+                        <Button
+                          icon={LaunchIcon}
+                          mode="bleed"
+                          text="Open in Google Calendar"
+                          tone="default"
+                          onClick={handleOpenInGoogle}
+                          disabled={loading || actionLoading}
+                        />
+                      )}
                       <Button
-                        icon={PublishIcon}
-                        text={selectedEvent.mapping?.publicEventId ? 'Publish updates' : 'Publish to public calendar'}
-                        tone="positive"
-                        disabled={actionLoading}
-                        onClick={() => runAction('publish')}
-                      />
-                    )}
-                    {canUpdate && (
-                      <Button
-                        icon={SyncIcon}
-                        text="Update public copy"
+                        icon={RefreshIcon}
+                        mode="bleed"
                         tone="primary"
-                        disabled={actionLoading}
-                        onClick={() => runAction('update')}
+                        text="Refresh"
+                        onClick={refresh}
+                        disabled={loading || actionLoading}
                       />
-                    )}
-                    {canUnpublish && (
-                      <Button
-                        icon={UnpublishIcon}
-                        text="Unpublish"
-                        tone="critical"
-                        disabled={actionLoading}
-                        onClick={() => runAction('unpublish')}
-                      />
-                    )}
+                    </Flex>
                   </Flex>
-                  {actionLoading && (
-                    <Text size={1} muted>
-                      Working…
-                    </Text>
+                </Stack>
+              </Box>
+              <Box padding={4} className="calendar-tool-scrollArea">
+                <Stack space={4}>
+                  <Card padding={4} radius={3} shadow={1}>
+                    <Stack space={3}>
+                      <Stack space={2}>
+                        <Heading as="h2" size={1}>
+                          Event summary
+                        </Heading>
+                        <Text size={1} muted>
+                          Key context for this calendar entry.
+                        </Text>
+                      </Stack>
+                      <Stack space={3}>
+                        <Stack space={1}>
+                          <Text size={1} weight="medium">
+                            Status
+                          </Text>
+                          <Flex align="center" gap={2} wrap="wrap">
+                            {selectedEvent.mapping?.status ? (
+                              <Badge
+                                tone={
+                                  selectedEvent.mapping.status === 'published'
+                                    ? 'positive'
+                                    : selectedEvent.mapping.status === 'unpublished'
+                                    ? 'critical'
+                                    : 'default'
+                                }
+                              >
+                                {selectedEvent.mapping.status === 'published'
+                                  ? 'Published'
+                                  : selectedEvent.mapping.status === 'unpublished'
+                                  ? 'Unpublished'
+                                  : 'Not yet published'}
+                              </Badge>
+                            ) : (
+                              <Badge>Draft only</Badge>
+                            )}
+                            <Badge tone={selectedEvent.source === 'internal' ? 'primary' : 'positive'}>
+                              {selectedEvent.source === 'internal' ? 'Internal event' : 'Public event'}
+                            </Badge>
+                            {selectedEvent.mapping?.publicEventId ? (
+                              <Badge tone="primary">Linked to public calendar</Badge>
+                            ) : (
+                              <Badge tone="default">Not linked to public calendar</Badge>
+                            )}
+                            {selectedEvent.allDay && <Badge tone="default">All-day</Badge>}
+                            {selectedEvent.recurringEventId && <Badge tone="default">Recurring series</Badge>}
+                          </Flex>
+                        </Stack>
+                        <Stack space={1}>
+                          <Text size={1} weight="medium">
+                            Calendar
+                          </Text>
+                          {calendarSummary ? (
+                            <Stack space={1}>
+                              <Text size={1} muted>
+                                <code>{calendarSummary.envVar}</code>
+                              </Text>
+                              <Text
+                                size={1}
+                                style={{
+                                  fontFamily: 'var(--font-mono, monospace)',
+                                  wordBreak: 'break-all',
+                                }}
+                              >
+                                {calendarSummary.id}
+                              </Text>
+                            </Stack>
+                          ) : (
+                            <Text size={1} muted>Loading calendar details…</Text>
+                          )}
+                        </Stack>
+                        {selectedEvent.mapping?.publicEventId && (
+                          <Stack space={1}>
+                            <Text size={1} weight="medium">
+                              Linked public event ID
+                            </Text>
+                            <Text
+                              size={1}
+                              style={{
+                                fontFamily: 'var(--font-mono, monospace)',
+                                wordBreak: 'break-all',
+                              }}
+                            >
+                              {selectedEvent.mapping.publicEventId}
+                            </Text>
+                          </Stack>
+                        )}
+                        <Stack space={1}>
+                          <Text size={1} weight="medium">
+                            When
+                          </Text>
+                          <Text size={1}>{formatDateRange(selectedEvent)}</Text>
+                          {timezoneLabel && (
+                            <Text size={1} muted>Time zone: {timezoneLabel}</Text>
+                          )}
+                        </Stack>
+                        <DriftList items={selectedEvent.drift} />
+                      </Stack>
+                    </Stack>
+                  </Card>
+                  <Card padding={4} radius={3} shadow={1}>
+                    <Stack space={3}>
+                      <Stack space={2}>
+                        <Heading as="h2" size={1}>
+                          Public details
+                        </Heading>
+                        <Text size={1} muted>
+                          Information that will appear on the public site.
+                        </Text>
+                      </Stack>
+                      <Stack space={3}>
+                        <Stack space={2}>
+                          <Text size={1} weight="medium">
+                            Title
+                          </Text>
+                          <TextInput
+                            value={formState?.title || ''}
+                            onChange={handleInputChange('title')}
+                            aria-label="Public title"
+                            placeholder="Event title"
+                          />
+                        </Stack>
+                        <Stack space={2}>
+                          <Text size={1} weight="medium">
+                            Blurb
+                          </Text>
+                          <TextArea
+                            value={formState?.blurb || ''}
+                            onChange={handleTextAreaChange('blurb')}
+                            rows={4}
+                            aria-label="Public blurb"
+                            placeholder="Public blurb"
+                            style={{resize: 'vertical'}}
+                          />
+                        </Stack>
+                        <Stack space={2}>
+                          <Text size={1} weight="medium">
+                            Location
+                          </Text>
+                          <TextInput
+                            value={formState?.location || ''}
+                            onChange={handleInputChange('location')}
+                            aria-label="Public location"
+                            placeholder="Location"
+                          />
+                        </Stack>
+                        <Stack space={2}>
+                          <Text size={1} weight="medium">
+                            Display notes
+                          </Text>
+                          <TextArea
+                            value={formState?.displayNotes || ''}
+                            onChange={handleTextAreaChange('displayNotes')}
+                            rows={3}
+                            aria-label="Display notes"
+                            placeholder="Display notes"
+                            style={{resize: 'vertical'}}
+                          />
+                        </Stack>
+                      </Stack>
+                    </Stack>
+                  </Card>
+                  <Card padding={4} radius={3} shadow={1}>
+                    <Stack space={3}>
+                      <Stack space={2}>
+                        <Heading as="h2" size={1}>
+                          Publishing
+                        </Heading>
+                        <Text size={1} muted>
+                          Choose how this event syncs with the public calendar.
+                        </Text>
+                      </Stack>
+                      <Flex gap={2} wrap="wrap">
+                        {canPublish && (
+                          <Button
+                            icon={PublishIcon}
+                            text={selectedEvent.mapping?.publicEventId ? 'Publish updates' : 'Publish to public calendar'}
+                            tone="positive"
+                            disabled={actionLoading}
+                            onClick={() => runAction('publish')}
+                          />
+                        )}
+                        {canUpdate && (
+                          <Button
+                            icon={SyncIcon}
+                            text="Update public copy"
+                            tone="primary"
+                            disabled={actionLoading}
+                            onClick={() => runAction('update')}
+                          />
+                        )}
+                        {canUnpublish && (
+                          <Button
+                            icon={UnpublishIcon}
+                            text="Unpublish"
+                            tone="critical"
+                            disabled={actionLoading}
+                            onClick={() => runAction('unpublish')}
+                          />
+                        )}
+                      </Flex>
+                      {!canPublish && !canUpdate && !canUnpublish && !actionLoading && (
+                        <Text size={1} muted>
+                          Publishing actions will appear once the event is linked to the public calendar.
+                        </Text>
+                      )}
+                      {actionLoading && (
+                        <Text size={1} muted>
+                          Working…
+                        </Text>
+                      )}
+                    </Stack>
+                  </Card>
+                  {relatedInternal && (
+                    <Card padding={4} radius={3} shadow={1}>
+                      <Stack space={3}>
+                        <Heading as="h3" size={1}>
+                          Internal notes
+                        </Heading>
+                        {relatedInternal.rawLocation && (
+                          <Stack space={1}>
+                            <Text size={1} weight="medium">
+                              Location
+                            </Text>
+                            <Text size={1}>{relatedInternal.rawLocation}</Text>
+                          </Stack>
+                        )}
+                        <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)', borderRadius: 4}}>
+                          <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
+                            {relatedInternal.rawDescription || 'No private notes provided.'}
+                          </Text>
+                        </Box>
+                      </Stack>
+                    </Card>
+                  )}
+                  {showSanitizedSuggestion && sanitizedSuggestion && (
+                    <Card padding={4} radius={3} shadow={1}>
+                      <Stack space={3}>
+                        <Heading as="h3" size={1}>
+                          Suggested public copy
+                        </Heading>
+                        <Stack space={3}>
+                          {sanitizedSuggestion.location && (
+                            <Stack space={1}>
+                              <Text size={1} weight="medium">
+                                Location
+                              </Text>
+                              <Text size={1}>{sanitizedSuggestion.location}</Text>
+                            </Stack>
+                          )}
+                          {sanitizedSuggestion.blurb && (
+                            <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)', borderRadius: 4}}>
+                              <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
+                                {sanitizedSuggestion.blurb}
+                              </Text>
+                            </Box>
+                          )}
+                          {sanitizedSuggestion.displayNotes && (
+                            <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)', borderRadius: 4}}>
+                              <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
+                                Display notes: {sanitizedSuggestion.displayNotes}
+                              </Text>
+                            </Box>
+                          )}
+                        </Stack>
+                      </Stack>
+                    </Card>
                   )}
                 </Stack>
-                {relatedInternal && (
-                  <Stack space={2}>
-                    <Heading as="h3" size={1}>
-                      Internal notes
-                    </Heading>
-                    {relatedInternal.rawLocation && (
-                      <Text size={1}>Location: {relatedInternal.rawLocation}</Text>
-                    )}
-                    <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)'}}>
-                      <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
-                        {relatedInternal.rawDescription || 'No private notes provided.'}
-                      </Text>
-                    </Box>
-                  </Stack>
-                )}
-                {showSanitizedSuggestion && sanitizedSuggestion && (
-                  <Stack space={2}>
-                    <Heading as="h3" size={1}>
-                      Suggested public copy
-                    </Heading>
-                    {sanitizedSuggestion.location && (
-                      <Text size={1}>Location suggestion: {sanitizedSuggestion.location}</Text>
-                    )}
-                    {sanitizedSuggestion.blurb && (
-                      <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)'}}>
-                        <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
-                          {sanitizedSuggestion.blurb}
-                        </Text>
-                      </Box>
-                    )}
-                    {sanitizedSuggestion.displayNotes && (
-                      <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)'}}>
-                        <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
-                          Display notes: {sanitizedSuggestion.displayNotes}
-                        </Text>
-                      </Box>
-                    )}
-                  </Stack>
-                )}
-              </Stack>
-            </Flex>
+              </Box>
+            </div>
           )}
         </Card>
       </div>
@@ -876,12 +1297,12 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
 }
 
 export const calendarSyncTool = definePlugin<CalendarSyncToolOptions>((options = {}) => ({
-  name: 'calendar-sync-plugin',
+  name: 'calendar-tool-plugin',
   tools: (prev) => [
     ...prev,
     {
-      name: 'calendar-sync',
-      title: 'Calendar Sync',
+      name: 'calendar',
+      title: 'Calendar',
       icon: CalendarIcon,
       component: () => <CalendarSyncToolComponent {...options} />,
     },
