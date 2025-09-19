@@ -2,6 +2,7 @@ import {google, calendar_v3} from 'googleapis';
 import {createHash} from 'crypto';
 import {sanity} from './sanity';
 import {getSanityWriteClient, hasSanityWriteToken} from './sanity.server';
+import { getServiceAccountCredentials } from './googleWorkspace';
 import type {
   CalendarAccessDetails,
   CalendarDriftNotice,
@@ -19,16 +20,7 @@ import type {
 
 const INTERNAL_CALENDAR_ID = process.env.GOOGLE_CALENDAR_INTERNAL_ID;
 const PUBLIC_CALENDAR_ID = process.env.GOOGLE_CALENDAR_ID;
-const SERVICE_ACCOUNT_EMAIL =
-  process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ||
-  process.env.GMAIL_SERVICE_ACCOUNT_EMAIL ||
-  process.env.GOOGLE_CLIENT_EMAIL;
-const SERVICE_ACCOUNT_KEY = (
-  process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY ||
-  process.env.GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY ||
-  process.env.GOOGLE_PRIVATE_KEY ||
-  ''
-).replace(/\\n/g, '\n');
+const { email: SERVICE_ACCOUNT_EMAIL, key: SERVICE_ACCOUNT_KEY } = getServiceAccountCredentials();
 const DEFAULT_TIMEZONE =
   process.env.TZ ||
   process.env.NEXT_PUBLIC_DEFAULT_TZ ||

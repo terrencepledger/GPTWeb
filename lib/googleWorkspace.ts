@@ -26,6 +26,10 @@ function loadServiceAccount(): ServiceAccountConfig {
 const SERVICE_ACCOUNT_EMAIL = loadServiceAccount().client_email || ''
 const SERVICE_ACCOUNT_KEY = (loadServiceAccount().private_key || '').replace(/\\n/g, '\n')
 
+export function getServiceAccountCredentials(): { email: string; key: string } {
+  return { email: SERVICE_ACCOUNT_EMAIL, key: SERVICE_ACCOUNT_KEY }
+}
+
 const DIRECTORY_SCOPES = [
   'https://www.googleapis.com/auth/admin.directory.group.readonly',
   'https://www.googleapis.com/auth/admin.directory.group.member.readonly',

@@ -1,7 +1,6 @@
 // sanity.config.js
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
-import {visionTool} from '@sanity/vision'
 import {analyticsTool} from './sanity/plugins/analyticsTool'
 import {calendarSyncTool} from './sanity/plugins/calendarSyncTool'
 
@@ -92,7 +91,6 @@ export default defineConfig({
             structure,
             defaultDocumentNode,
         }),
-        visionTool(),
         // Custom Analytics tool (embeds a GA/Looker Studio dashboard)
         // Configure URL via SANITY_STUDIO_GA_DASHBOARD_URL
         analyticsTool({
@@ -104,18 +102,6 @@ export default defineConfig({
             publicColor: 'var(--brand-accent)',
         }),
     ],
-    // Hide the Vision tool for non-admin users (e.g., editors)
-    // currentUser is available in the context when using a function form of `tools`
-    tools: (prev, context) => {
-        const roles = context.currentUser?.roles?.map(r => r.name?.toLowerCase?.() ?? '') || [];
-        const isAdmin = roles.includes('administrator') || roles.includes('developer');
-        return prev.filter(tool => {
-            if (tool.name === 'vision') {
-                return isAdmin;
-            }
-            return true;
-        });
-    },
     vite: {
         define: {
             'process.env': {},
