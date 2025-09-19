@@ -3,12 +3,14 @@ import {createHash} from 'crypto';
 import {sanity} from './sanity';
 import {getSanityWriteClient, hasSanityWriteToken} from './sanity.server';
 import type {
+  CalendarAccessDetails,
   CalendarDriftNotice,
   CalendarMappingInfo,
   CalendarSyncEvent,
   CalendarSyncResponse,
   CalendarSyncStatus,
   CalendarSource,
+  CalendarEnvVar,
   PublicEventPayload,
   PublishEventBody,
   UnpublishEventBody,
@@ -33,6 +35,102 @@ const DEFAULT_TIMEZONE =
   'America/Chicago';
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar'];
+
+const CALENDAR_ENV_MAP: Record<CalendarSource, CalendarEnvVar> = {
+  internal: 'GOOGLE_CALENDAR_INTERNAL_ID',
+  public: 'GOOGLE_CALENDAR_ID',
+};
+
+function coerceStatusCode(error: unknown): number | undefined {
+  const err = error as {code?: number | string; status?: number; response?: {status?: number}} | undefined;
+  if (!err) return undefined;
+  if (typeof err.code === 'number') return err.code;
+  if (typeof err.code === 'string') {
+    const parsed = Number(err.code);
+    if (!Number.isNaN(parsed)) return parsed;
+  }
+  if (typeof err.status === 'number') return err.status;
+  if (typeof err.response?.status === 'number') return err.response.status;
+  return undefined;
+}
+
+function extractGoogleReasons(error: unknown): string[] {
+  const err = error as {response?: {data?: {error?: {errors?: Array<{reason?: string}>}}}} | undefined;
+  const reasons = err?.response?.data?.error?.errors;
+  if (!Array.isArray(reasons)) return [];
+  return reasons
+    .map((item) => (typeof item?.reason === 'string' ? item.reason : ''))
+    .filter((reason): reason is string => Boolean(reason));
+}
+
+function extractGoogleErrorMessage(error: unknown): string | undefined {
+  const err = error as {response?: {data?: {error?: {message?: string}}}; message?: string} | undefined;
+  const responseMessage = err?.response?.data?.error?.message;
+  if (typeof responseMessage === 'string' && responseMessage.trim()) {
+    return responseMessage;
+  }
+  if (typeof err?.message === 'string' && err.message.trim()) {
+    return err.message;
+  }
+  return undefined;
+}
+
+function detectCalendarAccessIssue(error: unknown): {status: number; message?: string} | null {
+  const status = coerceStatusCode(error);
+  const reasons = extractGoogleReasons(error);
+  const message = extractGoogleErrorMessage(error);
+
+  if (status === 403 || reasons.some((reason) => reason === 'forbidden' || reason === 'accessNotConfigured')) {
+    return {status: 403, message};
+  }
+  if (status === 404 || reasons.includes('notFound')) {
+    return {status: 404, message};
+  }
+  return null;
+}
+
+export class CalendarAccessError extends Error {
+  statusCode: number;
+  details: CalendarAccessDetails;
+
+  constructor(source: CalendarSource, calendarId: string, upstreamStatus: number, upstreamMessage?: string) {
+    const envVar = CALENDAR_ENV_MAP[source];
+    const label = source === 'internal' ? 'internal' : 'public';
+    const reasonSuffix = upstreamMessage ? ` (${upstreamMessage})` : '';
+    const serviceAccountHint = SERVICE_ACCOUNT_EMAIL
+      ? `Share the calendar with ${SERVICE_ACCOUNT_EMAIL} if it is not already.`
+      : 'Share the calendar with your configured Google service account.';
+    const message = [
+      `Unable to access the ${label} calendar configured by ${envVar}.`,
+      `Google responded with status ${upstreamStatus}${reasonSuffix}.`,
+      `Verify that the calendar ID "${calendarId}" is correct, that the event still exists, and that the service account has permission.`,
+      serviceAccountHint,
+    ].join(' ');
+    super(message);
+    this.name = 'CalendarAccessError';
+    this.statusCode = 502;
+    this.details = {
+      source,
+      envVar,
+      calendarId,
+      serviceAccountEmail: SERVICE_ACCOUNT_EMAIL || null,
+      upstreamStatus,
+      upstreamMessage,
+    };
+    Object.setPrototypeOf(this, CalendarAccessError.prototype);
+  }
+}
+
+function translateCalendarError(source: CalendarSource, calendarId: string, error: unknown): never {
+  const issue = detectCalendarAccessIssue(error);
+  if (issue) {
+    throw new CalendarAccessError(source, calendarId, issue.status, issue.message);
+  }
+  if (error instanceof Error) {
+    throw error;
+  }
+  throw new Error('Google Calendar request failed');
+}
 
 interface MappingDoc {
   _id: string;
@@ -304,7 +402,7 @@ async function fetchCalendarEvents(
       // Invalid sync token; caller should clear their checkpoint
       throw new Error('Invalid sync token. Please perform a full resync.');
     }
-    throw err;
+    translateCalendarError(source, calendarId, err);
   }
 }
 
@@ -336,6 +434,9 @@ async function fetchRecurringMasters(ids: string[]) {
 }
 
 export async function getCalendarSnapshot(options: ListOptions = {}): Promise<CalendarSyncResponse> {
+  const internalCalendarId = requireCalendarId('internal');
+  const publicCalendarId = requireCalendarId('public');
+
   const [mappingsRaw, internalRaw, publicRaw] = await Promise.all([
     fetchMappings(),
     fetchCalendarEvents('internal', options),
@@ -369,7 +470,7 @@ export async function getCalendarSnapshot(options: ListOptions = {}): Promise<Ca
     return {
       id: event.id || mappingSourceId,
       source: 'internal',
-      calendarId: requireCalendarId('internal'),
+      calendarId: internalCalendarId,
       title: sanitized.title,
       start: sanitized.start,
       end: sanitized.end,
@@ -407,7 +508,7 @@ export async function getCalendarSnapshot(options: ListOptions = {}): Promise<Ca
     const syncEvent: CalendarSyncEvent = {
       id: event.id || '',
       source: 'public',
-      calendarId: requireCalendarId('public'),
+      calendarId: publicCalendarId,
       title: payload.title,
       start: payload.start,
       end: payload.end,
@@ -489,11 +590,16 @@ export async function getCalendarSnapshot(options: ListOptions = {}): Promise<Ca
     internal: internalEvents,
     public: publicEvents,
     mappings: mappingInfos,
+    calendars: {
+      internal: {source: 'internal', envVar: CALENDAR_ENV_MAP.internal, id: internalCalendarId},
+      public: {source: 'public', envVar: CALENDAR_ENV_MAP.public, id: publicCalendarId},
+    },
     meta: {
       timeMin: options.timeMin,
       timeMax: options.timeMax,
       timezone: DEFAULT_TIMEZONE,
       generatedAt: new Date().toISOString(),
+      serviceAccountEmail: SERVICE_ACCOUNT_EMAIL || null,
     },
   };
 }
@@ -533,11 +639,16 @@ function buildGoogleEventPayload(payload: PublicEventPayload): calendar_v3.Schem
 
 async function loadInternalEvent(eventId: string) {
   const calendar = getCalendarClient();
-  const {data} = await calendar.events.get({
-    calendarId: requireCalendarId('internal'),
-    eventId,
-  });
-  return data;
+  const calendarId = requireCalendarId('internal');
+  try {
+    const {data} = await calendar.events.get({
+      calendarId,
+      eventId,
+    });
+    return data;
+  } catch (err) {
+    translateCalendarError('internal', calendarId, err);
+  }
 }
 
 function resolveMappingKey(sourceEventId: string, recurringEventId?: string | null) {
@@ -565,6 +676,7 @@ export async function publishEvent(body: PublishEventBody) {
     displayNotes: manual.displayNotes ?? basePayload.displayNotes,
   };
   const calendar = getCalendarClient();
+  const publicCalendarId = requireCalendarId('public');
   const googlePayload = buildGoogleEventPayload(payload);
 
   const existing = await fetchMappingBySource(mappingKey);
@@ -572,20 +684,28 @@ export async function publishEvent(body: PublishEventBody) {
   let publicEventId = existing?.publicEventId || existing?.lastPublicEventId || undefined;
   let response: calendar_v3.Schema$Event;
   if (publicEventId) {
-    const {data} = await calendar.events.patch({
-      calendarId: requireCalendarId('public'),
-      eventId: publicEventId,
-      requestBody: googlePayload,
-    });
-    response = data;
-    publicEventId = data.id || publicEventId;
+    try {
+      const {data} = await calendar.events.patch({
+        calendarId: publicCalendarId,
+        eventId: publicEventId,
+        requestBody: googlePayload,
+      });
+      response = data;
+      publicEventId = data.id || publicEventId;
+    } catch (err) {
+      translateCalendarError('public', publicCalendarId, err);
+    }
   } else {
-    const {data} = await calendar.events.insert({
-      calendarId: requireCalendarId('public'),
-      requestBody: googlePayload,
-    });
-    response = data;
-    publicEventId = data.id || undefined;
+    try {
+      const {data} = await calendar.events.insert({
+        calendarId: publicCalendarId,
+        requestBody: googlePayload,
+      });
+      response = data;
+      publicEventId = data.id || undefined;
+    } catch (err) {
+      translateCalendarError('public', publicCalendarId, err);
+    }
   }
 
   if (!publicEventId) {
@@ -625,14 +745,15 @@ export async function unpublishEvent(body: UnpublishEventBody) {
   const publicEventId = mapping.publicEventId || body.publicEventId;
   if (publicEventId) {
     const calendar = getCalendarClient();
+    const publicCalendarId = requireCalendarId('public');
     try {
       await calendar.events.delete({
-        calendarId: requireCalendarId('public'),
+        calendarId: publicCalendarId,
         eventId: publicEventId,
       });
     } catch (err) {
-      if ((err as {code?: number}).code !== 404) {
-        throw err;
+      if (coerceStatusCode(err) !== 404) {
+        translateCalendarError('public', publicCalendarId, err);
       }
     }
   }
@@ -663,10 +784,20 @@ export async function updatePublicEvent(body: UpdateEventBody) {
     throw new Error('No published event is available to update.');
   }
   const calendar = getCalendarClient();
-  const {data: existing} = await calendar.events.get({
-    calendarId: requireCalendarId('public'),
-    eventId: publicEventId,
-  });
+  const publicCalendarId = requireCalendarId('public');
+  let existing: calendar_v3.Schema$Event | null = null;
+  try {
+    const {data} = await calendar.events.get({
+      calendarId: publicCalendarId,
+      eventId: publicEventId,
+    });
+    existing = data;
+  } catch (err) {
+    translateCalendarError('public', publicCalendarId, err);
+  }
+  if (!data) {
+    throw new Error('Failed to update public event.');
+  }
   if (!existing) {
     throw new Error('Public event could not be loaded.');
   }
@@ -681,11 +812,16 @@ export async function updatePublicEvent(body: UpdateEventBody) {
     displayNotes: manual.displayNotes ?? currentPayload.displayNotes,
   };
   const googlePayload = buildGoogleEventPayload(payload);
-  const {data} = await calendar.events.patch({
-    calendarId: requireCalendarId('public'),
-    eventId: publicEventId,
-    requestBody: googlePayload,
-  });
+  let data: calendar_v3.Schema$Event;
+  try {
+    ({data} = await calendar.events.patch({
+      calendarId: publicCalendarId,
+      eventId: publicEventId,
+      requestBody: googlePayload,
+    }));
+  } catch (err) {
+    translateCalendarError('public', publicCalendarId, err);
+  }
   const payloadHash = computePayloadHash(payload);
   const updatedMapping = await updateMapping(mappingInfo.sourceEventId, {
     publicEventId,

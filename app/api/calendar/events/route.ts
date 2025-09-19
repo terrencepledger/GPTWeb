@@ -1,5 +1,5 @@
 import {NextRequest, NextResponse} from 'next/server';
-import {getCalendarSnapshot} from '@/lib/calendarSync';
+import {CalendarAccessError, getCalendarSnapshot} from '@/lib/calendarSync';
 import {requireMediaGroupMember} from '@/lib/googleWorkspace';
 import {MEDIA_GROUP_HEADER} from '@/types/calendar';
 
@@ -43,11 +43,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(snapshot, {status: 200, headers: buildHeaders()});
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected error';
-    const status = message.includes('Invalid sync token') ? 410 : 500;
+    let status = message.includes('Invalid sync token') ? 410 : 500;
+    if (error instanceof CalendarAccessError) {
+      status = error.statusCode;
+    }
+    const body: Record<string, unknown> = {error: message};
+    if (error instanceof CalendarAccessError) {
+      body.details = error.details;
+    }
     console.error('[api/calendar/events] error', error);
-    return NextResponse.json(
-      {error: message},
-      {status, headers: buildHeaders()}
-    );
+    return NextResponse.json(body, {status, headers: buildHeaders()});
   }
 }

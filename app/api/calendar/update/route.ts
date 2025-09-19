@@ -1,5 +1,5 @@
 import {NextRequest, NextResponse} from 'next/server';
-import {updatePublicEvent} from '@/lib/calendarSync';
+import {CalendarAccessError, updatePublicEvent} from '@/lib/calendarSync';
 import {requireMediaGroupMember} from '@/lib/googleWorkspace';
 import {MEDIA_GROUP_HEADER, type UpdateEventBody} from '@/types/calendar';
 
@@ -38,14 +38,20 @@ export async function POST(request: NextRequest) {
     const result = await updatePublicEvent(body);
     return NextResponse.json(result, {status: 200, headers: buildHeaders()});
   } catch (error) {
-    const status = (error as any)?.statusCode === 403 ? 403 : 500;
+    let status = (error as any)?.statusCode === 403 ? 403 : 500;
     const message = error instanceof Error ? error.message : 'Unexpected error';
+    if (error instanceof CalendarAccessError) {
+      status = error.statusCode;
+    }
     const normalized = message.toLowerCase();
-    const adjustedStatus = status === 500 && normalized.includes('token') ? 401 : status;
+    if (status === 500 && normalized.includes('token')) {
+      status = 401;
+    }
+    const body: Record<string, unknown> = {error: message};
+    if (error instanceof CalendarAccessError) {
+      body.details = error.details;
+    }
     console.error('[api/calendar/update] error', error);
-    return NextResponse.json(
-      {error: message},
-      {status: adjustedStatus, headers: buildHeaders()}
-    );
+    return NextResponse.json(body, {status, headers: buildHeaders()});
   }
 }
