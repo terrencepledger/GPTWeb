@@ -40,6 +40,11 @@ import type {
   PublicEventPayload,
 } from '../../types/calendar'
 import {DEFAULT_MEDIA_GROUP_EMAIL, MEDIA_GROUP_HEADER} from '../../types/calendar'
+import {
+  fullCalendarCoreCss,
+  fullCalendarDayGridCss,
+  fullCalendarTimeGridCss,
+} from './fullcalendarStyles'
 
 interface CalendarSyncToolOptions {
   apiBaseUrl?: string
@@ -113,6 +118,15 @@ function joinApiPath(base: string, segment: string) {
   const normalized = base.replace(/\/$/, '')
   const cleaned = segment.replace(/^\//, '')
   return `${normalized}/${cleaned}`
+}
+
+function resolveEventTitle(event: CalendarSyncEvent) {
+  return (
+    event.title ||
+    event.publicPayload?.title ||
+    event.sanitized?.title ||
+    'Untitled event'
+  )
 }
 
 function formatDateRange(event: CalendarSyncEvent) {
@@ -311,7 +325,7 @@ function ErrorDetails(props: {details?: CalendarAccessDetails}) {
   )
 }
 
-const calendarStyles = `
+const customCalendarStyles = `
   .calendar-tool-root {
     display: flex;
     flex-direction: column;
@@ -357,6 +371,10 @@ const calendarStyles = `
   .calendar-tool-sidebarHeader {
     border-bottom: 1px solid var(--card-border-color);
   }
+  .calendar-tool-sidebarActions {
+    border-bottom: 1px solid var(--card-border-color);
+    background-color: var(--card-bg-color);
+  }
   .calendar-tool-scrollArea {
     flex: 1 1 auto;
     overflow-y: auto;
@@ -379,6 +397,8 @@ const calendarStyles = `
   .calendar-event-title {
     flex: 1 1 auto;
     min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .calendar-event-internal .calendar-event-content {
     color: var(--card-fg-color);
@@ -403,6 +423,10 @@ const calendarStyles = `
   }
   .fc-timegrid-event .calendar-event-title {
     font-size: 0.95em;
+    white-space: normal;
+  }
+  .fc-daygrid-event .calendar-event-title {
+    white-space: nowrap;
   }
   .calendar-event-selected {
     box-shadow: 0 0 0 2px var(--card-focus-ring-color) inset !important;
@@ -422,6 +446,13 @@ const calendarStyles = `
     }
   }
 `
+
+const calendarStyles = [
+  fullCalendarCoreCss,
+  fullCalendarDayGridCss,
+  fullCalendarTimeGridCss,
+  customCalendarStyles,
+].join('\n')
 
 function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   const toast = useToast()
@@ -576,7 +607,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     const items = [...data.internal, ...data.public]
     return items.map((event) => ({
       id: `${event.source}:${event.id}`,
-      title: event.title,
+      title: resolveEventTitle(event),
       start: event.start,
       end: event.end ?? undefined,
       allDay: event.allDay,
@@ -650,10 +681,11 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     const event: CalendarSyncEvent | undefined = (arg.event.extendedProps as any)?.event
     if (!event) return undefined
     const showTime = Boolean(arg.timeText && !arg.event.allDay)
+    const title = resolveEventTitle(event)
     return (
       <div className="calendar-event-content">
         {showTime ? <span className="calendar-event-time">{arg.timeText}</span> : null}
-        <span className="calendar-event-title">{event.title || arg.event.title}</span>
+        <span className="calendar-event-title">{title}</span>
       </div>
     )
   }, [])
@@ -991,7 +1023,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                 <Stack space={3}>
                   <Flex align="flex-start" justify="space-between" gap={3} wrap="wrap">
                     <Stack space={2}>
-                      <Heading size={1}>{selectedEvent.title || 'Untitled event'}</Heading>
+                      <Heading size={1}>{resolveEventTitle(selectedEvent)}</Heading>
                       <Text size={1} muted>{formatDateRange(selectedEvent)}</Text>
                     </Stack>
                     <Flex gap={1} wrap="wrap" justify="flex-end">
@@ -1016,6 +1048,78 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                     </Flex>
                   </Flex>
                 </Stack>
+              </Box>
+              <Box padding={4} className="calendar-tool-sidebarActions">
+                <Card padding={4} radius={3} shadow={1}>
+                  <Stack space={3}>
+                    <Stack space={2}>
+                      <Heading as="h2" size={1}>
+                        Publishing
+                      </Heading>
+                      <Text size={1} muted>
+                        Choose how this event syncs with the public calendar.
+                      </Text>
+                    </Stack>
+                    <Stack space={3}>
+                      {canPublish && (
+                        <Stack space={1}>
+                          <Button
+                            icon={PublishIcon}
+                            text={
+                              selectedEvent.mapping?.publicEventId
+                                ? 'Publish calendar updates'
+                                : 'Publish to public calendar'
+                            }
+                            tone="positive"
+                            disabled={actionLoading}
+                            onClick={() => runAction('publish')}
+                          />
+                          <Text size={1} muted>
+                            {selectedEvent.mapping?.publicEventId
+                              ? 'Syncs the schedule and core event details from the internal calendar to the linked public event.'
+                              : 'Creates a matching event on the public calendar using the internal event as the source.'}
+                          </Text>
+                        </Stack>
+                      )}
+                      {canUpdate && (
+                        <Stack space={1}>
+                          <Button
+                            icon={SyncIcon}
+                            text="Update public copy only"
+                            tone="primary"
+                            disabled={actionLoading}
+                            onClick={() => runAction('update')}
+                          />
+                          <Text size={1} muted>
+                            Applies the public title, blurb, location, and display notes above without changing the event schedule.
+                          </Text>
+                        </Stack>
+                      )}
+                      {canUnpublish && (
+                        <Stack space={1}>
+                          <Button
+                            icon={UnpublishIcon}
+                            text="Unpublish"
+                            tone="critical"
+                            disabled={actionLoading}
+                            onClick={() => runAction('unpublish')}
+                          />
+                          <Text size={1} muted>
+                            Stops syncing this event with the public calendar and removes the public copy.
+                          </Text>
+                        </Stack>
+                      )}
+                    </Stack>
+                    {!canPublish && !canUpdate && !canUnpublish && !actionLoading && (
+                      <Text size={1} muted>
+                        Publishing actions will appear once the event is linked to the public calendar.
+                      </Text>
+                    )}
+                    {actionLoading && (
+                      <Text size={1} muted>Working…</Text>
+                    )}
+                  </Stack>
+                </Card>
               </Box>
               <Box padding={4} className="calendar-tool-scrollArea">
                 <Stack space={4}>
@@ -1178,57 +1282,6 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                           />
                         </Stack>
                       </Stack>
-                    </Stack>
-                  </Card>
-                  <Card padding={4} radius={3} shadow={1}>
-                    <Stack space={3}>
-                      <Stack space={2}>
-                        <Heading as="h2" size={1}>
-                          Publishing
-                        </Heading>
-                        <Text size={1} muted>
-                          Choose how this event syncs with the public calendar.
-                        </Text>
-                      </Stack>
-                      <Flex gap={2} wrap="wrap">
-                        {canPublish && (
-                          <Button
-                            icon={PublishIcon}
-                            text={selectedEvent.mapping?.publicEventId ? 'Publish updates' : 'Publish to public calendar'}
-                            tone="positive"
-                            disabled={actionLoading}
-                            onClick={() => runAction('publish')}
-                          />
-                        )}
-                        {canUpdate && (
-                          <Button
-                            icon={SyncIcon}
-                            text="Update public copy"
-                            tone="primary"
-                            disabled={actionLoading}
-                            onClick={() => runAction('update')}
-                          />
-                        )}
-                        {canUnpublish && (
-                          <Button
-                            icon={UnpublishIcon}
-                            text="Unpublish"
-                            tone="critical"
-                            disabled={actionLoading}
-                            onClick={() => runAction('unpublish')}
-                          />
-                        )}
-                      </Flex>
-                      {!canPublish && !canUpdate && !canUnpublish && !actionLoading && (
-                        <Text size={1} muted>
-                          Publishing actions will appear once the event is linked to the public calendar.
-                        </Text>
-                      )}
-                      {actionLoading && (
-                        <Text size={1} muted>
-                          Working…
-                        </Text>
-                      )}
                     </Stack>
                   </Card>
                   {relatedInternal && (
