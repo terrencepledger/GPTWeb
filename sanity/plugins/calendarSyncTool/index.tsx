@@ -27,7 +27,8 @@ import FullCalendar from '@fullcalendar/react'
 import interactionPlugin from '@fullcalendar/interaction'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
-import type {DatesSetArg, EventClickArg, EventContentArg} from '@fullcalendar/core'
+import listPlugin from '@fullcalendar/list'
+import type {DatesSetArg, EventClickArg, EventContentArg, SlotLabelContentArg} from '@fullcalendar/core'
 
 
 import type {
@@ -371,63 +372,56 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       --calendar-public-color: ${publicColor};
       display: flex;
       flex-direction: column;
-      height: 100%;
+      min-height: 100%;
       width: min(1400px, 100%);
       margin: 0 auto;
-    }
-    .calendar-tool-shell {
-      display: flex;
-      flex: 1 1 auto;
-      gap: 1.5rem;
       padding: 1.5rem;
-      min-height: 0;
-      align-items: stretch;
+      gap: 1.5rem;
+      box-sizing: border-box;
     }
-    .calendar-tool-statusPane {
-      flex: 0 0 320px;
-      max-width: 360px;
-      overflow-y: auto;
-      padding-right: 0.25rem;
+    .calendar-tool-checklist {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
     .calendar-tool-statusList {
       display: flex;
       flex-direction: column;
       gap: 1rem;
     }
-    .calendar-tool-mainPane {
-      flex: 1 1 auto;
+    .calendar-tool-content {
+      display: flex;
+      gap: 1.5rem;
+      min-height: 0;
+      align-items: stretch;
+    }
+    .calendar-tool-calendarColumn {
+      flex: 1 1 0;
       min-width: 0;
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
-      min-height: 0;
+    }
+    .calendar-tool-detailsColumn {
+      flex: 0 0 360px;
+      min-width: 320px;
+      max-width: 460px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
     }
     .calendar-tool-calendarCard {
       position: relative;
       flex: 1 1 auto;
-      min-height: 420px;
+      min-height: 520px;
       overflow: hidden;
     }
     .calendar-tool-calendarCard .fc {
       height: 100%;
     }
-    .calendar-tool-calendarCard .fc-toolbar {
-      padding: 0.5rem 0.75rem 0;
-    }
-    .calendar-tool-inspector {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      min-height: 0;
-    }
-    .calendar-tool-inspectorGrid {
-      display: grid;
-      gap: 1.25rem 1.5rem;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      align-items: start;
-    }
     .calendar-tool-emptyState {
-      min-height: 280px;
+      flex: 1 1 auto;
+      min-height: 320px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -460,9 +454,9 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     .fc-daygrid-event .calendar-event-title {
       white-space: normal;
       display: -webkit-box;
-      -webkit-line-clamp: 2;
+      -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
-      line-height: 1.2;
+      line-height: 1.25;
       word-break: break-word;
     }
     .fc-timegrid-event .calendar-event-content {
@@ -476,6 +470,21 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       white-space: normal;
       overflow-wrap: anywhere;
     }
+    .calendar-event-listItem {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      font-size: 0.95rem;
+      line-height: 1.35;
+    }
+    .calendar-event-listItemTitle {
+      font-weight: 600;
+      word-break: break-word;
+    }
+    .calendar-event-note {
+      font-size: 0.75rem;
+      opacity: 0.85;
+    }
     .calendar-event-internal {
       background-color: var(--calendar-internal-color) !important;
       border-color: var(--calendar-internal-color) !important;
@@ -484,10 +493,12 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       background-color: var(--calendar-public-color) !important;
       border-color: var(--calendar-public-color) !important;
     }
-    .calendar-event-internal .calendar-event-content {
+    .calendar-event-internal .calendar-event-content,
+    .calendar-event-internal .calendar-event-listItem {
       color: var(--card-fg-color);
     }
-    .calendar-event-public .calendar-event-content {
+    .calendar-event-public .calendar-event-content,
+    .calendar-event-public .calendar-event-listItem {
       color: var(--card-bg-color);
     }
     .calendar-event-selected {
@@ -496,20 +507,35 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     .calendar-event-drift {
       border-style: dashed !important;
     }
+    .calendar-slot-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--card-muted-fg-color);
+      letter-spacing: 0.02em;
+    }
+    .fc .fc-timegrid-slot-label-cushion {
+      padding: 0.25rem 0.5rem;
+    }
+    .fc .fc-toolbar.fc-header-toolbar {
+      padding-bottom: 0.75rem;
+    }
     @media (max-width: 1200px) {
-      .calendar-tool-shell {
+      .calendar-tool-content {
         flex-direction: column;
       }
-      .calendar-tool-statusPane {
-        flex: 0 0 auto;
+      .calendar-tool-detailsColumn {
         max-width: none;
-        overflow: visible;
-        padding-right: 0;
+        min-width: 0;
+        flex: 1 1 auto;
       }
     }
     @media (max-width: 800px) {
-      .calendar-tool-inspectorGrid {
-        grid-template-columns: 1fr;
+      .calendar-tool-root {
+        padding: 1rem;
+        gap: 1rem;
+      }
+      .calendar-tool-content {
+        gap: 1rem;
       }
     }
   `
@@ -754,28 +780,68 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     return hasSeriousDrift(selectedEvent.drift)
   }, [sanitizedSuggestion, selectedEvent])
 
-  const renderEventContent = useCallback((arg: EventContentArg) => {
-    const extended = arg.event.extendedProps as {
-      event?: CalendarSyncEvent
-      displayTitle?: string
-    }
-    const sourceEvent = extended?.event
-    if (!sourceEvent) return undefined
-    const displayTitle = extended?.displayTitle || resolveEventTitle(sourceEvent)
-    const timeText = arg.timeText?.trim()
-    const showTime = Boolean(timeText && !arg.event.allDay)
-    return (
-      <div
-        className="calendar-event-content"
-        title={displayTitle}
-        aria-label={displayTitle}
-        data-calendar-source={sourceEvent.source}
-      >
-        {showTime ? <span className="calendar-event-time">{timeText}</span> : null}
-        <span className="calendar-event-title">{displayTitle}</span>
-      </div>
-    )
-  }, [])
+  const slotLabelFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(undefined, {
+        hour: 'numeric',
+        minute: '2-digit',
+      }),
+    [],
+  )
+
+  const renderEventContent = useCallback(
+    (arg: EventContentArg) => {
+      const extended = arg.event.extendedProps as {
+        event?: CalendarSyncEvent
+        displayTitle?: string
+      }
+      const sourceEvent = extended?.event
+      if (!sourceEvent) return undefined
+      const displayTitle = extended?.displayTitle || resolveEventTitle(sourceEvent)
+      const timeText = arg.timeText?.trim()
+      const isListView = Boolean(arg.view?.type && arg.view.type.startsWith('list'))
+      if (isListView) {
+        const timeLabel = timeText || (arg.event.allDay ? 'All day' : '')
+        const locationText =
+          sourceEvent.publicPayload?.location ||
+          sourceEvent.sanitized?.location ||
+          sourceEvent.rawLocation ||
+          ''
+        return (
+          <div
+            className="calendar-event-listItem"
+            title={displayTitle}
+            aria-label={displayTitle}
+            data-calendar-source={sourceEvent.source}
+          >
+            {timeLabel ? <span className="calendar-event-time">{timeLabel}</span> : null}
+            <span className="calendar-event-listItemTitle">{displayTitle}</span>
+            {locationText ? <span className="calendar-event-note">{locationText}</span> : null}
+          </div>
+        )
+      }
+      const showTime = Boolean(timeText && !arg.event.allDay)
+      return (
+        <div
+          className="calendar-event-content"
+          title={displayTitle}
+          aria-label={displayTitle}
+          data-calendar-source={sourceEvent.source}
+        >
+          {showTime ? <span className="calendar-event-time">{timeText}</span> : null}
+          <span className="calendar-event-title">{displayTitle}</span>
+        </div>
+      )
+    },
+    [],
+  )
+
+  const renderSlotLabel = useCallback(
+    (arg: SlotLabelContentArg) => (
+      <span className="calendar-slot-label">{slotLabelFormatter.format(arg.date)}</span>
+    ),
+    [slotLabelFormatter],
+  )
 
   const handleDatesSet = useCallback((args: DatesSetArg) => {
     const start = args.start.toISOString()
@@ -966,6 +1032,33 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       return new Date(data.meta.generatedAt).toLocaleString()
     }
   }, [data?.meta?.generatedAt])
+
+  const calendarButtonText = useMemo(
+    () => ({
+      listMonth: 'Month schedule',
+      timeGridWeek: 'Week grid',
+      timeGridDay: 'Day grid',
+    }),
+    [],
+  )
+
+  const calendarViewOptions = useMemo(
+    () => ({
+      listMonth: {
+        displayEventTime: true,
+        noEventsText: 'No scheduled events this month.',
+      },
+      timeGridWeek: {
+        slotLabelFormat: {hour: 'numeric', minute: '2-digit'},
+        expandRows: true,
+      },
+      timeGridDay: {
+        slotLabelFormat: {hour: 'numeric', minute: '2-digit'},
+        expandRows: true,
+      },
+    }),
+    [],
+  )
 
   const statusItems = useMemo(() => {
     const items: Array<{id: string; title: string; state: StatusState; content: React.ReactNode}> = []
@@ -1226,7 +1319,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     return (
       <div className="calendar-tool-root">
         <style>{calendarStyles}</style>
-        <Card padding={4} radius={0} shadow={1}>
+        <Card padding={4} radius={3} shadow={1}>
           <Stack space={3}>
             <Heading size={2}>Calendar</Heading>
             <Text size={1} muted>
@@ -1278,7 +1371,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   return (
     <div className="calendar-tool-root">
       <style>{calendarStyles}</style>
-      <Card padding={4} radius={0} shadow={1}>
+      <Card padding={4} radius={3} shadow={1}>
         <Stack space={3}>
           <Flex align="flex-start" justify="space-between" gap={4} wrap="wrap">
             <Stack space={2} style={{flex: '1 1 320px', minWidth: 260}}>
@@ -1310,54 +1403,59 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
           </Flex>
         </Stack>
       </Card>
-      <div className="calendar-tool-shell">
-        <div className="calendar-tool-statusPane">
-          <Stack space={3}>
-            <Stack space={2}>
-              <Heading as="h2" size={1}>
-                Workflow checklist
-              </Heading>
-              <Text size={1} muted>Follow these checkpoints to keep both calendars aligned.</Text>
-            </Stack>
-            <div className="calendar-tool-statusList">
-              {statusItems.map((item) => (
-                <StatusItem key={item.id} title={item.title} state={item.state}>
-                  {item.content}
-                </StatusItem>
-              ))}
-            </div>
-            {data?.meta && (
-              <Card padding={3} radius={3} shadow={1} tone="transparent">
-                <Stack space={2}>
-                  <Text size={1} weight="medium">
-                    Calendar credentials
-                  </Text>
-                  <Text size={1} muted>
-                    {data.meta.serviceAccountEmail
-                      ? `Service account: ${data.meta.serviceAccountEmail}`
-                      : 'Service account email is not configured.'}
-                  </Text>
-                  <Text size={1} muted>
-                    {data.meta.impersonatedUserEmail
-                      ? `Impersonating: ${data.meta.impersonatedUserEmail}`
-                      : 'Impersonation email is not configured.'}
-                  </Text>
-                </Stack>
-              </Card>
-            )}
+      <Card padding={4} radius={3} shadow={1}>
+        <Stack space={4} className="calendar-tool-checklist">
+          <Stack space={2}>
+            <Heading as="h2" size={1}>
+              Workflow checklist
+            </Heading>
+            <Text size={1} muted>Follow these checkpoints to keep both calendars aligned.</Text>
           </Stack>
-        </div>
-        <div className="calendar-tool-mainPane">
+          <div className="calendar-tool-statusList">
+            {statusItems.map((item) => (
+              <StatusItem key={item.id} title={item.title} state={item.state}>
+                {item.content}
+              </StatusItem>
+            ))}
+          </div>
+          {data?.meta && (
+            <Card padding={3} radius={3} shadow={1} tone="transparent">
+              <Stack space={2}>
+                <Text size={1} weight="medium">Calendar credentials</Text>
+                <Text size={1} muted>
+                  {data.meta.serviceAccountEmail
+                    ? `Service account: ${data.meta.serviceAccountEmail}`
+                    : 'Service account email is not configured.'}
+                </Text>
+                <Text size={1} muted>
+                  {data.meta.impersonatedUserEmail
+                    ? `Impersonating: ${data.meta.impersonatedUserEmail}`
+                    : 'Impersonation email is not configured.'}
+                </Text>
+              </Stack>
+            </Card>
+          )}
+        </Stack>
+      </Card>
+      <div className="calendar-tool-content">
+        <div className="calendar-tool-calendarColumn">
           <Card className="calendar-tool-calendarCard" padding={3} radius={3} shadow={1}>
             <FullCalendar
-              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-              initialView="dayGridMonth"
-              headerToolbar={{left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay'}}
+              plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
+              initialView="listMonth"
+              headerToolbar={{
+                left: 'prev,next today',
+                center: 'title',
+                right: 'listMonth,timeGridWeek,timeGridDay',
+              }}
+              buttonText={calendarButtonText}
+              views={calendarViewOptions}
               height="100%"
               events={events}
               eventContent={renderEventContent}
               eventTimeFormat={{hour: 'numeric', minute: '2-digit'}}
-              slotLabelFormat={{hour: 'numeric', minute: '2-digit'}}
+              slotDuration="00:30:00"
+              slotLabelContent={renderSlotLabel}
               nowIndicator
               dayMaxEventRows={4}
               slotEventOverlap={false}
@@ -1385,309 +1483,313 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
               </Flex>
             )}
           </Card>
-          <div className="calendar-tool-inspector">
-            {!selectedEvent ? (
-              <Card padding={4} radius={3} shadow={1} className="calendar-tool-emptyState">
-                <Stack space={3} style={{alignItems: 'center'}}>
-                  <CalendarIcon />
-                  <Text size={1} muted>Select an event to review publishing options.</Text>
+        </div>
+        <div className="calendar-tool-detailsColumn">
+          {!selectedEvent ? (
+            <Card padding={4} radius={3} shadow={1} className="calendar-tool-emptyState">
+              <Stack space={3} style={{alignItems: 'center'}}>
+                <CalendarIcon />
+                <Text size={1} muted>Select an event to review publishing options.</Text>
+              </Stack>
+            </Card>
+          ) : (
+            <>
+              <Card padding={4} radius={3} shadow={1}>
+                <Stack space={4}>
+                  <Stack space={1}>
+                    <Heading as="h3" size={1}>
+                      Publishing controls
+                    </Heading>
+                    <Text size={1} muted>
+                      Sync the internal schedule or update the public write-up for this event.
+                    </Text>
+                  </Stack>
+                  <Stack space={1}>
+                    <Heading size={1}>{resolveEventTitle(selectedEvent)}</Heading>
+                    <Text size={1} muted>{formatDateRange(selectedEvent)}</Text>
+                    {timezoneLabel && <Text size={1} muted>Time zone: {timezoneLabel}</Text>}
+                  </Stack>
+                  <Flex gap={1} wrap="wrap">
+                    {selectedEvent.htmlLink && (
+                      <Button
+                        icon={LaunchIcon}
+                        mode="bleed"
+                        text="Open in Google Calendar"
+                        tone="default"
+                        onClick={handleOpenInGoogle}
+                        disabled={loading || actionLoading}
+                      />
+                    )}
+                    <Button
+                      icon={RefreshIcon}
+                      mode="bleed"
+                      tone="primary"
+                      text="Refresh snapshot"
+                      onClick={refresh}
+                      disabled={loading || actionLoading}
+                    />
+                  </Flex>
+                  <Stack space={3}>
+                    {canPublish ? (
+                      <Stack space={1}>
+                        <Text size={1} weight="medium">
+                          Sync the schedule
+                        </Text>
+                        <Button
+                          icon={PublishIcon}
+                          text={
+                            selectedEvent.mapping?.publicEventId
+                              ? 'Sync schedule from internal calendar'
+                              : 'Publish to public calendar'
+                          }
+                          tone="positive"
+                          disabled={actionLoading}
+                          onClick={() => runAction('publish')}
+                        />
+                        <Text size={1} muted>
+                          {selectedEvent.mapping?.publicEventId
+                            ? 'Pushes start/end times and recurrence from the internal event to the linked public copy.'
+                            : 'Creates a new public event using this internal schedule and the public details below.'}
+                        </Text>
+                      </Stack>
+                    ) : (
+                      selectedEvent.source === 'public' && (
+                        <Text size={1} muted>
+                          Open the matching internal event to manage scheduling. Publishing actions originate from the internal
+                          calendar.
+                        </Text>
+                      )
+                    )}
+                    {canUpdate && (
+                      <Stack space={1}>
+                        <Text size={1} weight="medium">
+                          Publish public write-up
+                        </Text>
+                        <Button
+                          icon={SyncIcon}
+                          text="Publish public write-up updates"
+                          tone="primary"
+                          disabled={actionLoading}
+                          onClick={() => runAction('update')}
+                        />
+                        <Text size={1} muted>
+                          Updates the public title, blurb, location, and display notes without modifying the event schedule.
+                        </Text>
+                      </Stack>
+                    )}
+                    {canUnpublish && (
+                      <Stack space={1}>
+                        <Text size={1} weight="medium">
+                          Remove public listing
+                        </Text>
+                        <Button
+                          icon={UnpublishIcon}
+                          text="Unpublish from public calendar"
+                          tone="critical"
+                          disabled={actionLoading}
+                          onClick={() => runAction('unpublish')}
+                        />
+                        <Text size={1} muted>
+                          Removes the public copy and stops syncing this event.
+                        </Text>
+                      </Stack>
+                    )}
+                    {!canPublish && !canUpdate && !canUnpublish && !actionLoading && (
+                      <Text size={1} muted>
+                        Publishing actions unlock once this event is linked to the public calendar.
+                      </Text>
+                    )}
+                    {actionLoading && <Text size={1} muted>Working…</Text>}
+                  </Stack>
                 </Stack>
               </Card>
-            ) : (
-              <div className="calendar-tool-inspectorGrid">
-                <Card padding={4} radius={3} shadow={1}>
-                  <Stack space={4}>
-                    <Stack space={2}>
-                      <Heading as="h3" size={1}>
-                        Event overview
-                      </Heading>
-                      <Text size={1} muted>Publishing status, linked calendars, and drift checks.</Text>
-                    </Stack>
-                    <Stack space={2}>
-                      <Stack space={1}>
-                        <Heading size={1}>{resolveEventTitle(selectedEvent)}</Heading>
-                        <Text size={1} muted>{formatDateRange(selectedEvent)}</Text>
-                        {timezoneLabel && <Text size={1} muted>Time zone: {timezoneLabel}</Text>}
-                      </Stack>
-                      <Flex gap={1} wrap="wrap">
-                        {selectedEvent.htmlLink && (
-                          <Button
-                            icon={LaunchIcon}
-                            mode="bleed"
-                            text="Open in Google Calendar"
-                            tone="default"
-                            onClick={handleOpenInGoogle}
-                            disabled={loading || actionLoading}
-                          />
-                        )}
-                        <Button
-                          icon={RefreshIcon}
-                          mode="bleed"
-                          tone="primary"
-                          text="Refresh snapshot"
-                          onClick={refresh}
-                          disabled={loading || actionLoading}
-                        />
-                      </Flex>
-                    </Stack>
-                    <Stack space={3}>
-                      <Heading as="h4" size={1}>
-                        Publishing actions
-                      </Heading>
-                      {canPublish ? (
-                        <Stack space={1}>
-                          <Button
-                            icon={PublishIcon}
-                            text={
-                              selectedEvent.mapping?.publicEventId
-                                ? 'Sync schedule to public calendar'
-                                : 'Publish to public calendar'
-                            }
-                            tone="positive"
-                            disabled={actionLoading}
-                            onClick={() => runAction('publish')}
-                          />
-                          <Text size={1} muted>
-                            {selectedEvent.mapping?.publicEventId
-                              ? 'Overwrites the public event dates, times, and recurrence with the internal calendar schedule.'
-                              : 'Creates a public event using this internal schedule and the public details you provide.'}
-                          </Text>
-                        </Stack>
-                      ) : (
-                        selectedEvent.source === 'public' && (
-                          <Text size={1} muted>
-                            Open the internal source event to manage scheduling. Publishing actions originate from the internal
-                            calendar.
-                          </Text>
-                        )
-                      )}
-                      {canUpdate && (
-                        <Stack space={1}>
-                          <Button
-                            icon={SyncIcon}
-                            text="Publish public text updates"
-                            tone="primary"
-                            disabled={actionLoading}
-                            onClick={() => runAction('update')}
-                          />
-                          <Text size={1} muted>
-                            Updates the public title, blurb, location, and display notes without altering the event schedule.
-                          </Text>
-                        </Stack>
-                      )}
-                      {canUnpublish && (
-                        <Stack space={1}>
-                          <Button
-                            icon={UnpublishIcon}
-                            text="Unpublish from public calendar"
-                            tone="critical"
-                            disabled={actionLoading}
-                            onClick={() => runAction('unpublish')}
-                          />
-                          <Text size={1} muted>
-                            Removes the public copy and stops syncing this event.
-                          </Text>
-                        </Stack>
-                      )}
-                      {!canPublish && !canUpdate && !canUnpublish && !actionLoading && (
-                        <Text size={1} muted>
-                          Publishing actions unlock once this event is linked to the public calendar.
-                        </Text>
-                      )}
-                      {actionLoading && <Text size={1} muted>Working…</Text>}
-                    </Stack>
-                    <Stack space={3}>
-                      <Heading as="h4" size={1}>
-                        Status & context
-                      </Heading>
-                      <Stack space={1}>
-                        <Text size={1} weight="medium">Status</Text>
-                        <Flex align="center" gap={2} wrap="wrap">
-                          {selectedEvent.mapping?.status ? (
-                            <Badge
-                              tone={
-                                selectedEvent.mapping.status === 'published'
-                                  ? 'positive'
-                                  : selectedEvent.mapping.status === 'unpublished'
-                                  ? 'critical'
-                                  : 'default'
-                              }
-                            >
-                              {selectedEvent.mapping.status === 'published'
-                                ? 'Published'
-                                : selectedEvent.mapping.status === 'unpublished'
-                                ? 'Unpublished'
-                                : 'Not yet published'}
-                            </Badge>
-                          ) : (
-                            <Badge>Draft only</Badge>
-                          )}
-                          <Badge tone={selectedEvent.source === 'internal' ? 'primary' : 'positive'}>
-                            {selectedEvent.source === 'internal' ? 'Internal event' : 'Public event'}
-                          </Badge>
-                          {selectedEvent.mapping?.publicEventId ? (
-                            <Badge tone="primary">Linked to public calendar</Badge>
-                          ) : (
-                            <Badge tone="default">Not linked to public calendar</Badge>
-                          )}
-                          {selectedEvent.allDay && <Badge tone="default">All-day</Badge>}
-                          {selectedEvent.recurringEventId && <Badge tone="default">Recurring series</Badge>}
-                        </Flex>
-                      </Stack>
-                      <Stack space={1}>
-                        <Text size={1} weight="medium">Calendar</Text>
-                        {calendarSummary ? (
-                          <Stack space={1}>
-                            <Text size={1} muted>
-                              <code>{calendarSummary.envVar}</code>
-                            </Text>
-                            <Text
-                              size={1}
-                              style={{
-                                fontFamily: 'var(--font-mono, monospace)',
-                                wordBreak: 'break-all',
-                              }}
-                            >
-                              {calendarSummary.id}
-                            </Text>
-                          </Stack>
-                        ) : (
-                          <Text size={1} muted>Loading calendar details…</Text>
-                        )}
-                      </Stack>
-                      {selectedEvent.mapping?.publicEventId && (
-                        <Stack space={1}>
-                          <Text size={1} weight="medium">Linked public event ID</Text>
-                          <Text
-                            size={1}
-                            style={{fontFamily: 'var(--font-mono, monospace)', wordBreak: 'break-all'}}
-                          >
-                            {selectedEvent.mapping.publicEventId}
-                          </Text>
-                        </Stack>
-                      )}
-                      <DriftList items={selectedEvent.drift} />
-                    </Stack>
+              <Card padding={4} radius={3} shadow={1}>
+                <Stack space={3}>
+                  <Stack space={1}>
+                    <Heading as="h3" size={1}>
+                      Status & context
+                    </Heading>
+                    <Text size={1} muted>Review the current publishing state and linked calendar metadata.</Text>
                   </Stack>
-                </Card>
-                <Card padding={4} radius={3} shadow={1}>
+                  <Stack space={1}>
+                    <Text size={1} weight="medium">Status</Text>
+                    <Flex align="center" gap={2} wrap="wrap">
+                      {selectedEvent.mapping?.status ? (
+                        <Badge
+                          tone={
+                            selectedEvent.mapping.status === 'published'
+                              ? 'positive'
+                              : selectedEvent.mapping.status === 'unpublished'
+                              ? 'critical'
+                              : 'default'
+                          }
+                        >
+                          {selectedEvent.mapping.status === 'published'
+                            ? 'Published'
+                            : selectedEvent.mapping.status === 'unpublished'
+                            ? 'Unpublished'
+                            : 'Not yet published'}
+                        </Badge>
+                      ) : (
+                        <Badge>Draft only</Badge>
+                      )}
+                      <Badge tone={selectedEvent.source === 'internal' ? 'primary' : 'positive'}>
+                        {selectedEvent.source === 'internal' ? 'Internal event' : 'Public event'}
+                      </Badge>
+                      {selectedEvent.mapping?.publicEventId ? (
+                        <Badge tone="primary">Linked to public calendar</Badge>
+                      ) : (
+                        <Badge tone="default">Not linked to public calendar</Badge>
+                      )}
+                      {selectedEvent.allDay && <Badge tone="default">All-day</Badge>}
+                      {selectedEvent.recurringEventId && <Badge tone="default">Recurring series</Badge>}
+                    </Flex>
+                  </Stack>
+                  <Stack space={1}>
+                    <Text size={1} weight="medium">Calendar</Text>
+                    {calendarSummary ? (
+                      <Stack space={1}>
+                        <Text size={1} muted>
+                          <code>{calendarSummary.envVar}</code>
+                        </Text>
+                        <Text
+                          size={1}
+                          style={{
+                            fontFamily: 'var(--font-mono, monospace)',
+                            wordBreak: 'break-all',
+                          }}
+                        >
+                          {calendarSummary.id}
+                        </Text>
+                      </Stack>
+                    ) : (
+                      <Text size={1} muted>Loading calendar details…</Text>
+                    )}
+                  </Stack>
+                  {selectedEvent.mapping?.publicEventId && (
+                    <Stack space={1}>
+                      <Text size={1} weight="medium">Linked public event ID</Text>
+                      <Text size={1} style={{fontFamily: 'var(--font-mono, monospace)', wordBreak: 'break-all'}}>
+                        {selectedEvent.mapping.publicEventId}
+                      </Text>
+                    </Stack>
+                  )}
+                  <DriftList items={selectedEvent.drift} />
+                </Stack>
+              </Card>
+              <Card padding={4} radius={3} shadow={1}>
+                <Stack space={3}>
+                  <Stack space={2}>
+                    <Heading as="h3" size={1}>
+                      Public details
+                    </Heading>
+                    <Text size={1} muted>
+                      The blurb introduces the event on the public site, while display notes surface day-of reminders next to the
+                      schedule.
+                    </Text>
+                  </Stack>
                   <Stack space={3}>
                     <Stack space={2}>
-                      <Heading as="h3" size={1}>
-                        Public details
-                      </Heading>
-                      <Text size={1} muted>Information that will appear on the public site.</Text>
+                      <Text size={1} weight="medium">Title</Text>
+                      <Text size={1} muted>The public headline shown on listings and the event page.</Text>
+                      <TextInput
+                        value={formState?.title || ''}
+                        onChange={handleInputChange('title')}
+                        aria-label="Public title"
+                        placeholder="Event title"
+                      />
                     </Stack>
+                    <Stack space={2}>
+                      <Text size={1} weight="medium">Blurb</Text>
+                      <Text size={1} muted>Appears in the public description and calendar previews.</Text>
+                      <TextArea
+                        value={formState?.blurb || ''}
+                        onChange={handleTextAreaChange('blurb')}
+                        rows={4}
+                        aria-label="Public blurb"
+                        placeholder="Public blurb"
+                        style={{resize: 'vertical'}}
+                      />
+                    </Stack>
+                    <Stack space={2}>
+                      <Text size={1} weight="medium">Location</Text>
+                      <Text size={1} muted>Shown on the public calendar and event page.</Text>
+                      <TextInput
+                        value={formState?.location || ''}
+                        onChange={handleInputChange('location')}
+                        aria-label="Public location"
+                        placeholder="Location"
+                      />
+                    </Stack>
+                    <Stack space={2}>
+                      <Text size={1} weight="medium">Display notes</Text>
+                      <Text size={1} muted>
+                        Displayed with the published schedule—use for arrival instructions, streaming links, or other attendee
+                        details.
+                      </Text>
+                      <TextArea
+                        value={formState?.displayNotes || ''}
+                        onChange={handleTextAreaChange('displayNotes')}
+                        rows={3}
+                        aria-label="Display notes"
+                        placeholder="Display notes"
+                        style={{resize: 'vertical'}}
+                      />
+                    </Stack>
+                  </Stack>
+                </Stack>
+              </Card>
+              {relatedInternal && (
+                <Card padding={4} radius={3} shadow={1}>
+                  <Stack space={3}>
+                    <Heading as="h3" size={1}>
+                      Internal notes
+                    </Heading>
+                    {relatedInternal.rawLocation && (
+                      <Stack space={1}>
+                        <Text size={1} weight="medium">Location</Text>
+                        <Text size={1}>{relatedInternal.rawLocation}</Text>
+                      </Stack>
+                    )}
+                    <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)', borderRadius: 4}}>
+                      <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
+                        {relatedInternal.rawDescription || 'No private notes provided.'}
+                      </Text>
+                    </Box>
+                  </Stack>
+                </Card>
+              )}
+              {showSanitizedSuggestion && sanitizedSuggestion && (
+                <Card padding={4} radius={3} shadow={1}>
+                  <Stack space={3}>
+                    <Heading as="h3" size={1}>
+                      Suggested public copy
+                    </Heading>
                     <Stack space={3}>
-                      <Stack space={2}>
-                        <Text size={1} weight="medium">
-                          Title
-                        </Text>
-                        <TextInput
-                          value={formState?.title || ''}
-                          onChange={handleInputChange('title')}
-                          aria-label="Public title"
-                          placeholder="Event title"
-                        />
-                      </Stack>
-                      <Stack space={2}>
-                        <Text size={1} weight="medium">
-                          Blurb
-                        </Text>
-                        <TextArea
-                          value={formState?.blurb || ''}
-                          onChange={handleTextAreaChange('blurb')}
-                          rows={4}
-                          aria-label="Public blurb"
-                          placeholder="Public blurb"
-                          style={{resize: 'vertical'}}
-                        />
-                      </Stack>
-                      <Stack space={2}>
-                        <Text size={1} weight="medium">
-                          Location
-                        </Text>
-                        <TextInput
-                          value={formState?.location || ''}
-                          onChange={handleInputChange('location')}
-                          aria-label="Public location"
-                          placeholder="Location"
-                        />
-                      </Stack>
-                      <Stack space={2}>
-                        <Text size={1} weight="medium">
-                          Display notes
-                        </Text>
-                        <TextArea
-                          value={formState?.displayNotes || ''}
-                          onChange={handleTextAreaChange('displayNotes')}
-                          rows={3}
-                          aria-label="Display notes"
-                          placeholder="Display notes"
-                          style={{resize: 'vertical'}}
-                        />
-                      </Stack>
+                      {sanitizedSuggestion.location && (
+                        <Stack space={1}>
+                          <Text size={1} weight="medium">Location</Text>
+                          <Text size={1}>{sanitizedSuggestion.location}</Text>
+                        </Stack>
+                      )}
+                      {sanitizedSuggestion.blurb && (
+                        <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)', borderRadius: 4}}>
+                          <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>{sanitizedSuggestion.blurb}</Text>
+                        </Box>
+                      )}
+                      {sanitizedSuggestion.displayNotes && (
+                        <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)', borderRadius: 4}}>
+                          <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
+                            Display notes: {sanitizedSuggestion.displayNotes}
+                          </Text>
+                        </Box>
+                      )}
                     </Stack>
                   </Stack>
                 </Card>
-                {relatedInternal && (
-                  <Card padding={4} radius={3} shadow={1}>
-                    <Stack space={3}>
-                      <Heading as="h3" size={1}>
-                        Internal notes
-                      </Heading>
-                      {relatedInternal.rawLocation && (
-                        <Stack space={1}>
-                          <Text size={1} weight="medium">
-                            Location
-                          </Text>
-                          <Text size={1}>{relatedInternal.rawLocation}</Text>
-                        </Stack>
-                      )}
-                      <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)', borderRadius: 4}}>
-                        <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
-                          {relatedInternal.rawDescription || 'No private notes provided.'}
-                        </Text>
-                      </Box>
-                    </Stack>
-                  </Card>
-                )}
-                {showSanitizedSuggestion && sanitizedSuggestion && (
-                  <Card padding={4} radius={3} shadow={1}>
-                    <Stack space={3}>
-                      <Heading as="h3" size={1}>
-                        Suggested public copy
-                      </Heading>
-                      <Stack space={3}>
-                        {sanitizedSuggestion.location && (
-                          <Stack space={1}>
-                            <Text size={1} weight="medium">
-                              Location
-                            </Text>
-                            <Text size={1}>{sanitizedSuggestion.location}</Text>
-                          </Stack>
-                        )}
-                        {sanitizedSuggestion.blurb && (
-                          <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)', borderRadius: 4}}>
-                            <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
-                              {sanitizedSuggestion.blurb}
-                            </Text>
-                          </Box>
-                        )}
-                        {sanitizedSuggestion.displayNotes && (
-                          <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)', borderRadius: 4}}>
-                            <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
-                              Display notes: {sanitizedSuggestion.displayNotes}
-                            </Text>
-                          </Box>
-                        )}
-                      </Stack>
-                    </Stack>
-                  </Card>
-                )}
-              </div>
-            )}
-          </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>
