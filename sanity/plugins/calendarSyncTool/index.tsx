@@ -117,6 +117,12 @@ const CALENDAR_CARD_STYLE: React.CSSProperties = {
   overflow: 'hidden',
 }
 
+const CALENDAR_VIEW_CONTAINER_STYLE: React.CSSProperties = {
+  flex: '1 1 auto',
+  minHeight: 0,
+  display: 'flex',
+}
+
 const EMPTY_STATE_CARD_STYLE: React.CSSProperties = {
   minHeight: 360,
   display: 'flex',
@@ -1465,31 +1471,33 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       <div className="calendar-tool-content" style={CONTENT_STYLE}>
         <div className="calendar-tool-calendarColumn" style={CALENDAR_COLUMN_STYLE}>
           <Card className="calendar-tool-calendarCard" padding={3} radius={3} shadow={1} style={CALENDAR_CARD_STYLE}>
-            <FullCalendar
-              ref={calendarRef}
-              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-              initialView="dayGridMonth"
-              headerToolbar={{
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay',
-              }}
-              buttonText={calendarButtonText}
-              views={calendarViewOptions}
-              events={eventSource}
-              eventContent={renderEventContent}
-              eventTimeFormat={{hour: 'numeric', minute: '2-digit'}}
-              height="100%"
-              style={{flex: '1 1 auto', minHeight: 0}}
-              slotDuration="00:30:00"
-              slotLabelContent={renderSlotLabel}
-              nowIndicator
-              slotEventOverlap={false}
-              eventClick={handleEventClick}
-              eventClassNames={eventClassNames}
-              eventDidMount={handleEventDidMount}
-              eventWillUnmount={handleEventWillUnmount}
-            />
+            <div style={CALENDAR_VIEW_CONTAINER_STYLE}>
+              <FullCalendar
+                ref={calendarRef}
+                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                initialView="dayGridMonth"
+                headerToolbar={{
+                  left: 'prev,next today',
+                  center: 'title',
+                  right: 'dayGridMonth,timeGridWeek,timeGridDay',
+                }}
+                buttonText={calendarButtonText}
+                views={calendarViewOptions}
+                events={eventSource}
+                eventContent={renderEventContent}
+                eventTimeFormat={{hour: 'numeric', minute: '2-digit'}}
+                height="auto"
+                style={{flex: '1 1 auto', minHeight: 0, width: '100%'}}
+                slotDuration="00:30:00"
+                slotLabelContent={renderSlotLabel}
+                nowIndicator
+                slotEventOverlap={false}
+                eventClick={handleEventClick}
+                eventClassNames={eventClassNames}
+                eventDidMount={handleEventDidMount}
+                eventWillUnmount={handleEventWillUnmount}
+              />
+            </div>
             {loading && (
               <Flex align="center" justify="center" style={{position: 'absolute', inset: 0}}>
                 <Spinner />
