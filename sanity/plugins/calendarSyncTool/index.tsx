@@ -165,14 +165,23 @@ function hasSeriousDrift(drift?: CalendarDriftNotice[]) {
 function DriftList(props: {items?: CalendarDriftNotice[]}) {
   if (!props.items || props.items.length === 0) return null
   return (
-    <Stack space={2}>
-      {props.items.map((item, index) => (
-        <Flex key={`${item.kind}-${index}`} align="center" gap={2}>
-          <WarningOutlineIcon />
-          <Text size={1}>{item.message}</Text>
-        </Flex>
-      ))}
-    </Stack>
+    <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)', borderRadius: 4}}>
+      <Stack space={2}>
+        {props.items.map((item, index) => (
+          <Flex
+            key={`${item.kind}-${index}`}
+            align="center"
+            gap={2}
+            style={{color: 'var(--card-muted-fg-color)'}}
+          >
+            <WarningOutlineIcon />
+            <Text size={1} style={{color: 'inherit'}}>
+              {item.message}
+            </Text>
+          </Flex>
+        ))}
+      </Stack>
+    </Box>
   )
 }
 
@@ -180,11 +189,27 @@ function Legend(props: {internalColor: string; publicColor: string}) {
   return (
     <Flex gap={4} wrap="wrap">
       <Flex align="center" gap={2}>
-        <Box style={{width: 12, height: 12, backgroundColor: props.internalColor, borderRadius: 2}} />
+        <Box
+          style={{
+            width: 14,
+            height: 14,
+            borderRadius: '999px',
+            backgroundColor: props.internalColor,
+            boxShadow: '0 0 0 1px var(--card-border-color) inset',
+          }}
+        />
         <Text size={1}>Internal calendar</Text>
       </Flex>
       <Flex align="center" gap={2}>
-        <Box style={{width: 12, height: 12, backgroundColor: props.publicColor, borderRadius: 2}} />
+        <Box
+          style={{
+            width: 14,
+            height: 14,
+            borderRadius: '999px',
+            backgroundColor: props.publicColor,
+            boxShadow: '0 0 0 1px var(--card-border-color) inset',
+          }}
+        />
         <Text size={1}>Public calendar</Text>
       </Flex>
     </Flex>
@@ -192,19 +217,19 @@ function Legend(props: {internalColor: string; publicColor: string}) {
 }
 
 const calendarStyles = `
-  .calendar-sync-root {
+  .calendar-tool-root {
     display: flex;
     flex-direction: column;
     height: 100%;
     width: min(1280px, 100%);
     margin: 0 auto;
   }
-  .calendar-sync-content {
+  .calendar-tool-content {
     display: flex;
     flex: 1 1 auto;
     min-height: 0;
   }
-  .calendar-sync-calendar {
+  .calendar-tool-calendar {
     flex: 2 1 0;
     min-width: 0;
     position: relative;
@@ -213,21 +238,35 @@ const calendarStyles = `
     align-items: stretch;
     padding: 1.5rem;
   }
-  .calendar-sync-calendarInner {
+  .calendar-tool-calendarInner {
     flex: 1 1 960px;
     max-width: 960px;
     width: 100%;
     min-width: 0;
   }
-  .calendar-sync-sidebar {
-    flex: 1 1 320px;
-    min-width: 280px;
+  .calendar-tool-sidebar {
+    flex: 1 1 360px;
+    min-width: 300px;
     border-left: 1px solid var(--card-border-color);
     display: flex;
     flex-direction: column;
     min-height: 0;
+    background-color: var(--card-bg-color);
   }
-  .calendar-sync-calendarInner .fc {
+  .calendar-tool-sidebarContent {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .calendar-tool-sidebarHeader {
+    border-bottom: 1px solid var(--card-border-color);
+  }
+  .calendar-tool-scrollArea {
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+  .calendar-tool-calendarInner .fc {
     height: 100%;
   }
   .calendar-event-selected {
@@ -237,13 +276,13 @@ const calendarStyles = `
     border-style: dashed !important;
   }
   @media (max-width: 1200px) {
-    .calendar-sync-root {
+    .calendar-tool-root {
       width: 100%;
     }
-    .calendar-sync-calendar {
+    .calendar-tool-calendar {
       padding: 1rem;
     }
-    .calendar-sync-calendarInner {
+    .calendar-tool-calendarInner {
       max-width: 100%;
     }
   }
@@ -609,37 +648,43 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
             : 'Unable to verify Media access at the moment.')
 
     return (
-      <div className="calendar-sync-root">
+      <div className="calendar-tool-root">
         <style>{calendarStyles}</style>
         <Card padding={4} radius={0} shadow={1}>
           <Stack space={3}>
-            <Heading size={2}>Calendar Sync</Heading>
+            <Heading size={2}>Calendar</Heading>
             <Text size={1} muted>
-              Manage the public calendar once your Media team membership is confirmed.
+              Access to this workflow is limited to Media team members.
             </Text>
           </Stack>
         </Card>
         <Flex align="center" justify="center" style={{flex: '1 1 auto', padding: '2rem'}}>
-          <Card padding={4} radius={2} tone={gatingTone} shadow={1} style={{maxWidth: 420, width: '100%'}}>
+          <Card
+            padding={4}
+            radius={3}
+            tone={gatingTone}
+            shadow={1}
+            style={{maxWidth: 420, width: '100%'}}
+          >
             <Stack space={3}>
               {accessState === 'pending' ? (
-                <>
+                <Flex direction="column" align="center" gap={3}>
                   <Spinner />
                   <Text size={1}>Confirming Media access…</Text>
-                </>
+                </Flex>
               ) : (
-                <>
-                  <WarningOutlineIcon />
-                  <Text size={1} style={{textAlign: 'center'}}>
-                    {gatingMessage}
-                  </Text>
+                <Stack space={3} style={{textAlign: 'center'}}>
+                  <Flex align="center" justify="center">
+                    <WarningOutlineIcon />
+                  </Flex>
+                  <Text size={1}>{gatingMessage}</Text>
                   <Button
                     icon={RefreshIcon}
                     text="Retry check"
                     tone={accessState === 'error' ? 'critical' : 'primary'}
                     onClick={triggerAccessCheck}
                   />
-                </>
+                </Stack>
               )}
               {accessState === 'denied' && (
                 <Text size={1} muted style={{textAlign: 'center'}}>
@@ -666,20 +711,22 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   )
 
   return (
-    <div className="calendar-sync-root">
+    <div className="calendar-tool-root">
       <style>{calendarStyles}</style>
       <Card padding={4} radius={0} shadow={1}>
-        <Stack space={3}>
-          <Heading size={2}>Calendar Sync</Heading>
-          <Text size={1} muted>
-            Review upcoming events from the internal calendar, publish safe copies to the public calendar, and keep both sides in sync.
-          </Text>
+        <Stack space={4}>
+          <Stack space={2}>
+            <Heading size={2}>Calendar</Heading>
+            <Text size={1} muted>
+              Review upcoming internal events, prepare public details, and keep both calendars aligned.
+            </Text>
+          </Stack>
           <Legend internalColor={internalColor} publicColor={publicColor} />
         </Stack>
       </Card>
-      <div className="calendar-sync-content">
-        <Card className="calendar-sync-calendar" radius={0} padding={0}>
-          <div className="calendar-sync-calendarInner">
+      <div className="calendar-tool-content">
+        <Card className="calendar-tool-calendar" radius={0} padding={0}>
+          <div className="calendar-tool-calendarInner">
             <FullCalendar
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
               initialView="dayGridMonth"
@@ -708,166 +755,234 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
             </Flex>
           )}
         </Card>
-        <Card className="calendar-sync-sidebar" padding={4} radius={0}>
+        <Card className="calendar-tool-sidebar" padding={0} radius={0}>
           {!selectedEvent ? (
             <Flex flex={1} align="center" justify="center">
-              <Stack space={3}>
+              <Flex direction="column" align="center" gap={3} style={{textAlign: 'center'}}>
                 <CalendarIcon />
                 <Text size={1} muted>
                   Select an event in the calendar to review and publish it.
                 </Text>
-              </Stack>
+              </Flex>
             </Flex>
           ) : (
-            <Flex direction="column" style={{gap: '1rem', flex: 1, minHeight: 0}}>
-              <Stack space={3}>
-                <Flex align="center" justify="space-between">
-                  <Heading size={1}>{selectedEvent.title || 'Untitled event'}</Heading>
-                  <Button icon={RefreshIcon} mode="bleed" tone="primary" text="Refresh" onClick={refresh} disabled={loading || actionLoading} />
-                </Flex>
-                <Text size={1} muted>
-                  {formatDateRange(selectedEvent)}
-                </Text>
-                {selectedEvent.mapping?.status ? (
-                  <Badge tone={selectedEvent.mapping.status === 'published' ? 'positive' : selectedEvent.mapping.status === 'unpublished' ? 'critical' : 'default'}>
-                    {selectedEvent.mapping.status === 'published' ? 'Published' : selectedEvent.mapping.status === 'unpublished' ? 'Unpublished' : 'Not yet published'}
-                  </Badge>
-                ) : (
-                  <Badge>Draft only</Badge>
-                )}
-                <DriftList items={selectedEvent.drift} />
-              </Stack>
-              <Stack space={4} style={{flex: 1, minHeight: 0}}>
+            <div className="calendar-tool-sidebarContent">
+              <Box padding={4} className="calendar-tool-sidebarHeader">
                 <Stack space={3}>
-                  <Heading as="h2" size={1}>
-                    Public details
-                  </Heading>
-                  <Stack space={2}>
-                    <Text size={1} weight="medium">
-                      Title
-                    </Text>
-                    <TextInput
-                      value={formState?.title || ''}
-                      onChange={handleInputChange('title')}
-                      aria-label="Public title"
-                      placeholder="Event title"
+                  <Flex align="flex-start" justify="space-between" gap={3}>
+                    <Stack space={2}>
+                      <Heading size={1}>{selectedEvent.title || 'Untitled event'}</Heading>
+                      <Text size={1} muted>{formatDateRange(selectedEvent)}</Text>
+                    </Stack>
+                    <Button
+                      icon={RefreshIcon}
+                      mode="bleed"
+                      tone="primary"
+                      text="Refresh"
+                      onClick={refresh}
+                      disabled={loading || actionLoading}
                     />
-                  </Stack>
-                  <Stack space={2}>
-                    <Text size={1} weight="medium">
-                      Blurb
-                    </Text>
-                    <TextArea
-                      value={formState?.blurb || ''}
-                      onChange={handleTextAreaChange('blurb')}
-                      rows={4}
-                      aria-label="Public blurb"
-                      placeholder="Public blurb"
-                      style={{resize: 'vertical'}}
-                    />
-                  </Stack>
-                  <Stack space={2}>
-                    <Text size={1} weight="medium">
-                      Location
-                    </Text>
-                    <TextInput
-                      value={formState?.location || ''}
-                      onChange={handleInputChange('location')}
-                      aria-label="Public location"
-                      placeholder="Location"
-                    />
-                  </Stack>
-                  <Stack space={2}>
-                    <Text size={1} weight="medium">
-                      Display notes
-                    </Text>
-                    <TextArea
-                      value={formState?.displayNotes || ''}
-                      onChange={handleTextAreaChange('displayNotes')}
-                      rows={3}
-                      aria-label="Display notes"
-                      placeholder="Display notes"
-                      style={{resize: 'vertical'}}
-                    />
-                  </Stack>
-                </Stack>
-                <Stack space={2}>
-                  <Flex gap={2} wrap="wrap">
-                    {canPublish && (
-                      <Button
-                        icon={PublishIcon}
-                        text={selectedEvent.mapping?.publicEventId ? 'Publish updates' : 'Publish to public calendar'}
-                        tone="positive"
-                        disabled={actionLoading}
-                        onClick={() => runAction('publish')}
-                      />
-                    )}
-                    {canUpdate && (
-                      <Button
-                        icon={SyncIcon}
-                        text="Update public copy"
-                        tone="primary"
-                        disabled={actionLoading}
-                        onClick={() => runAction('update')}
-                      />
-                    )}
-                    {canUnpublish && (
-                      <Button
-                        icon={UnpublishIcon}
-                        text="Unpublish"
-                        tone="critical"
-                        disabled={actionLoading}
-                        onClick={() => runAction('unpublish')}
-                      />
-                    )}
                   </Flex>
-                  {actionLoading && (
-                    <Text size={1} muted>
-                      Working…
-                    </Text>
+                  <Flex align="center" gap={2} wrap="wrap">
+                    {selectedEvent.mapping?.status ? (
+                      <Badge
+                        tone={
+                          selectedEvent.mapping.status === 'published'
+                            ? 'positive'
+                            : selectedEvent.mapping.status === 'unpublished'
+                            ? 'critical'
+                            : 'default'
+                        }
+                      >
+                        {selectedEvent.mapping.status === 'published'
+                          ? 'Published'
+                          : selectedEvent.mapping.status === 'unpublished'
+                          ? 'Unpublished'
+                          : 'Not yet published'}
+                      </Badge>
+                    ) : (
+                      <Badge>Draft only</Badge>
+                    )}
+                    <Badge tone={selectedEvent.source === 'internal' ? 'primary' : 'positive'}>
+                      {selectedEvent.source === 'internal' ? 'Internal event' : 'Public event'}
+                    </Badge>
+                  </Flex>
+                  <DriftList items={selectedEvent.drift} />
+                </Stack>
+              </Box>
+              <Box padding={4} className="calendar-tool-scrollArea">
+                <Stack space={4}>
+                  <Card padding={4} radius={3} shadow={1}>
+                    <Stack space={3}>
+                      <Stack space={2}>
+                        <Heading as="h2" size={1}>
+                          Public details
+                        </Heading>
+                        <Text size={1} muted>
+                          Information that will appear on the public site.
+                        </Text>
+                      </Stack>
+                      <Stack space={3}>
+                        <Stack space={2}>
+                          <Text size={1} weight="medium">
+                            Title
+                          </Text>
+                          <TextInput
+                            value={formState?.title || ''}
+                            onChange={handleInputChange('title')}
+                            aria-label="Public title"
+                            placeholder="Event title"
+                          />
+                        </Stack>
+                        <Stack space={2}>
+                          <Text size={1} weight="medium">
+                            Blurb
+                          </Text>
+                          <TextArea
+                            value={formState?.blurb || ''}
+                            onChange={handleTextAreaChange('blurb')}
+                            rows={4}
+                            aria-label="Public blurb"
+                            placeholder="Public blurb"
+                            style={{resize: 'vertical'}}
+                          />
+                        </Stack>
+                        <Stack space={2}>
+                          <Text size={1} weight="medium">
+                            Location
+                          </Text>
+                          <TextInput
+                            value={formState?.location || ''}
+                            onChange={handleInputChange('location')}
+                            aria-label="Public location"
+                            placeholder="Location"
+                          />
+                        </Stack>
+                        <Stack space={2}>
+                          <Text size={1} weight="medium">
+                            Display notes
+                          </Text>
+                          <TextArea
+                            value={formState?.displayNotes || ''}
+                            onChange={handleTextAreaChange('displayNotes')}
+                            rows={3}
+                            aria-label="Display notes"
+                            placeholder="Display notes"
+                            style={{resize: 'vertical'}}
+                          />
+                        </Stack>
+                      </Stack>
+                    </Stack>
+                  </Card>
+                  <Card padding={4} radius={3} shadow={1}>
+                    <Stack space={3}>
+                      <Stack space={2}>
+                        <Heading as="h2" size={1}>
+                          Publishing
+                        </Heading>
+                        <Text size={1} muted>
+                          Choose how this event syncs with the public calendar.
+                        </Text>
+                      </Stack>
+                      <Flex gap={2} wrap="wrap">
+                        {canPublish && (
+                          <Button
+                            icon={PublishIcon}
+                            text={selectedEvent.mapping?.publicEventId ? 'Publish updates' : 'Publish to public calendar'}
+                            tone="positive"
+                            disabled={actionLoading}
+                            onClick={() => runAction('publish')}
+                          />
+                        )}
+                        {canUpdate && (
+                          <Button
+                            icon={SyncIcon}
+                            text="Update public copy"
+                            tone="primary"
+                            disabled={actionLoading}
+                            onClick={() => runAction('update')}
+                          />
+                        )}
+                        {canUnpublish && (
+                          <Button
+                            icon={UnpublishIcon}
+                            text="Unpublish"
+                            tone="critical"
+                            disabled={actionLoading}
+                            onClick={() => runAction('unpublish')}
+                          />
+                        )}
+                      </Flex>
+                      {!canPublish && !canUpdate && !canUnpublish && !actionLoading && (
+                        <Text size={1} muted>
+                          Publishing actions will appear once the event is linked to the public calendar.
+                        </Text>
+                      )}
+                      {actionLoading && (
+                        <Text size={1} muted>
+                          Working…
+                        </Text>
+                      )}
+                    </Stack>
+                  </Card>
+                  {relatedInternal && (
+                    <Card padding={4} radius={3} shadow={1}>
+                      <Stack space={3}>
+                        <Heading as="h3" size={1}>
+                          Internal notes
+                        </Heading>
+                        {relatedInternal.rawLocation && (
+                          <Stack space={1}>
+                            <Text size={1} weight="medium">
+                              Location
+                            </Text>
+                            <Text size={1}>{relatedInternal.rawLocation}</Text>
+                          </Stack>
+                        )}
+                        <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)', borderRadius: 4}}>
+                          <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
+                            {relatedInternal.rawDescription || 'No private notes provided.'}
+                          </Text>
+                        </Box>
+                      </Stack>
+                    </Card>
+                  )}
+                  {showSanitizedSuggestion && sanitizedSuggestion && (
+                    <Card padding={4} radius={3} shadow={1}>
+                      <Stack space={3}>
+                        <Heading as="h3" size={1}>
+                          Suggested public copy
+                        </Heading>
+                        <Stack space={3}>
+                          {sanitizedSuggestion.location && (
+                            <Stack space={1}>
+                              <Text size={1} weight="medium">
+                                Location
+                              </Text>
+                              <Text size={1}>{sanitizedSuggestion.location}</Text>
+                            </Stack>
+                          )}
+                          {sanitizedSuggestion.blurb && (
+                            <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)', borderRadius: 4}}>
+                              <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
+                                {sanitizedSuggestion.blurb}
+                              </Text>
+                            </Box>
+                          )}
+                          {sanitizedSuggestion.displayNotes && (
+                            <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)', borderRadius: 4}}>
+                              <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
+                                Display notes: {sanitizedSuggestion.displayNotes}
+                              </Text>
+                            </Box>
+                          )}
+                        </Stack>
+                      </Stack>
+                    </Card>
                   )}
                 </Stack>
-                {relatedInternal && (
-                  <Stack space={2}>
-                    <Heading as="h3" size={1}>
-                      Internal notes
-                    </Heading>
-                    {relatedInternal.rawLocation && (
-                      <Text size={1}>Location: {relatedInternal.rawLocation}</Text>
-                    )}
-                    <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)'}}>
-                      <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
-                        {relatedInternal.rawDescription || 'No private notes provided.'}
-                      </Text>
-                    </Box>
-                  </Stack>
-                )}
-                {showSanitizedSuggestion && sanitizedSuggestion && (
-                  <Stack space={2}>
-                    <Heading as="h3" size={1}>
-                      Suggested public copy
-                    </Heading>
-                    {sanitizedSuggestion.location && (
-                      <Text size={1}>Location suggestion: {sanitizedSuggestion.location}</Text>
-                    )}
-                    {sanitizedSuggestion.blurb && (
-                      <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)'}}>
-                        <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
-                          {sanitizedSuggestion.blurb}
-                        </Text>
-                      </Box>
-                    )}
-                    {sanitizedSuggestion.displayNotes && (
-                      <Box padding={3} style={{backgroundColor: 'var(--card-muted-bg-color)'}}>
-                        <Text size={1} style={{color: 'var(--card-muted-fg-color)'}}>
-                          Display notes: {sanitizedSuggestion.displayNotes}
-                        </Text>
-                      </Box>
-                    )}
-                  </Stack>
-                )}
-              </Stack>
-            </Flex>
+              </Box>
+            </div>
           )}
         </Card>
       </div>
@@ -881,7 +996,7 @@ export const calendarSyncTool = definePlugin<CalendarSyncToolOptions>((options =
     ...prev,
     {
       name: 'calendar-sync',
-      title: 'Calendar Sync',
+      title: 'Calendar',
       icon: CalendarIcon,
       component: () => <CalendarSyncToolComponent {...options} />,
     },
