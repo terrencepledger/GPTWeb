@@ -31,6 +31,7 @@ import type {
   EventClickArg,
   EventContentArg,
   EventInput,
+  EventMountArg,
   EventSourceFunc,
   SlotLabelContentArg,
 } from '@fullcalendar/core'
@@ -524,7 +525,7 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     .fc .fc-toolbar.fc-header-toolbar {
       padding-bottom: 0.75rem;
     }
-    @media (max-width: 1200px) {
+    @media (max-width: 960px) {
       .calendar-tool-content {
         grid-template-columns: minmax(0, 1fr);
       }
@@ -581,6 +582,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   const [formState, setFormState] = useState<FormState | null>(null)
   const [actionLoading, setActionLoading] = useState(false)
   const calendarRef = useRef<FullCalendar | null>(null)
+  const eventElementsRef = useRef<Map<string, Set<HTMLElement>>>(new Map())
   const activeFetchRef = useRef<AbortController | null>(null)
   const fetchIdRef = useRef(0)
 
@@ -659,6 +661,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       setFormState(null)
       setErrorState(null)
       setLoading(false)
+      eventElementsRef.current.clear()
       if (activeFetchRef.current) {
         activeFetchRef.current.abort()
         activeFetchRef.current = null
@@ -794,12 +797,6 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   }, [selectedEvent, selectedKey])
 
   useEffect(() => {
-    if (calendarRef.current) {
-      calendarRef.current.getApi().rerenderEvents()
-    }
-  }, [selectedKey])
-
-  useEffect(() => {
     return () => {
       if (activeFetchRef.current) {
         activeFetchRef.current.abort()
@@ -866,7 +863,18 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         displayTitle?: string
       }
       const sourceEvent = extended?.event
-      if (!sourceEvent) return undefined
+      const fallbackTitle = extended?.displayTitle || arg.event.title || ''
+      if (!sourceEvent) {
+        if (!fallbackTitle) return undefined
+        const timeText = arg.timeText?.trim()
+        const showTime = Boolean(timeText && !arg.event.allDay)
+        return (
+          <div className="calendar-event-content" title={fallbackTitle} aria-label={fallbackTitle}>
+            {showTime ? <span className="calendar-event-time">{timeText}</span> : null}
+            <span className="calendar-event-title">{fallbackTitle}</span>
+          </div>
+        )
+      }
       const displayTitle = extended?.displayTitle || resolveEventTitle(sourceEvent)
       const timeText = arg.timeText?.trim()
       const isListView = Boolean(arg.view?.type && arg.view.type.startsWith('list'))
@@ -929,12 +937,64 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       if (hasSeriousDrift(event.drift)) {
         classes.push('calendar-event-drift')
       }
-      if (selectedKey === `${event.source}:${event.id}`) {
-        classes.push('calendar-event-selected')
-      }
     }
     return classes
+  }, [])
+
+  const handleEventDidMount = useCallback(
+    (arg: EventMountArg) => {
+      const event: CalendarSyncEvent | undefined = (arg.event.extendedProps as any)?.event
+      if (!event) return
+      const key = `${event.source}:${event.id}`
+      let elements = eventElementsRef.current.get(key)
+      if (!elements) {
+        elements = new Set<HTMLElement>()
+        eventElementsRef.current.set(key, elements)
+      }
+      elements.add(arg.el)
+      if (key === selectedKey) {
+        arg.el.classList.add('calendar-event-selected')
+        arg.el.setAttribute('aria-current', 'true')
+      } else {
+        arg.el.classList.remove('calendar-event-selected')
+        arg.el.removeAttribute('aria-current')
+      }
+    },
+    [selectedKey],
+  )
+
+  const handleEventWillUnmount = useCallback((arg: EventMountArg) => {
+    const event: CalendarSyncEvent | undefined = (arg.event.extendedProps as any)?.event
+    if (!event) return
+    const key = `${event.source}:${event.id}`
+    const elements = eventElementsRef.current.get(key)
+    if (elements) {
+      elements.delete(arg.el)
+      if (elements.size === 0) {
+        eventElementsRef.current.delete(key)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    eventElementsRef.current.forEach((elements, key) => {
+      elements.forEach((element) => {
+        if (key === selectedKey) {
+          element.classList.add('calendar-event-selected')
+          element.setAttribute('aria-current', 'true')
+        } else {
+          element.classList.remove('calendar-event-selected')
+          element.removeAttribute('aria-current')
+        }
+      })
+    })
   }, [selectedKey])
+
+  useEffect(() => {
+    return () => {
+      eventElementsRef.current.clear()
+    }
+  }, [])
 
   const refresh = useCallback(() => {
     if (accessState !== 'authorized') return
@@ -1374,6 +1434,8 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
               slotEventOverlap={false}
               eventClick={handleEventClick}
               eventClassNames={eventClassNames}
+              eventDidMount={handleEventDidMount}
+              eventWillUnmount={handleEventWillUnmount}
             />
             {loading && (
               <Flex align="center" justify="center" style={{position: 'absolute', inset: 0}}>
@@ -1413,7 +1475,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                       Publishing controls
                     </Heading>
                     <Text size={1} muted>
-                      Sync the internal schedule or update the public write-up for this event.
+                      Use these controls to sync the internal schedule or revise the public-facing copy for this event.
                     </Text>
                   </Stack>
                   <Stack space={1}>
@@ -1442,17 +1504,24 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                     />
                   </Flex>
                   <Stack space={3}>
+                    {(canPublish || canUpdate) && (
+                      <Text size={1} muted>
+                        <span style={{fontWeight: 600}}>Sync internal schedule</span> mirrors timing from the internal
+                        calendar, while <span style={{fontWeight: 600}}>Update public copy only</span> edits the
+                        public-facing text without touching start/end times.
+                      </Text>
+                    )}
                     {canPublish ? (
                       <Stack space={1}>
                         <Text size={1} weight="medium">
-                          Sync schedule to public calendar
+                          Sync internal schedule to public calendar
                         </Text>
                         <Button
                           icon={PublishIcon}
                           text={
                             selectedEvent.mapping?.publicEventId
-                              ? 'Sync schedule to public calendar'
-                              : 'Publish schedule to public calendar'
+                              ? 'Sync internal schedule now'
+                              : 'Publish internal schedule to public calendar'
                           }
                           tone="positive"
                           disabled={actionLoading}
@@ -1460,7 +1529,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                         />
                         <Text size={1} muted>
                           {selectedEvent.mapping?.publicEventId
-                            ? 'Copies start/end times and recurrence from the internal event into the linked public listing.'
+                            ? 'Mirrors start/end times and recurrence from the internal event onto the linked public listing.'
                             : 'Creates a public event using this internal schedule plus the public details you provide below.'}
                         </Text>
                       </Stack>
@@ -1475,11 +1544,11 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                     {canUpdate && (
                       <Stack space={1}>
                         <Text size={1} weight="medium">
-                          Publish public details only
+                          Update public copy only
                         </Text>
                         <Button
                           icon={SyncIcon}
-                          text="Publish public details only"
+                          text="Update public copy only"
                           tone="primary"
                           disabled={actionLoading}
                           onClick={() => runAction('update')}
