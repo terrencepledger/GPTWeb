@@ -69,6 +69,63 @@ interface FormState {
 const DEFAULT_INTERNAL_COLOR = 'color-mix(in oklab, var(--brand-border) 70%, var(--brand-surface) 30%)'
 const DEFAULT_PUBLIC_COLOR = 'var(--brand-accent)'
 
+const ROOT_STYLE: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  minHeight: '100%',
+  width: 'min(1400px, 100%)',
+  margin: '0 auto',
+  padding: '1.5rem',
+  gap: '1.5rem',
+  boxSizing: 'border-box',
+}
+
+const HEADER_STATUS_WRAP_STYLE: React.CSSProperties = {
+  display: 'flex',
+  gap: '1rem',
+  flexWrap: 'wrap',
+}
+
+const CONTENT_STYLE: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: '1.5rem',
+  flexWrap: 'wrap',
+}
+
+const CALENDAR_COLUMN_STYLE: React.CSSProperties = {
+  flex: '2 1 620px',
+  minWidth: 480,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1.5rem',
+}
+
+const DETAILS_COLUMN_STYLE: React.CSSProperties = {
+  flex: '1 1 360px',
+  minWidth: 320,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1.5rem',
+}
+
+const CALENDAR_CARD_STYLE: React.CSSProperties = {
+  position: 'relative',
+  display: 'flex',
+  flexDirection: 'column',
+  minHeight: 600,
+  overflow: 'hidden',
+}
+
+const EMPTY_STATE_CARD_STYLE: React.CSSProperties = {
+  minHeight: 360,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  textAlign: 'center',
+  color: 'var(--card-muted-fg-color)',
+}
+
 function normalizeBase(value: string, originHint?: string) {
   const trimmed = value.trim()
   if (!trimmed) return ''
@@ -355,9 +412,14 @@ const STATUS_BADGE_TONE: Record<StatusState, React.ComponentProps<typeof Badge>[
   info: 'primary',
 }
 
-function StatusItem(props: {title: string; state: StatusState; children: React.ReactNode}) {
+function StatusItem(props: {
+  title: string
+  state: StatusState
+  children: React.ReactNode
+  style?: React.CSSProperties
+}) {
   return (
-    <Card padding={3} radius={3} shadow={1} tone="transparent">
+    <Card padding={3} radius={3} shadow={1} tone="transparent" style={props.style}>
       <Stack space={3}>
         <Flex align="center" justify="space-between" gap={3}>
           <Text size={1} weight="medium">
@@ -376,57 +438,6 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     .calendar-tool-root {
       --calendar-internal-color: ${internalColor};
       --calendar-public-color: ${publicColor};
-      display: flex;
-      flex-direction: column;
-      min-height: 100%;
-      width: min(1400px, 100%);
-      margin: 0 auto;
-      padding: 1.5rem;
-      gap: 1.5rem;
-      box-sizing: border-box;
-    }
-    .calendar-tool-statusList {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .calendar-tool-content {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
-      gap: 1.5rem;
-      align-items: start;
-    }
-    .calendar-tool-calendarColumn {
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-    .calendar-tool-detailsColumn {
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-    .calendar-tool-calendarCard {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      min-height: 600px;
-      overflow: hidden;
-    }
-    .calendar-tool-calendarCard .fc {
-      flex: 1 1 auto;
-      min-height: 0;
-    }
-    .calendar-tool-emptyState {
-      flex: 1 1 auto;
-      min-height: 320px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      color: var(--card-muted-fg-color);
     }
     .fc .calendar-event {
       border-radius: 6px;
@@ -524,20 +535,6 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     }
     .fc .fc-toolbar.fc-header-toolbar {
       padding-bottom: 0.75rem;
-    }
-    @media (max-width: 960px) {
-      .calendar-tool-content {
-        grid-template-columns: minmax(0, 1fr);
-      }
-    }
-    @media (max-width: 800px) {
-      .calendar-tool-root {
-        padding: 1rem;
-        gap: 1rem;
-      }
-      .calendar-tool-content {
-        gap: 1rem;
-      }
     }
   `
 }
@@ -863,19 +860,21 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         displayTitle?: string
       }
       const sourceEvent = extended?.event
-      const fallbackTitle = extended?.displayTitle || arg.event.title || ''
+      const fallbackTitle = (extended?.displayTitle || arg.event.title || '').trim()
       if (!sourceEvent) {
-        if (!fallbackTitle) return undefined
+        const displayTitle = fallbackTitle || 'Untitled event'
         const timeText = arg.timeText?.trim()
         const showTime = Boolean(timeText && !arg.event.allDay)
         return (
-          <div className="calendar-event-content" title={fallbackTitle} aria-label={fallbackTitle}>
+          <div className="calendar-event-content" title={displayTitle} aria-label={displayTitle}>
             {showTime ? <span className="calendar-event-time">{timeText}</span> : null}
-            <span className="calendar-event-title">{fallbackTitle}</span>
+            <span className="calendar-event-title">{displayTitle}</span>
           </div>
         )
       }
-      const displayTitle = extended?.displayTitle || resolveEventTitle(sourceEvent)
+      const resolvedTitle =
+        (extended?.displayTitle && extended.displayTitle.trim()) || resolveEventTitle(sourceEvent) || 'Untitled event'
+      const displayTitle = resolvedTitle || 'Untitled event'
       const timeText = arg.timeText?.trim()
       const isListView = Boolean(arg.view?.type && arg.view.type.startsWith('list'))
       if (isListView) {
@@ -1349,10 +1348,10 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
 
 
   return (
-    <div className="calendar-tool-root">
+    <div className="calendar-tool-root" style={ROOT_STYLE}>
       <style>{calendarStyles}</style>
       <Card padding={4} radius={3} shadow={1}>
-        <Stack space={3}>
+        <Stack space={4}>
           <Flex align="flex-start" justify="space-between" gap={4} wrap="wrap">
             <Stack space={2} style={{flex: '1 1 320px', minWidth: 260}}>
               <Heading size={2}>Calendar publishing</Heading>
@@ -1381,13 +1380,14 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
               disabled={loading || actionLoading}
             />
           </Flex>
-        </Stack>
-      </Card>
-      <Card padding={4} radius={3} shadow={1}>
-        <Stack space={4}>
-          <div className="calendar-tool-statusList">
+          <div style={HEADER_STATUS_WRAP_STYLE}>
             {statusItems.map((item) => (
-              <StatusItem key={item.id} title={item.title} state={item.state}>
+              <StatusItem
+                key={item.id}
+                title={item.title}
+                state={item.state}
+                style={{flex: '1 1 260px', minWidth: 240}}
+              >
                 {item.content}
               </StatusItem>
             ))}
@@ -1411,9 +1411,9 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
           )}
         </Stack>
       </Card>
-      <div className="calendar-tool-content">
-        <div className="calendar-tool-calendarColumn">
-          <Card className="calendar-tool-calendarCard" padding={3} radius={3} shadow={1}>
+      <div className="calendar-tool-content" style={CONTENT_STYLE}>
+        <div className="calendar-tool-calendarColumn" style={CALENDAR_COLUMN_STYLE}>
+          <Card className="calendar-tool-calendarCard" padding={3} radius={3} shadow={1} style={CALENDAR_CARD_STYLE}>
             <FullCalendar
               ref={calendarRef}
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -1428,6 +1428,8 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
               events={eventSource}
               eventContent={renderEventContent}
               eventTimeFormat={{hour: 'numeric', minute: '2-digit'}}
+              height="100%"
+              style={{flex: '1 1 auto', minHeight: 0}}
               slotDuration="00:30:00"
               slotLabelContent={renderSlotLabel}
               nowIndicator
@@ -1458,9 +1460,9 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
             )}
           </Card>
         </div>
-        <div className="calendar-tool-detailsColumn">
+        <div className="calendar-tool-detailsColumn" style={DETAILS_COLUMN_STYLE}>
           {!selectedEvent ? (
-            <Card padding={4} radius={3} shadow={1} className="calendar-tool-emptyState">
+            <Card padding={4} radius={3} shadow={1} style={EMPTY_STATE_CARD_STYLE}>
               <Stack space={3} style={{alignItems: 'center'}}>
                 <CalendarIcon />
                 <Text size={1} muted>Select an event to review publishing options.</Text>
