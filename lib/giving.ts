@@ -29,7 +29,7 @@ export async function getGivingOptions(): Promise<GivingOption[]> {
           title,
           content,
           href,
-        } satisfies GivingOption;
+        } as GivingOption;
       })
       .filter((option): option is GivingOption => option !== null);
   } catch {
