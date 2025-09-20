@@ -54,10 +54,19 @@ export default function Assistant() {
     const parts = text.split(regex).filter(Boolean);
     return parts.map((part, idx) => {
       if (/^https?:\/\//.test(part)) {
+        let label = part.replace(/^https?:\/\//, '');
+        if (label.endsWith('/')) label = label.slice(0, -1);
         return (
-          <span key={idx} className="break-words">
-            {part}
-          </span>
+          <a
+            key={idx}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:opacity-80 text-[var(--brand-accent)] break-words"
+            style={{ wordBreak: 'break-word' }}
+          >
+            {label}
+          </a>
         );
       }
       if (/^\//.test(part)) {
