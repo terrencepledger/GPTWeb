@@ -1,6 +1,6 @@
 'use client';
 
-import {FormEvent, useCallback, useEffect, useRef, useState, type CSSProperties} from 'react';
+import {FormEvent, useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode} from 'react';
 import type {ChatMessage} from '@/types/chat';
 import Link from 'next/link';
 
@@ -44,7 +44,10 @@ export default function Assistant() {
     };
   }, []);
 
-  function renderContent(text: string) {
+  function renderContent(text: string, role: ChatMessage['role']): ReactNode {
+    if (role !== 'assistant') {
+      return text;
+    }
     const emailRegex = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
     const phoneRegex = /\+?\d[\d\s().-]{7,}\d/;
     const regex = new RegExp(
@@ -52,6 +55,8 @@ export default function Assistant() {
       'g',
     );
     const parts = text.split(regex).filter(Boolean);
+    const accentLinkClass =
+      'underline text-[#f4f4f5] decoration-[#f4f4f5] hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f4f4f5]';
     return parts.map((part, idx) => {
       if (/^https?:\/\//.test(part)) {
         let label = part.replace(/^https?:\/\//, '');
@@ -62,7 +67,7 @@ export default function Assistant() {
             href={part}
             target="_blank"
             rel="noopener noreferrer"
-            className="underline hover:opacity-80 text-[var(--brand-accent)] break-words"
+            className={accentLinkClass}
             style={{ wordBreak: 'break-word' }}
           >
             {label}
@@ -74,7 +79,8 @@ export default function Assistant() {
           <Link
             key={idx}
             href={part}
-            className="underline hover:opacity-80 text-[var(--brand-accent)] break-words"
+            className={accentLinkClass}
+            style={{ wordBreak: 'break-word' }}
           >
             {part}
           </Link>
@@ -82,7 +88,7 @@ export default function Assistant() {
       }
       if (emailRegex.test(part)) {
         return (
-          <a key={idx} href={`mailto:${part}`} className="underline break-words">
+          <a key={idx} href={`mailto:${part}`} className={accentLinkClass} break-words>
             {part}
           </a>
         );
@@ -90,7 +96,7 @@ export default function Assistant() {
       if (phoneRegex.test(part)) {
         const tel = part.replace(/[^\d+]/g, '');
         return (
-          <a key={idx} href={`tel:${tel}`} className="underline break-words">
+          <a key={idx} href={`tel:${tel}`} className={accentLinkClass} break-words>
             {part}
           </a>
         );
@@ -283,12 +289,12 @@ export default function Assistant() {
                       wordBreak: 'break-word',
                     }}
                   >
-                    {renderContent(m.content)}
+                    {renderContent(m.content, m.role)}
                     {m.role === 'assistant' && m.softEscalate && !collectInfo && (
                       <div className="mt-1 text-sm">
                         <button
                           type="button"
-                          className="underline hover:opacity-80 focus:outline-none focus:ring-1 cursor-pointer bg-transparent p-0 font-normal text-[var(--brand-accent)] focus:ring-[var(--brand-accent)] dark:text-[var(--brand-primary-contrast)] dark:focus:ring-[var(--brand-primary-contrast)]"
+                          className="underline text-[#f4f4f5] decoration-[#f4f4f5] hover:opacity-80 focus:outline-none focus:ring-1 focus:ring-[#f4f4f5] cursor-pointer bg-transparent p-0 font-normal"
                           onClick={() => {
                             const pct = Math.max(
                               0,
