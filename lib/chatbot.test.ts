@@ -82,6 +82,9 @@ async function testBuildSiteContext() {
         email: 'info@example.com',
         phone: '123-456-7890',
         socialLinks: [{ label: 'Facebook', href: 'https://fb.com/test' }],
+        givingOptions: [
+          { title: 'Online', content: 'Give', href: 'https://give.example.com' },
+        ],
       }) as any,
     announcementLatest: async () =>
       ({
@@ -104,9 +107,6 @@ async function testBuildSiteContext() {
       ([
         { name: 'Youth', description: 'Teens' },
       ] as any),
-    givingOptions: [
-      { title: 'Online', content: 'Give', href: 'https://give.example.com' },
-    ],
     getCurrentLivestream: async () =>
       ({
         name: 'Sunday Service',

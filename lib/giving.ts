@@ -1,26 +1,38 @@
-export type GivingOption = {
-  title: string;
-  content: string;
-  href?: string;
-};
+import { siteSettings } from './queries';
+import type { GivingOption } from './queries';
 
-export const givingOptions: GivingOption[] = [
-  {
-    title: 'Mailing Address',
-    content: '864 Splitlog Ave., Kansas City, KS 66101',
-  },
-  {
-    title: 'Cash App',
-    content: '$GPTKCK',
-  },
-  {
-    title: 'Givelify',
-    content: 'Greater Pentecostal Temple Church',
-    href: 'https://www.givelify.com/donate/MTUxODY4MQ==/selection',
-  },
-  {
-    title: 'Razmobile',
-    content: 'Give securely online',
-    href: 'https://www.razmobile.com/GPTChurch',
-  },
-];
+export type { GivingOption } from './queries';
+
+function isString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+export async function getGivingOptions(): Promise<GivingOption[]> {
+  try {
+    const settings = await siteSettings();
+    const options = settings?.givingOptions;
+    if (!Array.isArray(options)) {
+      return [];
+    }
+
+    return options
+      .map((option) => {
+        const title = isString(option?.title) ? option.title.trim() : '';
+        const content = isString(option?.content) ? option.content.trim() : '';
+        const href = isString(option?.href) ? option.href.trim() : undefined;
+
+        if (!title || !content) {
+          return null;
+        }
+
+        return {
+          title,
+          content,
+          href,
+        } satisfies GivingOption;
+      })
+      .filter((option): option is GivingOption => option !== null);
+  } catch {
+    return [];
+  }
+}
