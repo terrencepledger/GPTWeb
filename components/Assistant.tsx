@@ -1,8 +1,9 @@
 'use client';
 
-import {FormEvent, useCallback, useEffect, useRef, useState, type CSSProperties} from 'react';
+import {FormEvent, useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode} from 'react';
 import type {ChatMessage} from '@/types/chat';
 import Link from 'next/link';
+import {stripInvisibleCharacters, stripTrailingUrlJunk} from '@/lib/textSanitizers';
 
 export default function Assistant() {
   const [open, setOpen] = useState(false);
@@ -44,7 +45,10 @@ export default function Assistant() {
     };
   }, []);
 
-  function renderContent(text: string) {
+  function renderContent(text: string, role: ChatMessage['role']): ReactNode {
+    if (role !== 'assistant') {
+      return text;
+    }
     const emailRegex = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
     const phoneRegex = /\+?\d[\d\s().-]{7,}\d/;
     const regex = new RegExp(
@@ -52,46 +56,78 @@ export default function Assistant() {
       'g',
     );
     const parts = text.split(regex).filter(Boolean);
+    const accentLinkClass =
+      'underline text-[#f4f4f5] decoration-[#f4f4f5] hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f4f4f5]';
     return parts.map((part, idx) => {
       if (/^https?:\/\//.test(part)) {
-        let label = part.replace(/^https?:\/\//, '');
+        const trimmed = stripInvisibleCharacters(part);
+        const href = stripTrailingUrlJunk(trimmed);
+        if (!href) {
+          return <span key={idx}>{trimmed}</span>;
+        }
+        let label = href.replace(/^https?:\/\//, '');
         if (label.endsWith('/')) label = label.slice(0, -1);
+        const trailing = trimmed.slice(href.length);
         return (
+        <span key={idx}>
           <a
             key={idx}
             href={part}
             target="_blank"
             rel="noopener noreferrer"
-            className="underline hover:opacity-80 text-[var(--brand-accent)]"
+            className={accentLinkClass}
+            style={{ wordBreak: 'break-word' }}
           >
             {label}
           </a>
+            {trailing}
+        </span>
         );
       }
       if (/^\//.test(part)) {
+        const cleaned = stripInvisibleCharacters(part);
         return (
           <Link
             key={idx}
-            href={part}
-            className="underline hover:opacity-80 text-[var(--brand-accent)]"
+            href={cleaned}
+            className={accentLinkClass}
+            style={{ wordBreak: 'break-word' }}
           >
-            {part}
+            {cleaned}
           </Link>
         );
       }
       if (emailRegex.test(part)) {
+        const trimmed = stripInvisibleCharacters(part);
+        const email = stripTrailingUrlJunk(trimmed);
+        if (!email) {
+          return <span key={idx}>{trimmed}</span>;
+        }
+        const trailing = trimmed.slice(email.length);
         return (
-          <a key={idx} href={`mailto:${part}`} className="underline">
-            {part}
-          </a>
+          <span key={idx}>
+            <a href={`mailto:${email}`} className={accentLinkClass} break-words>
+              {email}
+            </a>
+            {trailing}
+          </span>
         );
       }
       if (phoneRegex.test(part)) {
-        const tel = part.replace(/[^\d+]/g, '');
+        const trimmed = stripInvisibleCharacters(part);
+        const phoneText = stripTrailingUrlJunk(trimmed);
+        const tel = phoneText.replace(/[^\d+]/g, '');
+        if (!tel) {
+          return <span key={idx}>{trimmed}</span>;
+        }
+        const trailing = trimmed.slice(phoneText.length);
         return (
-          <a key={idx} href={`tel:${tel}`} className="underline">
-            {part}
-          </a>
+          <span key={idx}>
+            <a href={`tel:${tel}`} className={accentLinkClass} break-words>
+              {phoneText}
+            </a>
+            {trailing}
+          </span>
         );
       }
       return <span key={idx}>{part}</span>;
@@ -270,7 +306,7 @@ export default function Assistant() {
               <div className={`max-w-[85%] flex flex-col ${m.role === 'assistant' ? 'items-start' : 'items-end'}`}>
                 <div className="relative">
                   <div
-                    className="relative z-10 rounded-2xl border px-3 py-2 whitespace-pre-wrap"
+                    className="relative z-10 rounded-2xl border px-3 py-2 whitespace-pre-wrap break-words"
                     style={{
                       backgroundColor:
                         m.role === 'assistant'
@@ -278,14 +314,16 @@ export default function Assistant() {
                           : 'var(--brand-accent)',
                       color: 'var(--brand-ink)',
                       borderColor: 'var(--brand-border)',
+                      overflowWrap: 'anywhere',
+                      wordBreak: 'break-word',
                     }}
                   >
-                    {renderContent(m.content)}
+                    {renderContent(m.content, m.role)}
                     {m.role === 'assistant' && m.softEscalate && !collectInfo && (
                       <div className="mt-1 text-sm">
                         <button
                           type="button"
-                          className="underline hover:opacity-80 focus:outline-none focus:ring-1 cursor-pointer bg-transparent p-0 font-normal text-[var(--brand-accent)] focus:ring-[var(--brand-accent)] dark:text-[var(--brand-primary-contrast)] dark:focus:ring-[var(--brand-primary-contrast)]"
+                          className="underline text-[#f4f4f5] decoration-[#f4f4f5] hover:opacity-80 focus:outline-none focus:ring-1 focus:ring-[#f4f4f5] cursor-pointer bg-transparent p-0 font-normal"
                           onClick={() => {
                             const pct = Math.max(
                               0,

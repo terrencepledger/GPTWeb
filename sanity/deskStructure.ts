@@ -7,7 +7,6 @@ export const structure = (S: any) =>
       S.documentTypeListItem('ministry').title('Ministries'),
       S.documentTypeListItem('heroSlide').title('Hero Slides'),
       S.documentTypeListItem('eventDetail').title('Event Details'),
-      S.documentTypeListItem('page').title('Pages'),
       S.listItem()
         .title('Site Settings')
         .child(

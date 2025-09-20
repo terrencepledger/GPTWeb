@@ -75,5 +75,38 @@ export default defineType({
         },
       ],
     }),
+    defineField({
+      name: 'givingOptions',
+      title: 'Giving Options',
+      description: 'Giving methods surfaced in the chatbot and on the giving page.',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          name: 'givingOption',
+          fields: [
+            {
+              name: 'title',
+              title: 'Title',
+              type: 'string',
+              validation: (Rule) => Rule.required(),
+            },
+            {
+              name: 'content',
+              title: 'Content',
+              type: 'string',
+              validation: (Rule) => Rule.required(),
+              description: 'Shown as the detail such as an address or username.',
+            },
+            {
+              name: 'href',
+              title: 'Link',
+              type: 'url',
+              validation: (Rule) => Rule.uri({ scheme: ['http', 'https'] }),
+            },
+          ],
+        },
+      ],
+    }),
   ],
 });
