@@ -83,7 +83,12 @@ async function testBuildSiteContext() {
         phone: '123-456-7890',
         socialLinks: [{ label: 'Facebook', href: 'https://fb.com/test' }],
         givingOptions: [
-          { title: 'Online', content: 'Give', href: 'https://give.example.com' },
+          {
+            title: ' Online ',
+            content: ' https://give.example.com/path)** ',
+            href: ' https://give.example.com/path)** ',
+          },
+          { title: 'Mail  ', content: ' 123  Main St \nSuite 2 ' },
         ],
       }) as any,
     announcementLatest: async () =>
@@ -142,7 +147,14 @@ async function testBuildSiteContext() {
   assert.strictEqual(parsed.sf[0].r, 'Lead Pastor');
   assert.strictEqual(parsed.mn[0].n, 'Youth');
   assert.strictEqual(parsed.mn[0].d, 'Teens');
-  assert.strictEqual(parsed.gv[0].u, 'https://give.example.com');
+  assert.strictEqual(parsed.gv.length, 2);
+  assert.strictEqual(parsed.gv[0].t, 'Online');
+  assert.strictEqual(parsed.gv[0].c, 'https://give.example.com/path');
+  assert.strictEqual(parsed.gv[0].u, 'https://give.example.com/path');
+  assert.strictEqual(parsed.gv[0].c, parsed.gv[0].u);
+  assert.strictEqual(parsed.gv[1].t, 'Mail');
+  assert.strictEqual(parsed.gv[1].c, '123 Main St Suite 2');
+  assert.strictEqual(parsed.gv[1].u, undefined);
   assert.strictEqual(parsed.ls.st, 'live');
   assert.strictEqual(parsed.ls.u, 'https://example.com/live');
   assert.strictEqual(parsed.ev[0].t, 'Bible Study');
