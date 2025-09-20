@@ -1,4 +1,5 @@
 import {google, calendar_v3} from 'googleapis';
+import { JWT, JWTOptions } from 'google-auth-library';
 import {createHash} from 'crypto';
 import {sanity} from './sanity';
 import {getSanityWriteClient, hasSanityWriteToken} from './sanity.server';
@@ -199,7 +200,7 @@ function getCalendarClient() {
   if (!SERVICE_ACCOUNT_EMAIL || !SERVICE_ACCOUNT_KEY) {
     throw new Error('Google service account credentials are not configured');
   }
-  const authConfig: google.auth.JWTOptions = {
+  const authConfig: JWTOptions = {
     email: SERVICE_ACCOUNT_EMAIL,
     key: SERVICE_ACCOUNT_KEY,
     scopes: SCOPES,
@@ -207,7 +208,7 @@ function getCalendarClient() {
   if (SERVICE_ACCOUNT_SUBJECT) {
     authConfig.subject = SERVICE_ACCOUNT_SUBJECT;
   }
-  const auth = new google.auth.JWT(authConfig);
+  const auth = new JWT(authConfig);
   cachedCalendar = google.calendar({version: 'v3', auth});
   return cachedCalendar;
 }
@@ -828,9 +829,6 @@ export async function updatePublicEvent(body: UpdateEventBody) {
     existing = data;
   } catch (err) {
     translateCalendarError('public', publicCalendarId, err);
-  }
-  if (!data) {
-    throw new Error('Failed to update public event.');
   }
   if (!existing) {
     throw new Error('Public event could not be loaded.');
