@@ -6,9 +6,16 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node scripts/brand-consistency.js"
+    "test": "node scripts/brand-consistency.js",
+    "sync:pages": "node scripts/sync-pages.cjs"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.15",
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/list": "^6.1.19",
+    "@fullcalendar/react": "^6.1.15",
+    "@fullcalendar/timegrid": "^6.1.15",
     "@headlessui/react": "^2.2.7",
     "@portabletext/react": "^3.2.1",
     "@sanity/client": "^7.8.2",
