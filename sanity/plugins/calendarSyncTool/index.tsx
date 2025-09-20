@@ -565,11 +565,12 @@ function StatusLegendItem(props: {status: CalendarDisplayStatus; label: string})
     <Flex align="center" gap={2} wrap="wrap">
       <Box
         style={{
-          width: 12,
-          height: 12,
-          borderRadius: '999px',
-          backgroundColor: color,
-          boxShadow: '0 0 0 1px var(--card-border-color) inset',
+          width: 14,
+          height: 14,
+          borderRadius: 4,
+          border: `2px solid ${color}`,
+          backgroundColor: 'var(--card-bg-color)',
+          boxSizing: 'border-box',
         }}
       />
       <Text size={1}>{props.label}</Text>
@@ -697,18 +698,30 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     }
     .calendar-event {
       position: relative;
-      --calendar-event-accent: transparent;
-      box-shadow: inset 4px 0 0 var(--calendar-event-accent);
-      transition: box-shadow 0.12s ease, outline-color 0.12s ease;
+      --calendar-event-border: var(--card-border-color);
+      box-sizing: border-box;
+      border: 2px solid var(--calendar-event-border, var(--card-border-color));
+      border-radius: 6px;
+      background-clip: padding-box;
+      transition: border-color 0.12s ease, box-shadow 0.12s ease;
     }
     .calendar-event-status-published {
-      --calendar-event-accent: var(--calendar-status-published-color, var(--card-positive-fg-color));
+      --calendar-event-border: var(
+        --calendar-status-published-color,
+        var(--card-positive-fg-color)
+      );
     }
     .calendar-event-status-unpublished {
-      --calendar-event-accent: var(--calendar-status-unpublished-color, var(--card-critical-fg-color));
+      --calendar-event-border: var(
+        --calendar-status-unpublished-color,
+        var(--card-critical-fg-color)
+      );
     }
     .calendar-event-status-draft {
-      --calendar-event-accent: var(--calendar-status-draft-color, var(--card-muted-fg-color));
+      --calendar-event-border: var(
+        --calendar-status-draft-color,
+        var(--card-muted-fg-color)
+      );
     }
     .calendar-event-content {
       display: flex;
@@ -801,11 +814,9 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     }
     .calendar-event-internal {
       background-color: var(--calendar-internal-color) !important;
-      border-color: var(--calendar-internal-color) !important;
     }
     .calendar-event-public {
       background-color: var(--calendar-public-color) !important;
-      border-color: var(--calendar-public-color) !important;
     }
     .calendar-event-internal .calendar-event-content,
     .calendar-event-internal .calendar-event-listItem,
@@ -814,9 +825,7 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       color: inherit;
     }
     .calendar-event-selected {
-      outline: 2px solid var(--card-focus-ring-color) !important;
-      outline-offset: 2px;
-      box-shadow: inset 4px 0 0 var(--calendar-event-accent), 0 0 0 1px var(--card-focus-ring-color);
+      box-shadow: 0 0 0 2px var(--card-focus-ring-color) !important;
       z-index: 2;
     }
     .calendar-event-drift {
