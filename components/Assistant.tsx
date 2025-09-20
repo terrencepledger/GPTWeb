@@ -1,6 +1,6 @@
 'use client';
 
-import {FormEvent, useCallback, useEffect, useRef, useState, type CSSProperties} from 'react';
+import {FormEvent, useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode} from 'react';
 import type {ChatMessage} from '@/types/chat';
 import Link from 'next/link';
 import {stripInvisibleCharacters, stripTrailingUrlJunk} from '@/lib/textSanitizers';
@@ -45,7 +45,10 @@ export default function Assistant() {
     };
   }, []);
 
-  function renderContent(text: string) {
+  function renderContent(text: string, role: ChatMessage['role']): ReactNode {
+    if (role !== 'assistant') {
+      return text;
+    }
     const emailRegex = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
     const phoneRegex = /\+?\d[\d\s().-]{7,}\d/;
     const regex = new RegExp(
@@ -53,6 +56,8 @@ export default function Assistant() {
       'g',
     );
     const parts = text.split(regex).filter(Boolean);
+    const accentLinkClass =
+      'underline text-[#f4f4f5] decoration-[#f4f4f5] hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f4f4f5]';
     return parts.map((part, idx) => {
       if (/^https?:\/\//.test(part)) {
         const trimmed = stripInvisibleCharacters(part);
@@ -64,17 +69,19 @@ export default function Assistant() {
         if (label.endsWith('/')) label = label.slice(0, -1);
         const trailing = trimmed.slice(href.length);
         return (
-          <span key={idx}>
-            <a
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline hover:opacity-80 text-[var(--brand-accent)]"
-            >
-              {label}
-            </a>
+        <span key={idx}>
+          <a
+            key={idx}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={accentLinkClass}
+            style={{ wordBreak: 'break-word' }}
+          >
+            {label}
+          </a>
             {trailing}
-          </span>
+        </span>
         );
       }
       if (/^\//.test(part)) {
@@ -83,7 +90,8 @@ export default function Assistant() {
           <Link
             key={idx}
             href={cleaned}
-            className="underline hover:opacity-80 text-[var(--brand-accent)]"
+            className={accentLinkClass}
+            style={{ wordBreak: 'break-word' }}
           >
             {cleaned}
           </Link>
@@ -98,7 +106,7 @@ export default function Assistant() {
         const trailing = trimmed.slice(email.length);
         return (
           <span key={idx}>
-            <a href={`mailto:${email}`} className="underline">
+            <a href={`mailto:${email}`} {accentLinkClass} break-words>
               {email}
             </a>
             {trailing}
@@ -115,7 +123,7 @@ export default function Assistant() {
         const trailing = trimmed.slice(phoneText.length);
         return (
           <span key={idx}>
-            <a href={`tel:${tel}`} className="underline">
+            <a href={`tel:${tel}`} className={accentLinkClass} break-words>
               {phoneText}
             </a>
             {trailing}
@@ -298,7 +306,7 @@ export default function Assistant() {
               <div className={`max-w-[85%] flex flex-col ${m.role === 'assistant' ? 'items-start' : 'items-end'}`}>
                 <div className="relative">
                   <div
-                    className="relative z-10 rounded-2xl border px-3 py-2 whitespace-pre-wrap"
+                    className="relative z-10 rounded-2xl border px-3 py-2 whitespace-pre-wrap break-words"
                     style={{
                       backgroundColor:
                         m.role === 'assistant'
@@ -306,14 +314,16 @@ export default function Assistant() {
                           : 'var(--brand-accent)',
                       color: 'var(--brand-ink)',
                       borderColor: 'var(--brand-border)',
+                      overflowWrap: 'anywhere',
+                      wordBreak: 'break-word',
                     }}
                   >
-                    {renderContent(m.content)}
+                    {renderContent(m.content, m.role)}
                     {m.role === 'assistant' && m.softEscalate && !collectInfo && (
                       <div className="mt-1 text-sm">
                         <button
                           type="button"
-                          className="underline hover:opacity-80 focus:outline-none focus:ring-1 cursor-pointer bg-transparent p-0 font-normal text-[var(--brand-accent)] focus:ring-[var(--brand-accent)] dark:text-[var(--brand-primary-contrast)] dark:focus:ring-[var(--brand-primary-contrast)]"
+                          className="underline text-[#f4f4f5] decoration-[#f4f4f5] hover:opacity-80 focus:outline-none focus:ring-1 focus:ring-[#f4f4f5] cursor-pointer bg-transparent p-0 font-normal"
                           onClick={() => {
                             const pct = Math.max(
                               0,
