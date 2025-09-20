@@ -54,15 +54,7 @@ body::before {
 }
 
 a {
-  color: var(--brand-link);
-  text-decoration-color: color-mix(in oklab, var(--brand-link) 70%, transparent);
-  @apply underline transition-colors;
-}
-
-a:hover,
-a:focus-visible {
-  color: var(--brand-link-hover);
-  text-decoration-color: var(--brand-link-hover);
+  @apply underline;
 }
 
 /* Header: do not underline links by default; keep hover underline for affordance */
@@ -100,8 +92,6 @@ img {
   --brand-surface-contrast: #FFFFFF; /* white for headings on surface */
   --brand-overlay: color-mix(in oklab, var(--brand-ink) 50%, transparent);
   --brand-overlay-muted: color-mix(in oklab, var(--brand-ink) 30%, transparent);
-  --brand-link: var(--brand-accent);
-  --brand-link-hover: color-mix(in oklab, var(--brand-accent) 80%, var(--brand-alt) 20%);
 
   /* Layout and component variables (defaults) */
   --layout-max-width: 90vw;
@@ -127,8 +117,6 @@ img {
     --brand-muted: color-mix(in oklab, var(--brand-accent) 60%, var(--brand-ink) 40%);
     --brand-border: var(--brand-accent);
     --brand-overlay-muted: color-mix(in oklab, var(--brand-ink) 60%, transparent);
-    --brand-link: color-mix(in oklab, var(--brand-primary-contrast) 65%, var(--brand-accent) 35%);
-    --brand-link-hover: color-mix(in oklab, var(--brand-primary-contrast) 80%, var(--brand-accent) 20%);
   }
 }
 
@@ -141,8 +129,6 @@ html[data-theme="dark"] {
   --brand-muted: color-mix(in oklab, var(--brand-accent) 60%, var(--brand-ink) 40%);
   --brand-border: var(--brand-accent);
   --brand-overlay-muted: color-mix(in oklab, var(--brand-ink) 60%, transparent);
-  --brand-link: color-mix(in oklab, var(--brand-primary-contrast) 65%, var(--brand-accent) 35%);
-  --brand-link-hover: color-mix(in oklab, var(--brand-primary-contrast) 80%, var(--brand-accent) 20%);
 }
 
 
@@ -162,8 +148,6 @@ html {
   --brand-surface-contrast: #FFFFFF; /* white */
   --brand-overlay: color-mix(in oklab, var(--brand-ink) 50%, transparent);
   --brand-overlay-muted: color-mix(in oklab, var(--brand-ink) 30%, transparent);
-  --brand-link: var(--brand-accent);
-  --brand-link-hover: color-mix(in oklab, var(--brand-accent) 80%, var(--brand-alt) 20%);
 
   /* Font variable fallbacks (overridden by next/font classes on <html>) */
   --font-body: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
