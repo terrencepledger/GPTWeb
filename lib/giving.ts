@@ -56,13 +56,23 @@ function normalizeGivingOption(option: unknown): GivingOption | null {
   }
   const candidate = option as Partial<GivingOption> & Record<string, unknown>;
   const title = isString(candidate.title) ? sanitizeText(candidate.title) : '';
-  const content = isString(candidate.content)
-    ? sanitizeText(candidate.content)
-    : '';
+  let content = isString(candidate.content) ? sanitizeText(candidate.content) : '';
   const href = isString(candidate.href) ? normalizeUrl(candidate.href) : undefined;
 
   if (!title || !content) {
     return null;
+  }
+
+  if (href) {
+    const normalizedContentUrl = normalizeUrl(content);
+    if (normalizedContentUrl && normalizedContentUrl === href) {
+      content = href;
+    } else {
+      const stripped = stripTrailingUrlJunk(content);
+      if (stripped === href) {
+        content = href;
+      }
+    }
   }
 
   return {

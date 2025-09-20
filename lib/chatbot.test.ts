@@ -85,7 +85,7 @@ async function testBuildSiteContext() {
         givingOptions: [
           {
             title: ' Online ',
-            content: ' Give ',
+            content: ' https://give.example.com/path)** ',
             href: ' https://give.example.com/path)** ',
           },
           { title: 'Mail  ', content: ' 123  Main St \nSuite 2 ' },
@@ -149,8 +149,9 @@ async function testBuildSiteContext() {
   assert.strictEqual(parsed.mn[0].d, 'Teens');
   assert.strictEqual(parsed.gv.length, 2);
   assert.strictEqual(parsed.gv[0].t, 'Online');
-  assert.strictEqual(parsed.gv[0].c, 'Give');
+  assert.strictEqual(parsed.gv[0].c, 'https://give.example.com/path');
   assert.strictEqual(parsed.gv[0].u, 'https://give.example.com/path');
+  assert.strictEqual(parsed.gv[0].c, parsed.gv[0].u);
   assert.strictEqual(parsed.gv[1].t, 'Mail');
   assert.strictEqual(parsed.gv[1].c, '123 Main St Suite 2');
   assert.strictEqual(parsed.gv[1].u, undefined);
