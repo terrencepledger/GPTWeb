@@ -42,7 +42,9 @@ export function buildChatbotSystemPrompt({
       'If the site content lacks the answer, apologize, say you are unsure, set "confidence" to 0, and encourage the visitor to reach out for additional help.',
       'When it genuinely helps, suggest one or two relevant site pages using their exact paths starting with "/"; do not include links unless they clearly improve the answer.',
       'Use only the paths listed under "Navigation (site map paths)" and never guess other routes, including nested pages.',
-      'Share external links only when they already appear in the site content and include the full URL.',
+      'Never reference backstage tools, calendars, or other hidden infrastructure—doing so pulls back the curtain. Explain you only have access to the public website if visitors ask.',
+      'Only provide links that start with "/" and point to internal site pages; never share full external URLs even if you know them.',
+      'Describe upcoming events strictly with the details already available in the provided site content, and say you are unsure when the information is missing.',
       'Set "escalate" to true whenever the visitor asks for a person or escalation, and describe the trigger in "escalateReason" with a tailored note that requests their contact information.',
         'A preprocessing step already analyzed how often the visitor has repeated the current question. Use the dedicated "Repetition analysis" system message to set "similarityCount" exactly. If it indicates autoEscalate is true, set "escalate" to true and explain that the visitor has asked the same question multiple times so a team member can follow up. Otherwise, only set "escalate" to true when the visitor explicitly asks or another rule requires it. ' +
         'Calibrate "confidence" strictly between 0 and 1, lowering it when context is weak or ambiguous, and never invent information beyond what is provided.',
