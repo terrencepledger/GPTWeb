@@ -1,6 +1,6 @@
 import type { SVGProps } from "react";
 import type { GivingOption } from "@/lib/giving";
-import { givingOptions } from "@/lib/giving";
+import { getGivingOptions } from "@/lib/giving";
 
 export const metadata = { title: "Giving" };
 
@@ -92,11 +92,6 @@ const iconMap: Record<string, (props: SVGProps<SVGSVGElement>) => JSX.Element> =
   Razmobile: LinkIcon,
 };
 
-const options: Option[] = givingOptions.map((opt) => ({
-  ...opt,
-  icon: iconMap[opt.title] ?? LinkIcon,
-}));
-
 function OptionCard({ option, delay }: { option: Option; delay: string }) {
   const Icon = option.icon;
   return (
@@ -126,7 +121,12 @@ function OptionCard({ option, delay }: { option: Option; delay: string }) {
   );
 }
 
-export default function Page() {
+export default async function Page() {
+  const givingOptions = await getGivingOptions();
+  const options: Option[] = givingOptions.map((opt) => ({
+    ...opt,
+    icon: iconMap[opt.title] ?? LinkIcon,
+  }));
   return (
     <div className="w-full space-y-8">
       <div className="space-y-2">

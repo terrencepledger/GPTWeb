@@ -55,6 +55,12 @@ export interface SocialLink {
   icon: string;
 }
 
+export interface GivingOption {
+  title: string;
+  content: string;
+  href?: string;
+}
+
 export interface SiteSettings {
   _id: string;
   title: string;
@@ -64,11 +70,22 @@ export interface SiteSettings {
   phone?: string;
   logo?: string;
   socialLinks?: SocialLink[];
+  givingOptions?: GivingOption[];
 }
 
 export const siteSettings = () =>
   sanity.fetch<SiteSettings | null>(
-    groq`*[_id == "siteSettings"][0]{_id, title, email, phone, address, serviceTimes, "logo": logo.asset->url, "socialLinks": socialLinks[]{label, href, description, icon}}`
+    groq`*[_id == "siteSettings"][0]{
+      _id,
+      title,
+      email,
+      phone,
+      address,
+      serviceTimes,
+      "logo": logo.asset->url,
+      "socialLinks": socialLinks[]{label, href, description, icon},
+      "givingOptions": givingOptions[]{title, content, href}
+    }`
   );
 
 export interface FormSettings {

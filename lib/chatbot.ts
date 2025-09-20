@@ -11,9 +11,9 @@ import { getCurrentLivestream } from './vimeo';
 import { getUpcomingEvents } from './googleCalendar';
 import fs from 'fs';
 import path from 'path';
-import { givingOptions } from './giving';
 import { buildChatbotSystemPrompt } from './chatbotPrompts';
 import { getImpersonationAddress } from './gmail';
+import { normalizeGivingOptions } from './giving';
 
 export async function getChatbotTone(): Promise<string> {
   const tone = await sanity.fetch(groq`*[_type == "chatbotSettings"][0].tone`);
@@ -236,7 +236,6 @@ type SiteContextSources = {
   announcementLatest: typeof announcementLatest;
   getCurrentLivestream: typeof getCurrentLivestream;
   getUpcomingEvents: typeof getUpcomingEvents;
-  givingOptions: typeof givingOptions;
 };
 
 const defaultSiteContextSources: SiteContextSources = {
@@ -247,7 +246,6 @@ const defaultSiteContextSources: SiteContextSources = {
   announcementLatest,
   getCurrentLivestream,
   getUpcomingEvents,
-  givingOptions,
 };
 
 const toArray = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
@@ -300,6 +298,16 @@ export async function buildSiteContext(
         return Object.keys(entry).length ? entry : null;
       }).filter(Boolean) as Record<string, string>[];
       if (socials.length) st.sl = socials;
+      const givingList = normalizeGivingOptions(settingsRecord.givingOptions).map(
+        (g) => {
+          const entry: Record<string, string> = { t: g.title, c: g.content };
+          if (g.href) entry.u = g.href;
+          return entry;
+        },
+      );
+      if (givingList.length) {
+        context.gv = givingList;
+      }
       if (Object.keys(st).length) context.st = st;
     }
     const announcementRecord = toRecord<NonNullable<Awaited<ReturnType<typeof announcementLatest>>>>(announcement);
@@ -342,17 +350,6 @@ export async function buildSiteContext(
     }).filter(Boolean) as Record<string, string>[];
     if (ministriesList.length) {
       context.mn = ministriesList;
-    }
-    const givingList = toArray(sources.givingOptions).map((g: any) => {
-      if (!g || typeof g !== 'object') return null;
-      const entry: Record<string, string> = {};
-      if (typeof g.title === 'string' && g.title) entry.t = g.title;
-      if (typeof g.content === 'string' && g.content) entry.c = g.content;
-      if (typeof g.href === 'string' && g.href) entry.u = g.href;
-      return Object.keys(entry).length ? entry : null;
-    }).filter(Boolean) as Record<string, string>[];
-    if (givingList.length) {
-      context.gv = givingList;
     }
     const livestreamRecord = toRecord<NonNullable<Awaited<ReturnType<typeof getCurrentLivestream>>>>(livestream);
     if (livestreamRecord) {

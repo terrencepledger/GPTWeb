@@ -3,6 +3,7 @@
 import {FormEvent, useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode} from 'react';
 import type {ChatMessage} from '@/types/chat';
 import Link from 'next/link';
+import {stripInvisibleCharacters, stripTrailingUrlJunk} from '@/lib/textSanitizers';
 
 export default function Assistant() {
   const [open, setOpen] = useState(false);
@@ -59,9 +60,16 @@ export default function Assistant() {
       'underline text-[#f4f4f5] decoration-[#f4f4f5] hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f4f4f5]';
     return parts.map((part, idx) => {
       if (/^https?:\/\//.test(part)) {
-        let label = part.replace(/^https?:\/\//, '');
+        const trimmed = stripInvisibleCharacters(part);
+        const href = stripTrailingUrlJunk(trimmed);
+        if (!href) {
+          return <span key={idx}>{trimmed}</span>;
+        }
+        let label = href.replace(/^https?:\/\//, '');
         if (label.endsWith('/')) label = label.slice(0, -1);
+        const trailing = trimmed.slice(href.length);
         return (
+        <span key={idx}>
           <a
             key={idx}
             href={part}
@@ -72,33 +80,54 @@ export default function Assistant() {
           >
             {label}
           </a>
+            {trailing}
+        </span>
         );
       }
       if (/^\//.test(part)) {
+        const cleaned = stripInvisibleCharacters(part);
         return (
           <Link
             key={idx}
-            href={part}
+            href={cleaned}
             className={accentLinkClass}
             style={{ wordBreak: 'break-word' }}
           >
-            {part}
+            {cleaned}
           </Link>
         );
       }
       if (emailRegex.test(part)) {
+        const trimmed = stripInvisibleCharacters(part);
+        const email = stripTrailingUrlJunk(trimmed);
+        if (!email) {
+          return <span key={idx}>{trimmed}</span>;
+        }
+        const trailing = trimmed.slice(email.length);
         return (
-          <a key={idx} href={`mailto:${part}`} className={accentLinkClass} break-words>
-            {part}
-          </a>
+          <span key={idx}>
+            <a href={`mailto:${email}`} className={accentLinkClass} break-words>
+              {email}
+            </a>
+            {trailing}
+          </span>
         );
       }
       if (phoneRegex.test(part)) {
-        const tel = part.replace(/[^\d+]/g, '');
+        const trimmed = stripInvisibleCharacters(part);
+        const phoneText = stripTrailingUrlJunk(trimmed);
+        const tel = phoneText.replace(/[^\d+]/g, '');
+        if (!tel) {
+          return <span key={idx}>{trimmed}</span>;
+        }
+        const trailing = trimmed.slice(phoneText.length);
         return (
-          <a key={idx} href={`tel:${tel}`} className={accentLinkClass} break-words>
-            {part}
-          </a>
+          <span key={idx}>
+            <a href={`tel:${tel}`} className={accentLinkClass} break-words>
+              {phoneText}
+            </a>
+            {trailing}
+          </span>
         );
       }
       return <span key={idx}>{part}</span>;
