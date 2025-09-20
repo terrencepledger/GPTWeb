@@ -53,6 +53,7 @@ export type Message = ChatMessage;
 
 import type OpenAI from 'openai';
 import { google } from 'googleapis';
+import { JWT } from 'google-auth-library';
 import { getOpenAIClient } from './openaiClient';
 
 const REPEAT_ESCALATION_REASON = 'User repeated the question multiple times.';
@@ -146,7 +147,7 @@ function computeSimilarityScore(a: string, b: string): number {
 
 function analyzeRepetition(messages: Message[]): RepetitionAnalysis {
   const userMessages = messages.filter(
-    (msg) => msg.role === 'user' && typeof msg.content === 'string' && msg.content.trim(),
+    (msg) => msg.role === 'user' && msg.content.trim(),
   );
   if (!userMessages.length) {
     return { similarityCount: 0, escalate: false };
@@ -250,7 +251,7 @@ const defaultSiteContextSources: SiteContextSources = {
 };
 
 const toArray = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
-const toRecord = <T extends Record<string, unknown>>(value: unknown): T | null =>
+const toRecord = <T extends object>(value: unknown): T | null =>
   value && typeof value === 'object' && !Array.isArray(value) ? (value as T) : null;
 
 export async function buildSiteContext(
@@ -377,9 +378,9 @@ export async function buildSiteContext(
         entry.dt = evFmt.format(new Date(e.start));
       }
       const location = (e.location || e.loc || '') as string;
-      if (typeof location === 'string' && location) entry.loc = location;
+      if (location) entry.loc = location;
       const url = (e.href || e.htmlLink || '') as string;
-      if (typeof url === 'string' && url) entry.u = url;
+      if (url) entry.u = url;
       return Object.keys(entry).length ? entry : null;
     }).filter(Boolean) as Record<string, string>[];
     if (eventsList.length) {
@@ -647,12 +648,12 @@ export async function sendEscalationEmail(
   // Normalize private key: support both literal newlines and escaped \\n
   const svcKey = svcKeyRaw.includes('\\n') ? svcKeyRaw.replace(/\\n/g, '\n') : svcKeyRaw;
 
-  const auth = new google.auth.JWT({
+  const auth = new JWT({
     email: svcEmail,
     key: svcKey,
     scopes: ['https://www.googleapis.com/auth/gmail.send','https://mail.google.com/'],
     subject: parsedFrom, // act as this user
-  } as any);
+  });
   dlog('Authorizing Gmail client as subject', maskEmail(parsedFrom));
   await auth.authorize();
   dlog('Gmail authorization successful');
