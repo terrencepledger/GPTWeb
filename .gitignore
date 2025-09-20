@@ -24,4 +24,5 @@ lerna-debug.log*
 Thumbs.db
 
 # Secrets
+config/google-service-account.json
 config/gmail-service-account.json

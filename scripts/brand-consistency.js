@@ -5,7 +5,8 @@ const rootDir = path.resolve(__dirname, '..');
 const allowedFiles = new Set([
   'tailwind.config.js',
   'app/globals.css',
-  'app/utilities.css'
+  'app/utilities.css',
+  'sanity/plugins/calendarSyncTool/fullcalendarStyles.ts'
 ]);
 
 const hexColorRegex = /#[0-9a-fA-F]{3,6}\b/;

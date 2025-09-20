@@ -26,13 +26,6 @@ export default defineType({
         "Optional additional background/context the assistant should consider for every conversation (e.g., corrections, policies, irregular hours).",
     }),
     defineField({
-      name: "escalationFrom",
-      title: "Escalation From (sender email)",
-      type: "string",
-      validation: (Rule) => Rule.email().warning("Should be a valid email address"),
-      description: "The Google Workspace user the service account will impersonate when sending (e.g., support@yourdomain.com)",
-    }),
-    defineField({
       name: "escalationTo",
       title: "Escalation To (recipient email)",
       type: "string",
