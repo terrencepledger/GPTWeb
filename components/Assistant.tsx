@@ -106,7 +106,7 @@ export default function Assistant() {
         const trailing = trimmed.slice(email.length);
         return (
           <span key={idx}>
-            <a href={`mailto:${email}`} {accentLinkClass} break-words>
+            <a href={`mailto:${email}`} className={accentLinkClass} break-words>
               {email}
             </a>
             {trailing}
