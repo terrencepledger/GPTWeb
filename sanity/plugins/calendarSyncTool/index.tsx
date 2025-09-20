@@ -86,6 +86,12 @@ const DISPLAY_STATUS_BADGE_TONES: Record<CalendarDisplayStatus, BadgeTone> = {
   draft: 'caution',
 }
 
+const STATUS_ACCENTS: Record<CalendarDisplayStatus, {border: string; tint: string}> = {
+  published: {border: 'rgb(27, 127, 75)', tint: 'rgba(27, 127, 75, 0.18)'},
+  unpublished: {border: 'rgb(180, 35, 24)', tint: 'rgba(180, 35, 24, 0.2)'},
+  draft: {border: 'rgb(138, 97, 22)', tint: 'rgba(138, 97, 22, 0.16)'},
+}
+
 interface StatusInfo {
   status: CalendarDisplayStatus
   label: string
@@ -260,6 +266,9 @@ interface CalendarEventExtendedProps {
   status?: CalendarDisplayStatus
   combinedKey?: string
   primaryKey?: string
+  statusColor?: string
+  statusTint?: string
+  sourceColor?: string
 }
 
 const CALENDAR_VIEW_CONTAINER_STYLE: React.CSSProperties = {
@@ -585,21 +594,16 @@ function Legend(props: {
 }
 
 function StatusLegendItem(props: {status: CalendarDisplayStatus; label: string}) {
-  const color =
-    props.status === 'published'
-      ? 'var(--calendar-status-published-color, var(--card-positive-fg-color))'
-      : props.status === 'unpublished'
-      ? 'var(--calendar-status-unpublished-color, var(--card-critical-fg-color))'
-      : 'var(--calendar-status-draft-color, var(--card-muted-fg-color))'
+  const accent = STATUS_ACCENTS[props.status]
   return (
     <Flex align="center" gap={2} wrap="wrap">
       <Box
         style={{
-          width: 14,
-          height: 14,
-          borderRadius: 4,
-          border: `2px solid ${color}`,
-          backgroundColor: 'var(--card-bg-color)',
+          width: 16,
+          height: 16,
+          borderRadius: 6,
+          backgroundColor: accent.tint,
+          boxShadow: `inset 0 0 0 2px ${accent.border}`,
           boxSizing: 'border-box',
         }}
       />
@@ -719,41 +723,55 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     .calendar-tool-root {
       --calendar-internal-color: ${internalColor};
       --calendar-public-color: ${publicColor};
-      --calendar-status-published-color: color-mix(in oklab, var(--card-positive-fg-color) 70%, transparent);
-      --calendar-status-unpublished-color: color-mix(in oklab, var(--card-critical-fg-color) 70%, transparent);
-      --calendar-status-draft-color: color-mix(in oklab, var(--card-muted-fg-color) 65%, transparent);
     }
     .fc .calendar-event {
-      border-radius: 6px;
+      border-radius: 8px;
     }
     .calendar-event {
       position: relative;
-      --calendar-event-border: var(--card-border-color);
       box-sizing: border-box;
-      border: 2px solid var(--calendar-event-border, var(--card-border-color));
-      border-radius: 6px;
-      background-clip: padding-box;
-      transition: border-color 0.12s ease, box-shadow 0.12s ease;
+      border-radius: 8px;
+      background-color: var(--card-bg-color);
+      color: var(--card-fg-color);
+      overflow: hidden;
+      box-shadow: inset 0 0 0 2px var(--calendar-event-status-color, var(--card-border-color));
+      transition: box-shadow 0.16s ease, transform 0.16s ease;
     }
-    .calendar-event-status-published {
-      --calendar-event-border: var(
-        --calendar-status-published-color,
-        var(--card-positive-fg-color)
-      );
+    .calendar-event::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: var(--calendar-event-status-tint, transparent);
+      pointer-events: none;
     }
-    .calendar-event-status-unpublished {
-      --calendar-event-border: var(
-        --calendar-status-unpublished-color,
-        var(--card-critical-fg-color)
+    .calendar-event::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(
+        135deg,
+        transparent 0%,
+        transparent 55%,
+        var(--calendar-event-source-color, transparent) 100%
       );
+      opacity: 0.2;
+      pointer-events: none;
     }
-    .calendar-event-status-draft {
-      --calendar-event-border: var(
-        --calendar-status-draft-color,
-        var(--card-muted-fg-color)
-      );
+    .calendar-event:hover {
+      box-shadow:
+        inset 0 0 0 2px var(--calendar-event-status-color, var(--card-border-color)),
+        0 0 0 3px var(--calendar-event-status-tint, transparent);
+    }
+    .calendar-event-selected {
+      box-shadow:
+        inset 0 0 0 2px var(--calendar-event-status-color, var(--card-border-color)),
+        0 0 0 2px var(--card-focus-ring-color);
+      z-index: 2;
     }
     .calendar-event-content {
+      position: relative;
       display: flex;
       gap: 0.4rem;
       align-items: center;
@@ -761,6 +779,9 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       line-height: 1.25;
       max-width: 100%;
       overflow: hidden;
+    }
+    .calendar-event-listItem {
+      position: relative;
     }
     .calendar-event-time {
       font-weight: 600;
@@ -816,58 +837,32 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       font-size: 0.75rem;
       opacity: 0.85;
     }
-    .calendar-event-internal {
-      background-color: var(--calendar-internal-color) !important;
-    }
-    .calendar-event-public {
-      background-color: var(--calendar-public-color) !important;
-    }
-    .calendar-event-internal .calendar-event-content,
-    .calendar-event-internal .calendar-event-listItem,
-    .calendar-event-public .calendar-event-content,
-    .calendar-event-public .calendar-event-listItem {
-      color: inherit;
-    }
-    .calendar-event-selected {
-      box-shadow: 0 0 0 2px var(--card-focus-ring-color) !important;
-      z-index: 2;
-    }
-    .fc-daygrid-day[data-calendar-selected='true'] {
-      --calendar-day-selected-outline: var(--card-focus-ring-color);
-    }
-    .fc-daygrid-day[data-calendar-selected-status='published'] {
-      --calendar-day-selected-outline: var(
-        --calendar-status-published-color,
-        var(--card-positive-fg-color)
+    .calendar-event-drift {
+      background-image: repeating-linear-gradient(
+        135deg,
+        transparent,
+        transparent 6px,
+        rgba(0, 0, 0, 0.08) 6px,
+        rgba(0, 0, 0, 0.08) 12px
       );
-    }
-    .fc-daygrid-day[data-calendar-selected-status='unpublished'] {
-      --calendar-day-selected-outline: var(
-        --calendar-status-unpublished-color,
-        var(--card-critical-fg-color)
-      );
-    }
-    .fc-daygrid-day[data-calendar-selected-status='draft'] {
-      --calendar-day-selected-outline: var(
-        --calendar-status-draft-color,
-        var(--card-muted-fg-color)
-      );
+      outline: 2px dashed var(--calendar-event-status-color, var(--card-border-color));
+      outline-offset: -4px;
     }
     .fc-daygrid-day[data-calendar-selected='true'] .fc-daygrid-day-frame {
-      box-shadow: inset 0 0 0 2px var(--calendar-day-selected-outline, var(--card-focus-ring-color));
-      background-color: color-mix(
-        in oklab,
-        var(--calendar-day-selected-outline, var(--card-focus-ring-color)) 18%,
-        transparent
-      );
+      position: relative;
+    }
+    .fc-daygrid-day[data-calendar-selected='true'] .fc-daygrid-day-frame::after {
+      content: '';
+      position: absolute;
+      inset: 3px;
       border-radius: 8px;
+      border: 2px solid var(--calendar-day-selected-color, var(--card-focus-ring-color));
+      box-shadow: 0 0 0 4px var(--calendar-day-selected-tint, rgba(59, 130, 246, 0.18));
+      pointer-events: none;
     }
     .fc-daygrid-day[data-calendar-selected='true'] .fc-daygrid-day-number {
       color: var(--card-fg-color);
       font-weight: 600;
-    }
-    .calendar-event-drift {
-      border-style: dashed !important;
     }
     .calendar-slot-label {
       font-size: 0.75rem;
@@ -927,7 +922,9 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   const calendarRef = useRef<FullCalendar | null>(null)
   const eventElementsRef = useRef<Map<string, Set<HTMLElement>>>(new Map())
   const eventDayCellsRef = useRef<Map<string, Set<HTMLElement>>>(new Map())
-  const eventStatusRef = useRef<Map<string, CalendarDisplayStatus | undefined>>(new Map())
+  const eventStatusRef = useRef<
+    Map<string, {status?: CalendarDisplayStatus; color?: string; tint?: string; sourceColor?: string}>
+  >(new Map())
   const activeFetchRef = useRef<AbortController | null>(null)
   const fetchIdRef = useRef(0)
 
@@ -1006,11 +1003,23 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       setFormState(null)
       setErrorState(null)
       setLoading(false)
+      eventElementsRef.current.forEach((elements) => {
+        elements.forEach((element) => {
+          element.style.removeProperty('--calendar-event-status-color')
+          element.style.removeProperty('--calendar-event-status-tint')
+          element.style.removeProperty('--calendar-event-source-color')
+          element.classList.remove('calendar-event-selected')
+          element.removeAttribute('data-calendar-selected')
+          element.removeAttribute('aria-current')
+        })
+      })
       eventElementsRef.current.clear()
       eventDayCellsRef.current.forEach((cells) => {
         cells.forEach((cell) => {
           cell.removeAttribute('data-calendar-selected')
           cell.removeAttribute('data-calendar-selected-status')
+          cell.style.removeProperty('--calendar-day-selected-color')
+          cell.style.removeProperty('--calendar-day-selected-tint')
         })
       })
       eventDayCellsRef.current.clear()
@@ -1072,9 +1081,10 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         const relatedPublic = entry.public
         const status = resolveCombinedStatus(relatedInternal, relatedPublic)
         const displayTitle = resolveEventTitle(primary)
-        const baseColors = primary.source === 'internal' ? internalColor : publicColor
+        const accent = STATUS_ACCENTS[status]
         const textColor = 'var(--card-fg-color)'
         const primaryKey = `${primary.source}:${primary.id}`
+        const sourceColor = primary.source === 'internal' ? internalColor : publicColor
         const extendedProps: CalendarEventExtendedProps = {
           event: primary,
           displayTitle,
@@ -1083,6 +1093,9 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
           status,
           combinedKey: entry.key,
           primaryKey,
+          statusColor: accent.border,
+          statusTint: accent.tint,
+          sourceColor,
         }
         results.push({
           id: primaryKey,
@@ -1090,8 +1103,8 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
           start: primary.start,
           end: primary.end ?? undefined,
           allDay: primary.allDay,
-          backgroundColor: baseColors,
-          borderColor: baseColors,
+          backgroundColor: 'var(--card-bg-color)',
+          borderColor: 'transparent',
           textColor,
           extendedProps,
         })
@@ -1414,7 +1427,27 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         eventElementsRef.current.set(key, elements)
       }
       elements.add(arg.el)
-      eventStatusRef.current.set(key, extended?.status)
+      if (extended?.statusColor) {
+        arg.el.style.setProperty('--calendar-event-status-color', extended.statusColor)
+      } else {
+        arg.el.style.removeProperty('--calendar-event-status-color')
+      }
+      if (extended?.statusTint) {
+        arg.el.style.setProperty('--calendar-event-status-tint', extended.statusTint)
+      } else {
+        arg.el.style.removeProperty('--calendar-event-status-tint')
+      }
+      if (extended?.sourceColor) {
+        arg.el.style.setProperty('--calendar-event-source-color', extended.sourceColor)
+      } else {
+        arg.el.style.removeProperty('--calendar-event-source-color')
+      }
+      eventStatusRef.current.set(key, {
+        status: extended?.status,
+        color: extended?.statusColor,
+        tint: extended?.statusTint,
+        sourceColor: extended?.sourceColor,
+      })
       const dayCell = arg.el.closest('.fc-daygrid-day') as HTMLElement | null
       if (dayCell) {
         let dayCells = eventDayCellsRef.current.get(key)
@@ -1445,6 +1478,16 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
           } else {
             dayCell.removeAttribute('data-calendar-selected-status')
           }
+          if (extended?.statusColor) {
+            dayCell.style.setProperty('--calendar-day-selected-color', extended.statusColor)
+          } else {
+            dayCell.style.removeProperty('--calendar-day-selected-color')
+          }
+          if (extended?.statusTint) {
+            dayCell.style.setProperty('--calendar-day-selected-tint', extended.statusTint)
+          } else {
+            dayCell.style.removeProperty('--calendar-day-selected-tint')
+          }
         }
       } else {
         arg.el.classList.remove('calendar-event-selected')
@@ -1466,6 +1509,9 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         : ''
     const key = extended?.primaryKey || (event ? `${event.source}:${event.id}` : fallbackId)
     if (!key) return
+    arg.el.style.removeProperty('--calendar-event-status-color')
+    arg.el.style.removeProperty('--calendar-event-status-tint')
+    arg.el.style.removeProperty('--calendar-event-source-color')
     const elements = eventElementsRef.current.get(key)
     if (elements) {
       elements.delete(arg.el)
@@ -1484,6 +1530,8 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       }
       dayCell.removeAttribute('data-calendar-selected')
       dayCell.removeAttribute('data-calendar-selected-status')
+      dayCell.style.removeProperty('--calendar-day-selected-color')
+      dayCell.style.removeProperty('--calendar-day-selected-tint')
     }
     if (!eventElementsRef.current.has(key) && !eventDayCellsRef.current.has(key)) {
       eventStatusRef.current.delete(key)
@@ -1492,7 +1540,23 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
 
   useEffect(() => {
     eventElementsRef.current.forEach((elements, key) => {
+      const meta = eventStatusRef.current.get(key)
       elements.forEach((element) => {
+        if (meta?.color) {
+          element.style.setProperty('--calendar-event-status-color', meta.color)
+        } else {
+          element.style.removeProperty('--calendar-event-status-color')
+        }
+        if (meta?.tint) {
+          element.style.setProperty('--calendar-event-status-tint', meta.tint)
+        } else {
+          element.style.removeProperty('--calendar-event-status-tint')
+        }
+        if (meta?.sourceColor) {
+          element.style.setProperty('--calendar-event-source-color', meta.sourceColor)
+        } else {
+          element.style.removeProperty('--calendar-event-source-color')
+        }
         if (key === selectedKey) {
           element.classList.add('calendar-event-selected')
           element.setAttribute('aria-current', 'true')
@@ -1505,18 +1569,30 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       })
     })
     eventDayCellsRef.current.forEach((cells, key) => {
-      const status = eventStatusRef.current.get(key)
+      const meta = eventStatusRef.current.get(key)
       cells.forEach((cell) => {
         if (key === selectedKey) {
           cell.setAttribute('data-calendar-selected', 'true')
-          if (status) {
-            cell.setAttribute('data-calendar-selected-status', status)
+          if (meta?.status) {
+            cell.setAttribute('data-calendar-selected-status', meta.status)
           } else {
             cell.removeAttribute('data-calendar-selected-status')
+          }
+          if (meta?.color) {
+            cell.style.setProperty('--calendar-day-selected-color', meta.color)
+          } else {
+            cell.style.removeProperty('--calendar-day-selected-color')
+          }
+          if (meta?.tint) {
+            cell.style.setProperty('--calendar-day-selected-tint', meta.tint)
+          } else {
+            cell.style.removeProperty('--calendar-day-selected-tint')
           }
         } else {
           cell.removeAttribute('data-calendar-selected')
           cell.removeAttribute('data-calendar-selected-status')
+          cell.style.removeProperty('--calendar-day-selected-color')
+          cell.style.removeProperty('--calendar-day-selected-tint')
         }
       })
     })
@@ -1524,11 +1600,23 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
 
   useEffect(() => {
     return () => {
+      eventElementsRef.current.forEach((elements) => {
+        elements.forEach((element) => {
+          element.style.removeProperty('--calendar-event-status-color')
+          element.style.removeProperty('--calendar-event-status-tint')
+          element.style.removeProperty('--calendar-event-source-color')
+          element.classList.remove('calendar-event-selected')
+          element.removeAttribute('data-calendar-selected')
+          element.removeAttribute('aria-current')
+        })
+      })
       eventElementsRef.current.clear()
       eventDayCellsRef.current.forEach((cells) => {
         cells.forEach((cell) => {
           cell.removeAttribute('data-calendar-selected')
           cell.removeAttribute('data-calendar-selected-status')
+          cell.style.removeProperty('--calendar-day-selected-color')
+          cell.style.removeProperty('--calendar-day-selected-tint')
         })
       })
       eventDayCellsRef.current.clear()
