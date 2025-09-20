@@ -12,6 +12,7 @@ import { getUpcomingEvents } from './googleCalendar';
 import fs from 'fs';
 import path from 'path';
 import { givingOptions } from './giving';
+import { getImpersonationAddress } from './gmail';
 
 export async function getChatbotTone(): Promise<string> {
   const tone = await sanity.fetch(groq`*[_type == "chatbotSettings"][0].tone`);
@@ -33,36 +34,25 @@ export async function getChatbotExtraContext(): Promise<string> {
 }
 
 export async function getEscalationAddresses(): Promise<{ from: string; to: string }> {
-  const result = await sanity.fetch(groq`*[_type == "chatbotSettings"][0]{
-    "from": escalationFrom,
-    "to": escalationTo,
-  }`);
-  const from = result?.from?.trim();
+  const result = await sanity.fetch(
+    groq`*[_type == "chatbotSettings"][0]{
+      "to": escalationTo,
+    }`,
+  );
   const to = result?.to?.trim();
-  if (!from || !to) {
-    throw new Error('Chatbot escalation email settings are missing in Sanity (escalationFrom/escalationTo)');
+  if (!to) {
+    throw new Error('Chatbot escalation email settings are missing in Sanity (escalationTo)');
   }
+  const from = getImpersonationAddress();
   return { from, to };
 }
 
 import type { ChatMessage, EscalationInfo as SharedEscalationInfo } from '@/types/chat';
 export type Message = ChatMessage;
 
-import OpenAI from 'openai';
+import type OpenAI from 'openai';
 import { google } from 'googleapis';
-
-let defaultClient: OpenAI | null = null;
-
-function getClient(client?: OpenAI): OpenAI {
-  if (client) return client;
-  if (!defaultClient) {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is not set');
-    }
-    defaultClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  }
-  return defaultClient;
-}
+import { getOpenAIClient } from './openaiClient';
 
 // Build a simple sitemap from the Next.js app directory so the assistant knows exact page paths.
 function buildAppSitemap(): string {
@@ -305,7 +295,7 @@ export async function generateChatbotReply(
   escalate: boolean;
   escalateReason: string;
 }> {
-  const openai = getClient(client);
+  const openai = getOpenAIClient(client);
   const [contextJson, extra] = await Promise.all([
     buildSiteContext(),
     getChatbotExtraContext(),
@@ -382,7 +372,7 @@ export async function escalationNotice(
   lastUserMessage: string,
   client?: OpenAI,
 ): Promise<string> {
-  const openai = getClient(client);
+  const openai = getOpenAIClient(client);
   const completion = await openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages: [
@@ -406,7 +396,7 @@ export async function sendEscalationEmail(
   reason: string,
 ) {
   // Require server-to-server auth via a Google Workspace Service Account with
-  // domain-wide delegation, impersonating a fixed sender account sourced from Sanity.
+  // domain-wide delegation, impersonating a fixed sender account from configuration.
   // Allow disabling email sending only via an explicit flag.
   const emailsDisabled = String(process.env.DISABLE_ESCALATION_EMAILS || '').toLowerCase() === 'true';
 
@@ -446,7 +436,7 @@ export async function sendEscalationEmail(
   let credsSource: 'file' | 'env' | 'env-json' | 'env-pem' | 'unknown' = 'unknown';
 
   // Prefer file-based credentials first
-  const defaultKeyPath = path.join(process.cwd(), 'config', 'gmail-service-account.json');
+  const defaultKeyPath = path.join(process.cwd(), 'config', 'google-service-account.json');
   const keyFilePath = process.env.GMAIL_SERVICE_ACCOUNT_KEY_FILE || defaultKeyPath;
   const keyFileExists = fs.existsSync(keyFilePath);
   dlog('Credential key file check', { keyFilePath, exists: keyFileExists });
@@ -468,9 +458,17 @@ export async function sendEscalationEmail(
   }
 
   // Fallback to environment variables (supports PEM or full JSON blob)
-  if (!svcEmail) svcEmail = process.env.GMAIL_SERVICE_ACCOUNT_EMAIL || '';
+  if (!svcEmail) {
+    svcEmail =
+      process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ||
+      process.env.GMAIL_SERVICE_ACCOUNT_EMAIL ||
+      '';
+  }
   if (!svcKeyRaw) {
-    const envRaw = process.env.GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY || '';
+    const envRaw =
+      process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY ||
+      process.env.GMAIL_SERVICE_ACCOUNT_PRIVATE_KEY ||
+      '';
     if (envRaw.trim().startsWith('{')) {
       try {
         const creds = JSON.parse(envRaw);
@@ -503,18 +501,24 @@ export async function sendEscalationEmail(
   }
   dlog('Credential source in use:', credsSource);
 
-  // Get sender and recipient from Sanity
+  // Get impersonated sender from config and recipient from Sanity
   const { from, to } = await getEscalationAddresses();
-  dlog('Fetched escalation addresses from Sanity', { from: maskEmail(from), to: maskEmail(to) });
-  // Sanity check parsed mailbox portions (handles "Name <email@...>")
   const parsedFrom = extractAngleEmail(from);
   const parsedTo = extractAngleEmail(to);
-  dlog('Escalation address parsing', {
+  dlog('Fetched escalation addresses from configuration', {
+    fromHeader: maskEmail(from),
     fromParsed: maskEmail(parsedFrom),
     toParsed: maskEmail(parsedTo),
+  });
+  dlog('Escalation address validation', {
     fromValid: isValidEmail(parsedFrom),
     toValid: isValidEmail(parsedTo),
   });
+  if (!isValidEmail(parsedFrom) || !isValidEmail(parsedTo)) {
+    throw new Error(
+      'Escalation email configuration is invalid. Verify EMAIL_IMPERSONATION_ADDRESS and the escalationTo field in Sanity.',
+    );
+  }
 
   // If emails are disabled by flag, skip sending.
   if (emailsDisabled) {
@@ -537,9 +541,9 @@ export async function sendEscalationEmail(
     email: svcEmail,
     key: svcKey,
     scopes: ['https://www.googleapis.com/auth/gmail.send','https://mail.google.com/'],
-    subject: from, // act as this user
+    subject: parsedFrom, // act as this user
   } as any);
-  dlog('Authorizing Gmail client as subject', maskEmail(from));
+  dlog('Authorizing Gmail client as subject', maskEmail(parsedFrom));
   await auth.authorize();
   dlog('Gmail authorization successful');
 

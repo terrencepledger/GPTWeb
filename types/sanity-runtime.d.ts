@@ -13,3 +13,8 @@ declare module "https://core.sanity-cdn.com/bridge.js" {
   const bridge: any
   export default bridge
 }
+
+declare module '*.css' {
+  const content: string
+  export default content
+}
