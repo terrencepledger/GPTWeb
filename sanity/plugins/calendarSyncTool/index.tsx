@@ -44,6 +44,7 @@ import type {
   CalendarConnectionSummary,
   CalendarSyncEvent,
   CalendarSyncResponse,
+  CalendarSyncStatus,
   PublicEventPayload,
 } from '../../types/calendar'
 import {DEFAULT_MEDIA_GROUP_EMAIL, MEDIA_GROUP_HEADER} from '../../types/calendar'
@@ -68,6 +69,146 @@ interface FormState {
 
 const DEFAULT_INTERNAL_COLOR = 'color-mix(in oklab, var(--brand-border) 70%, var(--brand-surface) 30%)'
 const DEFAULT_PUBLIC_COLOR = 'var(--brand-accent)'
+
+type CalendarDisplayStatus = 'published' | 'unpublished' | 'draft'
+
+type BadgeTone = React.ComponentProps<typeof Badge>['tone']
+
+const DISPLAY_STATUS_LABELS: Record<CalendarDisplayStatus, string> = {
+  published: 'Published',
+  unpublished: 'Unpublished',
+  draft: 'Draft',
+}
+
+const DISPLAY_STATUS_BADGE_TONES: Record<CalendarDisplayStatus, BadgeTone> = {
+  published: 'positive',
+  unpublished: 'critical',
+  draft: 'caution',
+}
+
+const STATUS_ACCENTS: Record<CalendarDisplayStatus, {border: string; tint: string}> = {
+  published: {border: 'rgb(16, 185, 129)', tint: 'rgba(16, 185, 129, 0.24)'},
+  unpublished: {border: 'rgb(239, 68, 68)', tint: 'rgba(239, 68, 68, 0.28)'},
+  draft: {border: 'rgb(245, 158, 11)', tint: 'rgba(245, 158, 11, 0.26)'},
+}
+
+interface StatusInfo {
+  status: CalendarDisplayStatus
+  label: string
+  tone: BadgeTone
+  description?: string
+}
+
+function gatherMappingStatuses(events: Array<CalendarSyncEvent | undefined>) {
+  const statuses = new Set<CalendarSyncStatus>()
+  events.forEach((item) => {
+    if (item?.mapping?.status) {
+      statuses.add(item.mapping.status)
+    }
+  })
+  return statuses
+}
+
+function resolveCombinedStatus(
+  internalEvent?: CalendarSyncEvent,
+  publicEvent?: CalendarSyncEvent,
+): CalendarDisplayStatus {
+  const statuses = gatherMappingStatuses([internalEvent, publicEvent])
+  if (statuses.has('unpublished')) return 'unpublished'
+  if (statuses.has('published')) return 'published'
+  if (publicEvent) return 'published'
+  return 'draft'
+}
+
+function buildInternalStatusInfo(
+  internalEvent?: CalendarSyncEvent,
+  relatedPublic?: CalendarSyncEvent,
+): StatusInfo {
+  if (!internalEvent) {
+    return {
+      status: 'draft',
+      label: 'No internal schedule',
+      tone: 'caution',
+      description: 'This event currently only exists on the public calendar.',
+    }
+  }
+  const statuses = gatherMappingStatuses([internalEvent, relatedPublic])
+  if (statuses.has('unpublished')) {
+    return {
+      status: 'unpublished',
+      label: 'Unpublished',
+      tone: 'critical',
+      description: 'The public listing has been removed, but the internal schedule remains.',
+    }
+  }
+  if (statuses.has('published')) {
+    return {
+      status: 'published',
+      label: 'Synced to public calendar',
+      tone: 'positive',
+      description: 'Updates to the internal schedule flow to the public listing.',
+    }
+  }
+  if (relatedPublic && statuses.size === 0) {
+    return {
+      status: 'draft',
+      label: 'Needs linking',
+      tone: 'caution',
+      description: 'A public event exists but is not linked to this internal schedule.',
+    }
+  }
+  return {
+    status: 'draft',
+    label: 'Internal only',
+    tone: 'caution',
+    description: 'Publish to create or update the public listing.',
+  }
+}
+
+function buildPublicStatusInfo(
+  publicEvent?: CalendarSyncEvent,
+  relatedInternal?: CalendarSyncEvent,
+): StatusInfo {
+  const statuses = gatherMappingStatuses([publicEvent, relatedInternal])
+  if (statuses.has('unpublished')) {
+    return {
+      status: 'unpublished',
+      label: 'Removed from public calendar',
+      tone: 'critical',
+      description: 'The linked public event has been unpublished.',
+    }
+  }
+  if (!publicEvent) {
+    return {
+      status: 'draft',
+      label: 'No public listing',
+      tone: 'default',
+      description: 'Publish when you are ready to make this event visible.',
+    }
+  }
+  if (statuses.has('published')) {
+    return {
+      status: 'published',
+      label: 'Live on public calendar',
+      tone: 'positive',
+      description: 'Visitors can see this event on the public calendar.',
+    }
+  }
+  if (relatedInternal) {
+    return {
+      status: 'draft',
+      label: 'Awaiting publish',
+      tone: 'caution',
+      description: 'Publish the internal schedule to update this listing.',
+    }
+  }
+  return {
+    status: 'published',
+    label: 'Public only',
+    tone: 'positive',
+    description: 'This event is currently managed on the public calendar only.',
+  }
+}
 
 const ROOT_STYLE: React.CSSProperties = {
   display: 'flex',
@@ -115,6 +256,19 @@ const CALENDAR_CARD_STYLE: React.CSSProperties = {
   flexDirection: 'column',
   minHeight: 600,
   overflow: 'hidden',
+}
+
+interface CalendarEventExtendedProps {
+  event?: CalendarSyncEvent
+  displayTitle?: string
+  relatedInternal?: CalendarSyncEvent
+  relatedPublic?: CalendarSyncEvent
+  status?: CalendarDisplayStatus
+  combinedKey?: string
+  primaryKey?: string
+  statusColor?: string
+  statusTint?: string
+  sourceColor?: string
 }
 
 const CALENDAR_VIEW_CONTAINER_STYLE: React.CSSProperties = {
@@ -190,6 +344,33 @@ function joinApiPath(base: string, segment: string) {
   return `${normalized}/${cleaned}`
 }
 
+const STATUS_TITLE_TOKENS = ['draft', 'published', 'unpublished'] as const
+
+function stripStatusTokens(value: string) {
+  let result = value.trim()
+  if (!result) return ''
+
+  STATUS_TITLE_TOKENS.forEach((token) => {
+    const prefixPattern = new RegExp(
+      `^(?:\\[\\s*${token}\\s*\\]|\\(\\s*${token}\\s*\\)|${token}\\b)(?:\\s*[:\\-–—·•|]\\s*|\\s+)`,
+      'i',
+    )
+    if (prefixPattern.test(result)) {
+      result = result.replace(prefixPattern, '').trim()
+    }
+
+    const suffixPattern = new RegExp(
+      `(?:\\s*[:\\-–—·•|]\\s*)?(?:\\[\\s*${token}\\s*\\]|\\(\\s*${token}\\s*\\)|${token})$`,
+      'i',
+    )
+    if (suffixPattern.test(result)) {
+      result = result.replace(suffixPattern, '').trim()
+    }
+  })
+
+  return result.trim()
+}
+
 function resolveEventTitle(event: CalendarSyncEvent) {
   const candidates = [
     event.title,
@@ -198,7 +379,10 @@ function resolveEventTitle(event: CalendarSyncEvent) {
   ]
   for (const candidate of candidates) {
     if (candidate && candidate.trim()) {
-      return candidate.trim()
+      const cleaned = stripStatusTokens(candidate)
+      if (cleaned) {
+        return cleaned
+      }
     }
   }
   return 'Untitled event'
@@ -409,6 +593,55 @@ function Legend(props: {
   )
 }
 
+function StatusLegendItem(props: {status: CalendarDisplayStatus; label: string}) {
+  const accent = STATUS_ACCENTS[props.status]
+  return (
+    <Flex align="center" gap={2} wrap="wrap">
+      <Box
+        style={{
+          width: 16,
+          height: 16,
+          borderRadius: 6,
+          backgroundColor: accent.tint,
+          border: `3px solid ${accent.border}`,
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08) inset',
+          boxSizing: 'border-box',
+        }}
+      />
+      <Text size={1}>{props.label}</Text>
+    </Flex>
+  )
+}
+
+function StatusLegend() {
+  return (
+    <Stack space={2}>
+      <Text size={1} weight="medium">
+        Status key
+      </Text>
+      <Flex gap={3} wrap="wrap">
+        <StatusLegendItem status="published" label="Published / live" />
+        <StatusLegendItem status="unpublished" label="Unpublished" />
+        <StatusLegendItem status="draft" label="Draft / internal only" />
+      </Flex>
+    </Stack>
+  )
+}
+
+function StatusSummaryRow(props: {label: string; info: StatusInfo}) {
+  return (
+    <Stack space={1}>
+      <Flex align="center" gap={2} wrap="wrap">
+        <Text size={1} weight="medium">
+          {props.label}
+        </Text>
+        <Badge tone={props.info.tone}>{props.info.label}</Badge>
+      </Flex>
+      {props.info.description ? <Text size={1} muted>{props.info.description}</Text> : null}
+    </Stack>
+  )
+}
+
 function ErrorDetails(props: {details?: CalendarAccessDetails}) {
   if (!props.details) return null
   const label = props.details.source === 'internal' ? 'Internal calendar' : 'Public calendar'
@@ -493,9 +726,59 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       --calendar-public-color: ${publicColor};
     }
     .fc .calendar-event {
-      border-radius: 6px;
+      border-radius: 10px;
+    }
+    .calendar-event {
+      position: relative;
+      box-sizing: border-box;
+      border-radius: 10px;
+      background-color: var(--card-bg-color);
+      color: var(--card-fg-color);
+      overflow: hidden;
+      border: 2px solid var(--calendar-event-status-color, var(--card-border-color));
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+    }
+    .calendar-event::before {
+      content: '';
+      position: absolute;
+      inset: 1px;
+      border-radius: 8px;
+      background: var(--calendar-event-status-tint, transparent);
+      pointer-events: none;
+    }
+    .calendar-event::after {
+      content: '';
+      position: absolute;
+      inset: 1px;
+      border-radius: 8px;
+      background: linear-gradient(
+        135deg,
+        transparent 0%,
+        transparent 55%,
+        var(--calendar-event-source-color, transparent) 100%
+      );
+      opacity: 0.28;
+      pointer-events: none;
+    }
+    .calendar-event:hover {
+      transform: translateY(-1px);
+      border-color: color-mix(
+        in oklab,
+        var(--calendar-event-status-color, var(--card-border-color)) 75%,
+        white 25%
+      );
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
+    }
+    .calendar-event-selected {
+      transform: translateY(0);
+      box-shadow:
+        0 0 0 3px var(--calendar-event-status-tint, rgba(59, 130, 246, 0.3)),
+        0 10px 24px rgba(0, 0, 0, 0.25);
+      z-index: 2;
     }
     .calendar-event-content {
+      position: relative;
       display: flex;
       gap: 0.4rem;
       align-items: center;
@@ -503,6 +786,9 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       line-height: 1.25;
       max-width: 100%;
       overflow: hidden;
+    }
+    .calendar-event-listItem {
+      position: relative;
     }
     .calendar-event-time {
       font-weight: 600;
@@ -558,25 +844,32 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       font-size: 0.75rem;
       opacity: 0.85;
     }
-    .calendar-event-internal {
-      background-color: var(--calendar-internal-color) !important;
-      border-color: var(--calendar-internal-color) !important;
-    }
-    .calendar-event-public {
-      background-color: var(--calendar-public-color) !important;
-      border-color: var(--calendar-public-color) !important;
-    }
-    .calendar-event-internal .calendar-event-content,
-    .calendar-event-internal .calendar-event-listItem,
-    .calendar-event-public .calendar-event-content,
-    .calendar-event-public .calendar-event-listItem {
-      color: inherit;
-    }
-    .calendar-event-selected {
-      box-shadow: 0 0 0 2px var(--card-focus-ring-color) inset !important;
-    }
     .calendar-event-drift {
-      border-style: dashed !important;
+      background-image: repeating-linear-gradient(
+        135deg,
+        transparent,
+        transparent 6px,
+        rgba(0, 0, 0, 0.08) 6px,
+        rgba(0, 0, 0, 0.08) 12px
+      );
+      outline: 2px dashed var(--calendar-event-status-color, var(--card-border-color));
+      outline-offset: -4px;
+    }
+    .fc-daygrid-day[data-calendar-selected='true'] .fc-daygrid-day-frame {
+      position: relative;
+    }
+    .fc-daygrid-day[data-calendar-selected='true'] .fc-daygrid-day-frame::after {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      border-radius: 10px;
+      border: 3px solid var(--calendar-day-selected-color, var(--card-focus-ring-color));
+      box-shadow: 0 0 0 6px var(--calendar-day-selected-tint, rgba(59, 130, 246, 0.22));
+      pointer-events: none;
+    }
+    .fc-daygrid-day[data-calendar-selected='true'] .fc-daygrid-day-number {
+      color: var(--calendar-day-selected-color, var(--card-fg-color));
+      font-weight: 700;
     }
     .calendar-slot-label {
       font-size: 0.75rem;
@@ -635,6 +928,10 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   const [actionLoading, setActionLoading] = useState(false)
   const calendarRef = useRef<FullCalendar | null>(null)
   const eventElementsRef = useRef<Map<string, Set<HTMLElement>>>(new Map())
+  const eventDayCellsRef = useRef<Map<string, Set<HTMLElement>>>(new Map())
+  const eventStatusRef = useRef<
+    Map<string, {status?: CalendarDisplayStatus; color?: string; tint?: string; sourceColor?: string}>
+  >(new Map())
   const activeFetchRef = useRef<AbortController | null>(null)
   const fetchIdRef = useRef(0)
 
@@ -713,7 +1010,27 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       setFormState(null)
       setErrorState(null)
       setLoading(false)
+      eventElementsRef.current.forEach((elements) => {
+        elements.forEach((element) => {
+          element.style.removeProperty('--calendar-event-status-color')
+          element.style.removeProperty('--calendar-event-status-tint')
+          element.style.removeProperty('--calendar-event-source-color')
+          element.classList.remove('calendar-event-selected')
+          element.removeAttribute('data-calendar-selected')
+          element.removeAttribute('aria-current')
+        })
+      })
       eventElementsRef.current.clear()
+      eventDayCellsRef.current.forEach((cells) => {
+        cells.forEach((cell) => {
+          cell.removeAttribute('data-calendar-selected')
+          cell.removeAttribute('data-calendar-selected-status')
+          cell.style.removeProperty('--calendar-day-selected-color')
+          cell.style.removeProperty('--calendar-day-selected-tint')
+        })
+      })
+      eventDayCellsRef.current.clear()
+      eventStatusRef.current.clear()
       if (activeFetchRef.current) {
         activeFetchRef.current.abort()
         activeFetchRef.current = null
@@ -723,23 +1040,84 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
 
   const projectEvents = useCallback(
     (payload: CalendarSyncResponse): EventInput[] => {
-      const items = [...payload.internal, ...payload.public]
-      return items.map((event) => {
-        const displayTitle = resolveEventTitle(event)
-        const baseColors = event.source === 'internal' ? internalColor : publicColor
-        const textColor = 'var(--card-fg-color)'
-        return {
-          id: `${event.source}:${event.id}`,
-          title: displayTitle,
-          start: event.start,
-          end: event.end ?? undefined,
-          allDay: event.allDay,
-          backgroundColor: baseColors,
-          borderColor: baseColors,
-          textColor,
-          extendedProps: {event, displayTitle},
+      const grouped = new Map<
+        string,
+        {key: string; internal?: CalendarSyncEvent; public?: CalendarSyncEvent}
+      >()
+      const aliasBySourceId = new Map<string, string>()
+
+      payload.public.forEach((event, index) => {
+        const fallbackId = event.mapping?.publicEventId || event.relatedPublicEventId || `${event.start}:${index}`
+        const baseId = event.id || fallbackId
+        const key = `public:${baseId}`
+        const existing = grouped.get(key)
+        if (existing) {
+          existing.public = event
+        } else {
+          grouped.set(key, {key, public: event})
+        }
+        if (event.relatedSourceEventId) {
+          aliasBySourceId.set(event.relatedSourceEventId, key)
+        }
+        if (event.mappingSourceId) {
+          aliasBySourceId.set(event.mappingSourceId, key)
         }
       })
+
+      payload.internal.forEach((event, index) => {
+        const relatedId = event.relatedPublicEventId || event.mapping?.publicEventId || null
+        const fallbackId = event.id || event.mappingSourceId || `${event.start}:${index}`
+        const aliasKey =
+          (event.mappingSourceId && aliasBySourceId.get(event.mappingSourceId)) ||
+          (event.relatedSourceEventId && aliasBySourceId.get(event.relatedSourceEventId)) ||
+          (event.id && aliasBySourceId.get(event.id))
+        const key = aliasKey || (relatedId ? `public:${relatedId}` : `internal:${fallbackId}`)
+        const existing = grouped.get(key)
+        if (existing) {
+          existing.internal = event
+        } else {
+          grouped.set(key, {key, internal: event})
+        }
+      })
+
+      const results: EventInput[] = []
+      grouped.forEach((entry) => {
+        const primary = entry.internal || entry.public
+        if (!primary) return
+        const relatedInternal = entry.internal
+        const relatedPublic = entry.public
+        const status = resolveCombinedStatus(relatedInternal, relatedPublic)
+        const displayTitle = resolveEventTitle(primary)
+        const accent = STATUS_ACCENTS[status]
+        const textColor = 'var(--card-fg-color)'
+        const primaryKey = `${primary.source}:${primary.id}`
+        const sourceColor = primary.source === 'internal' ? internalColor : publicColor
+        const extendedProps: CalendarEventExtendedProps = {
+          event: primary,
+          displayTitle,
+          relatedInternal,
+          relatedPublic,
+          status,
+          combinedKey: entry.key,
+          primaryKey,
+          statusColor: accent.border,
+          statusTint: accent.tint,
+          sourceColor,
+        }
+        results.push({
+          id: primaryKey,
+          title: displayTitle,
+          start: primary.start,
+          end: primary.end ?? undefined,
+          allDay: primary.allDay,
+          backgroundColor: 'var(--card-bg-color)',
+          borderColor: 'transparent',
+          textColor,
+          extendedProps,
+        })
+      })
+
+      return results
     },
     [internalColor, publicColor],
   )
@@ -864,6 +1242,16 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     return data.internal.find((item) => item.mappingSourceId === mappingSourceId || item.id === mappingSourceId)
   }, [data, selectedEvent])
 
+  useEffect(() => {
+    if (!selectedEvent) return
+    if (selectedEvent.source === 'public' && relatedInternal) {
+      const nextKey = `internal:${relatedInternal.id}`
+      if (selectedKey !== nextKey) {
+        setSelectedKey(nextKey)
+      }
+    }
+  }, [relatedInternal, selectedEvent, selectedKey])
+
   const relatedPublic = useMemo(() => {
     if (!data || !selectedEvent) return undefined
     if (selectedEvent.source === 'public') return selectedEvent
@@ -871,6 +1259,24 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     if (!publicId) return undefined
     return data.public.find((item) => item.id === publicId)
   }, [data, selectedEvent])
+
+  const derivedInternal = selectedEvent?.source === 'internal' ? selectedEvent : relatedInternal
+  const derivedPublic = selectedEvent?.source === 'public' ? selectedEvent : relatedPublic
+
+  const internalStatusInfo = useMemo(() => {
+    if (!selectedEvent && !derivedInternal) return undefined
+    return buildInternalStatusInfo(derivedInternal, derivedPublic)
+  }, [derivedInternal, derivedPublic, selectedEvent])
+
+  const publicStatusInfo = useMemo(() => {
+    if (!selectedEvent && !derivedPublic) return undefined
+    return buildPublicStatusInfo(derivedPublic, derivedInternal)
+  }, [derivedInternal, derivedPublic, selectedEvent])
+
+  const combinedStatus = useMemo(() => {
+    if (!selectedEvent) return undefined
+    return resolveCombinedStatus(derivedInternal, derivedPublic)
+  }, [derivedInternal, derivedPublic, selectedEvent])
 
   const calendarSummary = useMemo(() => {
     if (!data || !selectedEvent) return undefined
@@ -912,20 +1318,21 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
 
   const renderEventContent = useCallback(
     (arg: EventContentArg) => {
-      const extended = arg.event.extendedProps as {
-        event?: CalendarSyncEvent
-        displayTitle?: string
-      }
+      const extended = arg.event.extendedProps as CalendarEventExtendedProps
       const sourceEvent = extended?.event
       const fallbackTitle = (extended?.displayTitle || arg.event.title || '').trim()
       const baseTimeText = arg.timeText?.trim()
+      const status = extended?.status
+      const statusLabel = status ? DISPLAY_STATUS_LABELS[status] : undefined
+      const accessibleParts = [statusLabel, fallbackTitle].filter(Boolean)
+      const accessibleTitle = (accessibleParts.join(' · ') || fallbackTitle || 'Untitled event').trim()
       if (!sourceEvent) {
-        const displayTitle = fallbackTitle || 'Untitled event'
         const timeLabel = !arg.event.allDay && baseTimeText ? baseTimeText : ''
+        const displayText = fallbackTitle || 'Untitled event'
         return (
-          <div className="calendar-event-content" title={displayTitle} aria-label={displayTitle}>
+          <div className="calendar-event-content" title={accessibleTitle} aria-label={accessibleTitle}>
             {timeLabel ? <span className="calendar-event-time">{timeLabel}</span> : null}
-            <span className="calendar-event-title">{displayTitle}</span>
+            <span className="calendar-event-title">{displayText}</span>
           </div>
         )
       }
@@ -944,8 +1351,8 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         return (
           <div
             className="calendar-event-listItem"
-            title={displayTitle}
-            aria-label={displayTitle}
+            title={accessibleTitle}
+            aria-label={accessibleTitle}
             data-calendar-source={sourceEvent.source}
           >
             {timeLabel ? <span className="calendar-event-time">{timeLabel}</span> : null}
@@ -958,8 +1365,8 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       return (
         <div
           className="calendar-event-content"
-          title={displayTitle}
-          aria-label={displayTitle}
+          title={accessibleTitle}
+          aria-label={accessibleTitle}
           data-calendar-source={sourceEvent.source}
         >
           {timeLabel ? <span className="calendar-event-time">{timeLabel}</span> : null}
@@ -978,51 +1385,140 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   )
 
   const handleEventClick = useCallback((arg: EventClickArg) => {
-    const event: CalendarSyncEvent | undefined = arg.event.extendedProps.event
+    const extended = arg.event.extendedProps as CalendarEventExtendedProps
+    const primaryKey = extended?.primaryKey
+    if (primaryKey) {
+      setSelectedKey(primaryKey)
+      return
+    }
+    const event = extended?.event
     if (event) {
       setSelectedKey(`${event.source}:${event.id}`)
     }
   }, [])
 
   const eventClassNames = useCallback((arg: any) => {
-    const event: CalendarSyncEvent | undefined = (arg.event.extendedProps as any)?.event
-    const classes: string[] = []
+    const extended = arg.event.extendedProps as CalendarEventExtendedProps
+    const event = extended?.event
+    const classes: string[] = ['calendar-event']
     if (event) {
-      classes.push('calendar-event')
       classes.push(`calendar-event-${event.source}`)
       if (hasSeriousDrift(event.drift)) {
         classes.push('calendar-event-drift')
       }
+    }
+    if (extended?.status) {
+      classes.push(`calendar-event-status-${extended.status}`)
+    }
+    if (extended?.relatedInternal && extended?.relatedPublic) {
+      classes.push('calendar-event-linked')
     }
     return classes
   }, [])
 
   const handleEventDidMount = useCallback(
     (arg: EventMountArg) => {
-      const event: CalendarSyncEvent | undefined = (arg.event.extendedProps as any)?.event
-      if (!event) return
-      const key = `${event.source}:${event.id}`
+      const extended = arg.event.extendedProps as CalendarEventExtendedProps
+      const event = extended?.event
+      const fallbackId =
+        typeof arg.event.id === 'string'
+          ? arg.event.id
+          : typeof arg.event.id === 'number'
+          ? String(arg.event.id)
+          : ''
+      const key = extended?.primaryKey || (event ? `${event.source}:${event.id}` : fallbackId)
+      if (!key) return
       let elements = eventElementsRef.current.get(key)
       if (!elements) {
         elements = new Set<HTMLElement>()
         eventElementsRef.current.set(key, elements)
       }
       elements.add(arg.el)
+      if (extended?.statusColor) {
+        arg.el.style.setProperty('--calendar-event-status-color', extended.statusColor)
+      } else {
+        arg.el.style.removeProperty('--calendar-event-status-color')
+      }
+      if (extended?.statusTint) {
+        arg.el.style.setProperty('--calendar-event-status-tint', extended.statusTint)
+      } else {
+        arg.el.style.removeProperty('--calendar-event-status-tint')
+      }
+      if (extended?.sourceColor) {
+        arg.el.style.setProperty('--calendar-event-source-color', extended.sourceColor)
+      } else {
+        arg.el.style.removeProperty('--calendar-event-source-color')
+      }
+      eventStatusRef.current.set(key, {
+        status: extended?.status,
+        color: extended?.statusColor,
+        tint: extended?.statusTint,
+        sourceColor: extended?.sourceColor,
+      })
+      const dayCell = arg.el.closest('.fc-daygrid-day') as HTMLElement | null
+      if (dayCell) {
+        let dayCells = eventDayCellsRef.current.get(key)
+        if (!dayCells) {
+          dayCells = new Set<HTMLElement>()
+          eventDayCellsRef.current.set(key, dayCells)
+        }
+        dayCells.add(dayCell)
+      }
+      if (extended?.status) {
+        arg.el.setAttribute('data-calendar-status', extended.status)
+      } else {
+        arg.el.removeAttribute('data-calendar-status')
+      }
+      if (extended?.relatedInternal && extended.relatedPublic) {
+        arg.el.setAttribute('data-calendar-linked', 'true')
+      } else {
+        arg.el.removeAttribute('data-calendar-linked')
+      }
       if (key === selectedKey) {
         arg.el.classList.add('calendar-event-selected')
         arg.el.setAttribute('aria-current', 'true')
+        arg.el.setAttribute('data-calendar-selected', 'true')
+        if (dayCell) {
+          dayCell.setAttribute('data-calendar-selected', 'true')
+          if (extended?.status) {
+            dayCell.setAttribute('data-calendar-selected-status', extended.status)
+          } else {
+            dayCell.removeAttribute('data-calendar-selected-status')
+          }
+          if (extended?.statusColor) {
+            dayCell.style.setProperty('--calendar-day-selected-color', extended.statusColor)
+          } else {
+            dayCell.style.removeProperty('--calendar-day-selected-color')
+          }
+          if (extended?.statusTint) {
+            dayCell.style.setProperty('--calendar-day-selected-tint', extended.statusTint)
+          } else {
+            dayCell.style.removeProperty('--calendar-day-selected-tint')
+          }
+        }
       } else {
         arg.el.classList.remove('calendar-event-selected')
         arg.el.removeAttribute('aria-current')
+        arg.el.removeAttribute('data-calendar-selected')
       }
     },
     [selectedKey],
   )
 
   const handleEventWillUnmount = useCallback((arg: EventMountArg) => {
-    const event: CalendarSyncEvent | undefined = (arg.event.extendedProps as any)?.event
-    if (!event) return
-    const key = `${event.source}:${event.id}`
+    const extended = arg.event.extendedProps as CalendarEventExtendedProps
+    const event = extended?.event
+    const fallbackId =
+      typeof arg.event.id === 'string'
+        ? arg.event.id
+        : typeof arg.event.id === 'number'
+        ? String(arg.event.id)
+        : ''
+    const key = extended?.primaryKey || (event ? `${event.source}:${event.id}` : fallbackId)
+    if (!key) return
+    arg.el.style.removeProperty('--calendar-event-status-color')
+    arg.el.style.removeProperty('--calendar-event-status-tint')
+    arg.el.style.removeProperty('--calendar-event-source-color')
     const elements = eventElementsRef.current.get(key)
     if (elements) {
       elements.delete(arg.el)
@@ -1030,17 +1526,80 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         eventElementsRef.current.delete(key)
       }
     }
+    const dayCell = arg.el.closest('.fc-daygrid-day') as HTMLElement | null
+    if (dayCell) {
+      const dayCells = eventDayCellsRef.current.get(key)
+      if (dayCells) {
+        dayCells.delete(dayCell)
+        if (dayCells.size === 0) {
+          eventDayCellsRef.current.delete(key)
+        }
+      }
+      dayCell.removeAttribute('data-calendar-selected')
+      dayCell.removeAttribute('data-calendar-selected-status')
+      dayCell.style.removeProperty('--calendar-day-selected-color')
+      dayCell.style.removeProperty('--calendar-day-selected-tint')
+    }
+    if (!eventElementsRef.current.has(key) && !eventDayCellsRef.current.has(key)) {
+      eventStatusRef.current.delete(key)
+    }
   }, [])
 
   useEffect(() => {
     eventElementsRef.current.forEach((elements, key) => {
+      const meta = eventStatusRef.current.get(key)
       elements.forEach((element) => {
+        if (meta?.color) {
+          element.style.setProperty('--calendar-event-status-color', meta.color)
+        } else {
+          element.style.removeProperty('--calendar-event-status-color')
+        }
+        if (meta?.tint) {
+          element.style.setProperty('--calendar-event-status-tint', meta.tint)
+        } else {
+          element.style.removeProperty('--calendar-event-status-tint')
+        }
+        if (meta?.sourceColor) {
+          element.style.setProperty('--calendar-event-source-color', meta.sourceColor)
+        } else {
+          element.style.removeProperty('--calendar-event-source-color')
+        }
         if (key === selectedKey) {
           element.classList.add('calendar-event-selected')
           element.setAttribute('aria-current', 'true')
+          element.setAttribute('data-calendar-selected', 'true')
         } else {
           element.classList.remove('calendar-event-selected')
           element.removeAttribute('aria-current')
+          element.removeAttribute('data-calendar-selected')
+        }
+      })
+    })
+    eventDayCellsRef.current.forEach((cells, key) => {
+      const meta = eventStatusRef.current.get(key)
+      cells.forEach((cell) => {
+        if (key === selectedKey) {
+          cell.setAttribute('data-calendar-selected', 'true')
+          if (meta?.status) {
+            cell.setAttribute('data-calendar-selected-status', meta.status)
+          } else {
+            cell.removeAttribute('data-calendar-selected-status')
+          }
+          if (meta?.color) {
+            cell.style.setProperty('--calendar-day-selected-color', meta.color)
+          } else {
+            cell.style.removeProperty('--calendar-day-selected-color')
+          }
+          if (meta?.tint) {
+            cell.style.setProperty('--calendar-day-selected-tint', meta.tint)
+          } else {
+            cell.style.removeProperty('--calendar-day-selected-tint')
+          }
+        } else {
+          cell.removeAttribute('data-calendar-selected')
+          cell.removeAttribute('data-calendar-selected-status')
+          cell.style.removeProperty('--calendar-day-selected-color')
+          cell.style.removeProperty('--calendar-day-selected-tint')
         }
       })
     })
@@ -1048,7 +1607,27 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
 
   useEffect(() => {
     return () => {
+      eventElementsRef.current.forEach((elements) => {
+        elements.forEach((element) => {
+          element.style.removeProperty('--calendar-event-status-color')
+          element.style.removeProperty('--calendar-event-status-tint')
+          element.style.removeProperty('--calendar-event-source-color')
+          element.classList.remove('calendar-event-selected')
+          element.removeAttribute('data-calendar-selected')
+          element.removeAttribute('aria-current')
+        })
+      })
       eventElementsRef.current.clear()
+      eventDayCellsRef.current.forEach((cells) => {
+        cells.forEach((cell) => {
+          cell.removeAttribute('data-calendar-selected')
+          cell.removeAttribute('data-calendar-selected-status')
+          cell.style.removeProperty('--calendar-day-selected-color')
+          cell.style.removeProperty('--calendar-day-selected-tint')
+        })
+      })
+      eventDayCellsRef.current.clear()
+      eventStatusRef.current.clear()
     }
   }, [])
 
@@ -1303,6 +1882,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
               internalMeta={internalSummary}
               publicMeta={publicSummary}
             />
+            <StatusLegend />
             {generatedAtLabel && (
               <Text size={1} muted>Events last refreshed {generatedAtLabel}.</Text>
             )}
@@ -1656,21 +2236,9 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                   <Stack space={1}>
                     <Text size={1} weight="medium">Status</Text>
                     <Flex align="center" gap={2} wrap="wrap">
-                      {selectedEvent.mapping?.status ? (
-                        <Badge
-                          tone={
-                            selectedEvent.mapping.status === 'published'
-                              ? 'positive'
-                              : selectedEvent.mapping.status === 'unpublished'
-                              ? 'critical'
-                              : 'default'
-                          }
-                        >
-                          {selectedEvent.mapping.status === 'published'
-                            ? 'Published'
-                            : selectedEvent.mapping.status === 'unpublished'
-                            ? 'Unpublished'
-                            : 'Not yet published'}
+                      {combinedStatus ? (
+                        <Badge tone={DISPLAY_STATUS_BADGE_TONES[combinedStatus]}>
+                          {DISPLAY_STATUS_LABELS[combinedStatus]}
                         </Badge>
                       ) : (
                         <Badge>Draft only</Badge>
@@ -1687,6 +2255,19 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                       {selectedEvent.recurringEventId && <Badge tone="default">Recurring series</Badge>}
                     </Flex>
                   </Stack>
+                  {(internalStatusInfo || publicStatusInfo) && (
+                    <Stack space={2}>
+                      <Text size={1} weight="medium">Publishing overview</Text>
+                      <Stack space={3}>
+                        {internalStatusInfo && (
+                          <StatusSummaryRow label="Internal schedule" info={internalStatusInfo} />
+                        )}
+                        {publicStatusInfo && (
+                          <StatusSummaryRow label="Public listing" info={publicStatusInfo} />
+                        )}
+                      </Stack>
+                    </Stack>
+                  )}
                   <Stack space={1}>
                     <Text size={1} weight="medium">Calendar</Text>
                     {calendarSummary ? (
