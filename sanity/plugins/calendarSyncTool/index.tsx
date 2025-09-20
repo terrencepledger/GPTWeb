@@ -335,6 +335,33 @@ function joinApiPath(base: string, segment: string) {
   return `${normalized}/${cleaned}`
 }
 
+const STATUS_TITLE_TOKENS = ['draft', 'published', 'unpublished'] as const
+
+function stripStatusTokens(value: string) {
+  let result = value.trim()
+  if (!result) return ''
+
+  STATUS_TITLE_TOKENS.forEach((token) => {
+    const prefixPattern = new RegExp(
+      `^(?:\\[\\s*${token}\\s*\\]|\\(\\s*${token}\\s*\\)|${token}\\b)(?:\\s*[:\\-–—·•|]\\s*|\\s+)`,
+      'i',
+    )
+    if (prefixPattern.test(result)) {
+      result = result.replace(prefixPattern, '').trim()
+    }
+
+    const suffixPattern = new RegExp(
+      `(?:\\s*[:\\-–—·•|]\\s*)?(?:\\[\\s*${token}\\s*\\]|\\(\\s*${token}\\s*\\)|${token})$`,
+      'i',
+    )
+    if (suffixPattern.test(result)) {
+      result = result.replace(suffixPattern, '').trim()
+    }
+  })
+
+  return result.trim()
+}
+
 function resolveEventTitle(event: CalendarSyncEvent) {
   const candidates = [
     event.title,
@@ -343,7 +370,10 @@ function resolveEventTitle(event: CalendarSyncEvent) {
   ]
   for (const candidate of candidates) {
     if (candidate && candidate.trim()) {
-      return candidate.trim()
+      const cleaned = stripStatusTokens(candidate)
+      if (cleaned) {
+        return cleaned
+      }
     }
   }
   return 'Untitled event'
@@ -786,32 +816,6 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       font-size: 0.75rem;
       opacity: 0.85;
     }
-    .calendar-event-statusChip {
-      font-size: 0.65rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-      opacity: 0.95;
-    }
-    .calendar-event-statusChip::before {
-      content: '';
-      width: 0.4rem;
-      height: 0.4rem;
-      border-radius: 999px;
-      background-color: currentColor;
-    }
-    .calendar-event-statusChip-published {
-      color: var(--card-positive-fg-color);
-    }
-    .calendar-event-statusChip-unpublished {
-      color: var(--card-critical-fg-color);
-    }
-    .calendar-event-statusChip-draft {
-      color: var(--card-muted-fg-color);
-    }
     .calendar-event-internal {
       background-color: var(--calendar-internal-color) !important;
     }
@@ -827,6 +831,40 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     .calendar-event-selected {
       box-shadow: 0 0 0 2px var(--card-focus-ring-color) !important;
       z-index: 2;
+    }
+    .fc-daygrid-day[data-calendar-selected='true'] {
+      --calendar-day-selected-outline: var(--card-focus-ring-color);
+    }
+    .fc-daygrid-day[data-calendar-selected-status='published'] {
+      --calendar-day-selected-outline: var(
+        --calendar-status-published-color,
+        var(--card-positive-fg-color)
+      );
+    }
+    .fc-daygrid-day[data-calendar-selected-status='unpublished'] {
+      --calendar-day-selected-outline: var(
+        --calendar-status-unpublished-color,
+        var(--card-critical-fg-color)
+      );
+    }
+    .fc-daygrid-day[data-calendar-selected-status='draft'] {
+      --calendar-day-selected-outline: var(
+        --calendar-status-draft-color,
+        var(--card-muted-fg-color)
+      );
+    }
+    .fc-daygrid-day[data-calendar-selected='true'] .fc-daygrid-day-frame {
+      box-shadow: inset 0 0 0 2px var(--calendar-day-selected-outline, var(--card-focus-ring-color));
+      background-color: color-mix(
+        in oklab,
+        var(--calendar-day-selected-outline, var(--card-focus-ring-color)) 18%,
+        transparent
+      );
+      border-radius: 8px;
+    }
+    .fc-daygrid-day[data-calendar-selected='true'] .fc-daygrid-day-number {
+      color: var(--card-fg-color);
+      font-weight: 600;
     }
     .calendar-event-drift {
       border-style: dashed !important;
@@ -888,6 +926,8 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   const [actionLoading, setActionLoading] = useState(false)
   const calendarRef = useRef<FullCalendar | null>(null)
   const eventElementsRef = useRef<Map<string, Set<HTMLElement>>>(new Map())
+  const eventDayCellsRef = useRef<Map<string, Set<HTMLElement>>>(new Map())
+  const eventStatusRef = useRef<Map<string, CalendarDisplayStatus | undefined>>(new Map())
   const activeFetchRef = useRef<AbortController | null>(null)
   const fetchIdRef = useRef(0)
 
@@ -967,6 +1007,14 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       setErrorState(null)
       setLoading(false)
       eventElementsRef.current.clear()
+      eventDayCellsRef.current.forEach((cells) => {
+        cells.forEach((cell) => {
+          cell.removeAttribute('data-calendar-selected')
+          cell.removeAttribute('data-calendar-selected-status')
+        })
+      })
+      eventDayCellsRef.current.clear()
+      eventStatusRef.current.clear()
       if (activeFetchRef.current) {
         activeFetchRef.current.abort()
         activeFetchRef.current = null
@@ -1258,17 +1306,11 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       const statusLabel = status ? DISPLAY_STATUS_LABELS[status] : undefined
       const accessibleParts = [statusLabel, fallbackTitle].filter(Boolean)
       const accessibleTitle = (accessibleParts.join(' · ') || fallbackTitle || 'Untitled event').trim()
-      const statusChip = status ? (
-        <span className={`calendar-event-statusChip calendar-event-statusChip-${status}`}>
-          {statusLabel}
-        </span>
-      ) : null
       if (!sourceEvent) {
         const timeLabel = !arg.event.allDay && baseTimeText ? baseTimeText : ''
         const displayText = fallbackTitle || 'Untitled event'
         return (
           <div className="calendar-event-content" title={accessibleTitle} aria-label={accessibleTitle}>
-            {statusChip}
             {timeLabel ? <span className="calendar-event-time">{timeLabel}</span> : null}
             <span className="calendar-event-title">{displayText}</span>
           </div>
@@ -1293,7 +1335,6 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
             aria-label={accessibleTitle}
             data-calendar-source={sourceEvent.source}
           >
-            {statusChip}
             {timeLabel ? <span className="calendar-event-time">{timeLabel}</span> : null}
             <span className="calendar-event-listItemTitle">{displayTitle}</span>
             {locationText ? <span className="calendar-event-note">{locationText}</span> : null}
@@ -1308,7 +1349,6 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
           aria-label={accessibleTitle}
           data-calendar-source={sourceEvent.source}
         >
-          {statusChip}
           {timeLabel ? <span className="calendar-event-time">{timeLabel}</span> : null}
           <span className="calendar-event-title">{displayTitle}</span>
         </div>
@@ -1374,6 +1414,16 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         eventElementsRef.current.set(key, elements)
       }
       elements.add(arg.el)
+      eventStatusRef.current.set(key, extended?.status)
+      const dayCell = arg.el.closest('.fc-daygrid-day') as HTMLElement | null
+      if (dayCell) {
+        let dayCells = eventDayCellsRef.current.get(key)
+        if (!dayCells) {
+          dayCells = new Set<HTMLElement>()
+          eventDayCellsRef.current.set(key, dayCells)
+        }
+        dayCells.add(dayCell)
+      }
       if (extended?.status) {
         arg.el.setAttribute('data-calendar-status', extended.status)
       } else {
@@ -1388,6 +1438,14 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         arg.el.classList.add('calendar-event-selected')
         arg.el.setAttribute('aria-current', 'true')
         arg.el.setAttribute('data-calendar-selected', 'true')
+        if (dayCell) {
+          dayCell.setAttribute('data-calendar-selected', 'true')
+          if (extended?.status) {
+            dayCell.setAttribute('data-calendar-selected-status', extended.status)
+          } else {
+            dayCell.removeAttribute('data-calendar-selected-status')
+          }
+        }
       } else {
         arg.el.classList.remove('calendar-event-selected')
         arg.el.removeAttribute('aria-current')
@@ -1415,6 +1473,21 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         eventElementsRef.current.delete(key)
       }
     }
+    const dayCell = arg.el.closest('.fc-daygrid-day') as HTMLElement | null
+    if (dayCell) {
+      const dayCells = eventDayCellsRef.current.get(key)
+      if (dayCells) {
+        dayCells.delete(dayCell)
+        if (dayCells.size === 0) {
+          eventDayCellsRef.current.delete(key)
+        }
+      }
+      dayCell.removeAttribute('data-calendar-selected')
+      dayCell.removeAttribute('data-calendar-selected-status')
+    }
+    if (!eventElementsRef.current.has(key) && !eventDayCellsRef.current.has(key)) {
+      eventStatusRef.current.delete(key)
+    }
   }, [])
 
   useEffect(() => {
@@ -1431,11 +1504,35 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         }
       })
     })
+    eventDayCellsRef.current.forEach((cells, key) => {
+      const status = eventStatusRef.current.get(key)
+      cells.forEach((cell) => {
+        if (key === selectedKey) {
+          cell.setAttribute('data-calendar-selected', 'true')
+          if (status) {
+            cell.setAttribute('data-calendar-selected-status', status)
+          } else {
+            cell.removeAttribute('data-calendar-selected-status')
+          }
+        } else {
+          cell.removeAttribute('data-calendar-selected')
+          cell.removeAttribute('data-calendar-selected-status')
+        }
+      })
+    })
   }, [selectedKey])
 
   useEffect(() => {
     return () => {
       eventElementsRef.current.clear()
+      eventDayCellsRef.current.forEach((cells) => {
+        cells.forEach((cell) => {
+          cell.removeAttribute('data-calendar-selected')
+          cell.removeAttribute('data-calendar-selected-status')
+        })
+      })
+      eventDayCellsRef.current.clear()
+      eventStatusRef.current.clear()
     }
   }, [])
 
