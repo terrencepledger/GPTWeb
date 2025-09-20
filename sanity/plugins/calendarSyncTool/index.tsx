@@ -69,6 +69,9 @@ interface FormState {
 
 const DEFAULT_INTERNAL_COLOR = 'color-mix(in oklab, var(--brand-border) 70%, var(--brand-surface) 30%)'
 const DEFAULT_PUBLIC_COLOR = 'var(--brand-accent)'
+const EVENT_SELECTION_COLOR = '#2563eb'
+const EVENT_SELECTION_TINT = 'rgba(37, 99, 235, 0.32)'
+const EVENT_SELECTION_SURFACE = 'rgba(37, 99, 235, 0.2)'
 
 type CalendarDisplayStatus = 'published' | 'unpublished' | 'draft'
 
@@ -770,6 +773,9 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     .calendar-tool-root {
       --calendar-internal-color: ${internalColor};
       --calendar-public-color: ${publicColor};
+      --calendar-selected-color: ${EVENT_SELECTION_COLOR};
+      --calendar-selected-tint: ${EVENT_SELECTION_TINT};
+      --calendar-selected-surface: ${EVENT_SELECTION_SURFACE};
       --calendar-grid-border: color-mix(in srgb, var(--card-border-color) 82%, transparent 18%);
       --calendar-grid-surface: color-mix(in srgb, var(--card-bg-color) 90%, black 10%);
       --calendar-header-bg: color-mix(in srgb, var(--card-bg-color) 42%, black 58%);
@@ -868,6 +874,8 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       color: var(--card-fg-color);
       box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
+      overflow: hidden;
+      max-width: 100%;
     }
     .calendar-event::before {
       content: '';
@@ -900,11 +908,21 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     }
     .calendar-event-selected {
       transform: translateY(-1px);
+      background-color: color-mix(in srgb, var(--calendar-selected-surface, rgba(37, 99, 235, 0.2)) 78%, transparent 22%) !important;
+      border-color: color-mix(in srgb, var(--calendar-selected-color, #2563eb) 88%, transparent 12%) !important;
       box-shadow:
-        0 0 0 2px color-mix(in srgb, var(--calendar-event-status-color, var(--card-focus-ring-color)) 82%, white 18%),
-        0 0 0 12px var(--calendar-event-status-tint, rgba(59, 130, 246, 0.24)),
+        0 0 0 2px color-mix(in srgb, var(--calendar-selected-color, #2563eb) 90%, white 10%),
+        0 0 0 12px color-mix(in srgb, var(--calendar-selected-tint, rgba(37, 99, 235, 0.32)) 100%, transparent 0%),
         0 16px 40px rgba(0, 0, 0, 0.45);
       z-index: 3;
+    }
+    .calendar-event-selected::before {
+      background: color-mix(in srgb, var(--calendar-selected-color, #2563eb) 88%, transparent 12%);
+      box-shadow: 0 0 12px color-mix(in srgb, var(--calendar-selected-color, #2563eb) 72%, transparent 28%);
+    }
+    .calendar-event-selected::after {
+      opacity: 0.6;
+      background: linear-gradient(120deg, color-mix(in srgb, var(--calendar-selected-color, #2563eb) 62%, transparent 38%), transparent 72%);
     }
     .calendar-event-content {
       position: relative;
@@ -914,6 +932,8 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       font-size: 0.86rem;
       line-height: 1.35;
       max-width: 100%;
+      min-height: 0;
+      overflow: hidden;
       pointer-events: none;
     }
     .calendar-event-metaRow {
@@ -921,14 +941,23 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       align-items: center;
       gap: 0.5rem;
       min-width: 0;
+      overflow: hidden;
       font-size: 0.7rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       color: color-mix(in srgb, var(--card-fg-color) 92%, white 8%);
     }
+    .calendar-event-metaRow > * {
+      min-width: 0;
+    }
+    .calendar-event-metaRow span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     .calendar-event-time {
       font-weight: 600;
       white-space: nowrap;
+      flex-shrink: 0;
     }
     .calendar-event-statusIndicator {
       position: relative;
@@ -966,6 +995,34 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       word-break: break-word;
       overflow-wrap: anywhere;
     }
+    .calendar-event-title,
+    .calendar-event-listItemTitle,
+    .calendar-event-note {
+      overflow: hidden;
+    }
+    .calendar-event-title[data-calendar-overflow='true'],
+    .calendar-event-listItemTitle[data-calendar-overflow='true'] {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      text-overflow: ellipsis;
+      word-break: normal;
+      overflow-wrap: normal;
+    }
+    .fc-daygrid-event .calendar-event-title[data-calendar-overflow='true'] {
+      -webkit-line-clamp: 3;
+    }
+    .calendar-event-listItemTitle[data-calendar-overflow='true'] {
+      -webkit-line-clamp: 3;
+    }
+    .calendar-event-note[data-calendar-overflow='true'] {
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .calendar-event[data-calendar-overflow='true'] .calendar-event-content,
+    .calendar-event[data-calendar-overflow='true'] .calendar-event-listItem {
+      overflow: hidden;
+    }
     .fc-daygrid-event .calendar-event-content {
       gap: 0.32rem;
     }
@@ -986,6 +1043,8 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       gap: 0.35rem;
       font-size: 0.95rem;
       line-height: 1.35;
+      min-height: 0;
+      overflow: hidden;
     }
     .calendar-event-listItem .calendar-event-metaRow {
       margin-bottom: 0.1rem;
@@ -1018,7 +1077,7 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       position: absolute;
       inset: 3px;
       border-radius: 12px;
-      background: color-mix(in srgb, var(--calendar-day-selected-tint, rgba(59, 130, 246, 0.25)) 38%, transparent 62%);
+      background: color-mix(in srgb, var(--calendar-selected-tint, rgba(37, 99, 235, 0.28)) 52%, transparent 48%);
       pointer-events: none;
     }
     .fc-daygrid-day[data-calendar-selected='true'] .fc-daygrid-day-frame::after {
@@ -1026,12 +1085,12 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       position: absolute;
       inset: 3px;
       border-radius: 12px;
-      border: 2px solid color-mix(in srgb, var(--calendar-day-selected-color, var(--card-focus-ring-color)) 88%, white 12%);
-      box-shadow: 0 0 0 8px color-mix(in srgb, var(--calendar-day-selected-tint, rgba(59, 130, 246, 0.22)) 55%, transparent 45%);
+      border: 2px solid color-mix(in srgb, var(--calendar-selected-color, #2563eb) 88%, white 12%);
+      box-shadow: 0 0 0 8px color-mix(in srgb, var(--calendar-selected-tint, rgba(37, 99, 235, 0.24)) 65%, transparent 35%);
       pointer-events: none;
     }
     .fc-daygrid-day[data-calendar-selected='true'] .fc-daygrid-day-number {
-      color: color-mix(in srgb, var(--calendar-day-selected-color, var(--card-fg-color)) 92%, white 8%);
+      color: color-mix(in srgb, var(--calendar-selected-color, #2563eb) 92%, white 8%);
       font-weight: 700;
     }
     .calendar-slot-label {
@@ -1093,6 +1152,109 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   const eventStatusRef = useRef<Map<string, EventStatusMeta>>(new Map())
   const activeFetchRef = useRef<AbortController | null>(null)
   const fetchIdRef = useRef(0)
+  const eventOverflowObserversRef = useRef<Map<HTMLElement, ResizeObserver>>(new Map())
+  const eventOverflowRafRef = useRef<Map<HTMLElement, number>>(new Map())
+
+  const clearOverflowState = useCallback((element: HTMLElement) => {
+    element.removeAttribute('data-calendar-overflow')
+    element
+      .querySelectorAll<HTMLElement>(
+        '.calendar-event-title[data-calendar-overflow], .calendar-event-listItemTitle[data-calendar-overflow], .calendar-event-note[data-calendar-overflow]',
+      )
+      .forEach((node) => {
+        node.removeAttribute('data-calendar-overflow')
+      })
+  }, [])
+
+  const updateEventOverflowState = useCallback(
+    (element: HTMLElement) => {
+      if (!element || !element.isConnected) return
+      const content = element.querySelector<HTMLElement>('.calendar-event-content, .calendar-event-listItem')
+      clearOverflowState(element)
+      if (!content) return
+      const title = content.querySelector<HTMLElement>('.calendar-event-title, .calendar-event-listItemTitle')
+      const note = content.querySelector<HTMLElement>('.calendar-event-note')
+      const checkOverflow = (node: HTMLElement) => {
+        const heightOverflow = Math.ceil(node.scrollHeight) - Math.ceil(node.clientHeight) > 1
+        const widthOverflow = Math.ceil(node.scrollWidth) - Math.ceil(node.clientWidth) > 1
+        return heightOverflow || widthOverflow
+      }
+      const contentOverflow = checkOverflow(content)
+      const titleOverflow = title ? checkOverflow(title) : false
+      const noteOverflow = note ? checkOverflow(note) : false
+      if (title && titleOverflow) {
+        title.setAttribute('data-calendar-overflow', 'true')
+      }
+      if (note && noteOverflow) {
+        note.setAttribute('data-calendar-overflow', 'true')
+      }
+      if (contentOverflow || titleOverflow || noteOverflow) {
+        element.setAttribute('data-calendar-overflow', 'true')
+      }
+    },
+    [clearOverflowState],
+  )
+
+  const scheduleOverflowMeasurement = useCallback(
+    (element: HTMLElement) => {
+      if (!element) return
+      const win = typeof window !== 'undefined' ? window : null
+      if (!win || typeof win.requestAnimationFrame !== 'function') {
+        updateEventOverflowState(element)
+        return
+      }
+      const existing = eventOverflowRafRef.current.get(element)
+      if (existing !== undefined) {
+        win.cancelAnimationFrame(existing)
+      }
+      const frame = win.requestAnimationFrame(() => {
+        eventOverflowRafRef.current.delete(element)
+        updateEventOverflowState(element)
+      })
+      eventOverflowRafRef.current.set(element, frame)
+    },
+    [updateEventOverflowState],
+  )
+
+  const attachOverflowObserver = useCallback(
+    (element: HTMLElement) => {
+      if (!element) return
+      scheduleOverflowMeasurement(element)
+      if (eventOverflowObserversRef.current.has(element)) return
+      const ObserverCtor = typeof ResizeObserver !== 'undefined' ? ResizeObserver : null
+      if (!ObserverCtor) return
+      const observer = new ObserverCtor(() => {
+        scheduleOverflowMeasurement(element)
+      })
+      observer.observe(element)
+      const content = element.querySelector<HTMLElement>('.calendar-event-content, .calendar-event-listItem')
+      if (content) {
+        observer.observe(content)
+      }
+      eventOverflowObserversRef.current.set(element, observer)
+    },
+    [scheduleOverflowMeasurement],
+  )
+
+  const detachOverflowObserver = useCallback(
+    (element: HTMLElement) => {
+      const observer = eventOverflowObserversRef.current.get(element)
+      if (observer) {
+        observer.disconnect()
+        eventOverflowObserversRef.current.delete(element)
+      }
+      const win = typeof window !== 'undefined' ? window : null
+      const frame = eventOverflowRafRef.current.get(element)
+      if (frame !== undefined) {
+        if (win && typeof win.cancelAnimationFrame === 'function') {
+          win.cancelAnimationFrame(frame)
+        }
+        eventOverflowRafRef.current.delete(element)
+      }
+      clearOverflowState(element)
+    },
+    [clearOverflowState],
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -1171,6 +1333,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       setLoading(false)
       eventElementsRef.current.forEach((elements) => {
         elements.forEach((element) => {
+          detachOverflowObserver(element)
           element.style.removeProperty('--calendar-event-status-color')
           element.style.removeProperty('--calendar-event-status-tint')
           element.style.removeProperty('--calendar-event-status-surface')
@@ -1185,19 +1348,19 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       eventDayCellsRef.current.forEach((cells) => {
         cells.forEach((cell) => {
           cell.removeAttribute('data-calendar-selected')
-          cell.removeAttribute('data-calendar-selected-status')
-          cell.style.removeProperty('--calendar-day-selected-color')
-          cell.style.removeProperty('--calendar-day-selected-tint')
         })
       })
       eventDayCellsRef.current.clear()
+      eventOverflowObserversRef.current.forEach((observer) => observer.disconnect())
+      eventOverflowObserversRef.current.clear()
+      eventOverflowRafRef.current.clear()
       eventStatusRef.current.clear()
       if (activeFetchRef.current) {
         activeFetchRef.current.abort()
         activeFetchRef.current = null
       }
     }
-  }, [accessState])
+  }, [accessState, detachOverflowObserver])
 
   const projectEvents = useCallback(
     (payload: CalendarSyncResponse): EventInput[] => {
@@ -1482,7 +1645,8 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     (arg: EventContentArg) => {
       const extended = arg.event.extendedProps as CalendarEventExtendedProps
       const sourceEvent = extended?.event
-      const fallbackTitle = (extended?.displayTitle || arg.event.title || '').trim()
+      const rawFallbackTitle = (extended?.displayTitle || arg.event.title || '').trim()
+      const fallbackTitle = stripStatusTokens(rawFallbackTitle)
       const baseTimeText = arg.timeText?.trim()
       const status = extended?.status
       const statusLabel = status ? DISPLAY_STATUS_LABELS[status] : undefined
@@ -1675,29 +1839,19 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         arg.el.setAttribute('data-calendar-selected', 'true')
         if (dayCell) {
           dayCell.setAttribute('data-calendar-selected', 'true')
-          if (extended?.status) {
-            dayCell.setAttribute('data-calendar-selected-status', extended.status)
-          } else {
-            dayCell.removeAttribute('data-calendar-selected-status')
-          }
-          if (extended?.statusColor) {
-            dayCell.style.setProperty('--calendar-day-selected-color', extended.statusColor)
-          } else {
-            dayCell.style.removeProperty('--calendar-day-selected-color')
-          }
-          if (extended?.statusTint) {
-            dayCell.style.setProperty('--calendar-day-selected-tint', extended.statusTint)
-          } else {
-            dayCell.style.removeProperty('--calendar-day-selected-tint')
-          }
         }
       } else {
         arg.el.classList.remove('calendar-event-selected')
         arg.el.removeAttribute('aria-current')
         arg.el.removeAttribute('data-calendar-selected')
+        if (dayCell) {
+          dayCell.removeAttribute('data-calendar-selected')
+        }
       }
+      attachOverflowObserver(arg.el)
+      scheduleOverflowMeasurement(arg.el)
     },
-    [selectedKey],
+    [attachOverflowObserver, scheduleOverflowMeasurement, selectedKey],
   )
 
   const handleEventWillUnmount = useCallback((arg: EventMountArg) => {
@@ -1716,6 +1870,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     arg.el.style.removeProperty('--calendar-event-status-surface')
     arg.el.style.removeProperty('--calendar-event-source-color')
     arg.el.style.backgroundColor = ''
+    detachOverflowObserver(arg.el)
     const elements = eventElementsRef.current.get(key)
     if (elements) {
       elements.delete(arg.el)
@@ -1733,14 +1888,11 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         }
       }
       dayCell.removeAttribute('data-calendar-selected')
-      dayCell.removeAttribute('data-calendar-selected-status')
-      dayCell.style.removeProperty('--calendar-day-selected-color')
-      dayCell.style.removeProperty('--calendar-day-selected-tint')
     }
     if (!eventElementsRef.current.has(key) && !eventDayCellsRef.current.has(key)) {
       eventStatusRef.current.delete(key)
     }
-  }, [])
+  }, [detachOverflowObserver])
 
   useEffect(() => {
     eventElementsRef.current.forEach((elements, key) => {
@@ -1777,42 +1929,25 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
           element.removeAttribute('aria-current')
           element.removeAttribute('data-calendar-selected')
         }
+        scheduleOverflowMeasurement(element)
       })
     })
     eventDayCellsRef.current.forEach((cells, key) => {
-      const meta = eventStatusRef.current.get(key)
       cells.forEach((cell) => {
         if (key === selectedKey) {
           cell.setAttribute('data-calendar-selected', 'true')
-          if (meta?.status) {
-            cell.setAttribute('data-calendar-selected-status', meta.status)
-          } else {
-            cell.removeAttribute('data-calendar-selected-status')
-          }
-          if (meta?.color) {
-            cell.style.setProperty('--calendar-day-selected-color', meta.color)
-          } else {
-            cell.style.removeProperty('--calendar-day-selected-color')
-          }
-          if (meta?.tint) {
-            cell.style.setProperty('--calendar-day-selected-tint', meta.tint)
-          } else {
-            cell.style.removeProperty('--calendar-day-selected-tint')
-          }
         } else {
           cell.removeAttribute('data-calendar-selected')
-          cell.removeAttribute('data-calendar-selected-status')
-          cell.style.removeProperty('--calendar-day-selected-color')
-          cell.style.removeProperty('--calendar-day-selected-tint')
         }
       })
     })
-  }, [selectedKey])
+  }, [scheduleOverflowMeasurement, selectedKey])
 
   useEffect(() => {
     return () => {
       eventElementsRef.current.forEach((elements) => {
         elements.forEach((element) => {
+          detachOverflowObserver(element)
           element.style.removeProperty('--calendar-event-status-color')
           element.style.removeProperty('--calendar-event-status-tint')
           element.style.removeProperty('--calendar-event-source-color')
@@ -1825,15 +1960,15 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       eventDayCellsRef.current.forEach((cells) => {
         cells.forEach((cell) => {
           cell.removeAttribute('data-calendar-selected')
-          cell.removeAttribute('data-calendar-selected-status')
-          cell.style.removeProperty('--calendar-day-selected-color')
-          cell.style.removeProperty('--calendar-day-selected-tint')
         })
       })
       eventDayCellsRef.current.clear()
+      eventOverflowObserversRef.current.forEach((observer) => observer.disconnect())
+      eventOverflowObserversRef.current.clear()
+      eventOverflowRafRef.current.clear()
       eventStatusRef.current.clear()
     }
-  }, [])
+  }, [detachOverflowObserver])
 
   const refresh = useCallback(() => {
     if (accessState !== 'authorized') return
