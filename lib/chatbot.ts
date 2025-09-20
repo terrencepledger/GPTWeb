@@ -113,11 +113,40 @@ function buildAppSitemap(): string {
   }
 }
 
-async function buildSiteContext(): Promise<string> {
+type SiteContextSources = {
+  siteSettings: typeof siteSettings;
+  staffAll: typeof staffAll;
+  ministriesAll: typeof ministriesAll;
+  missionStatement: typeof missionStatement;
+  announcementLatest: typeof announcementLatest;
+  getCurrentLivestream: typeof getCurrentLivestream;
+  getUpcomingEvents: typeof getUpcomingEvents;
+  givingOptions: typeof givingOptions;
+};
+
+const defaultSiteContextSources: SiteContextSources = {
+  siteSettings,
+  staffAll,
+  ministriesAll,
+  missionStatement,
+  announcementLatest,
+  getCurrentLivestream,
+  getUpcomingEvents,
+  givingOptions,
+};
+
+const toArray = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
+const toRecord = <T extends Record<string, unknown>>(value: unknown): T | null =>
+  value && typeof value === 'object' && !Array.isArray(value) ? (value as T) : null;
+
+export async function buildSiteContext(
+  overrides: Partial<SiteContextSources> = {},
+): Promise<string> {
   if (!process.env.SANITY_STUDIO_PROJECT_ID || !process.env.SANITY_STUDIO_DATASET) {
     return '';
   }
   try {
+    const sources = { ...defaultSiteContextSources, ...overrides } as SiteContextSources;
     const [
       settings,
       staff,
@@ -127,76 +156,129 @@ async function buildSiteContext(): Promise<string> {
       livestream,
       events,
     ] = await Promise.all([
-      siteSettings().catch(() => null),
-      staffAll().catch(() => []),
-      ministriesAll().catch(() => []),
-      missionStatement().catch(() => null),
-      announcementLatest().catch(() => null),
-      getCurrentLivestream().catch(() => null),
-      getUpcomingEvents(5).catch(() => []),
+      sources.siteSettings().catch(() => null),
+      sources.staffAll().catch(() => []),
+      sources.ministriesAll().catch(() => []),
+      sources.missionStatement().catch(() => null),
+      sources.announcementLatest().catch(() => null),
+      sources.getCurrentLivestream().catch(() => null),
+      sources.getUpcomingEvents(5).catch(() => []),
     ]);
-    let context = '';
+    const context: Record<string, unknown> = {};
     const tz = process.env.TZ || 'UTC';
     const dateFmt = new Intl.DateTimeFormat('en-US', { timeZone: tz, dateStyle: 'medium', timeStyle: 'short' });
+    const evFmt = new Intl.DateTimeFormat('en-US', { timeZone: tz, dateStyle: 'medium' });
     const sitemap = buildAppSitemap();
-    if (settings) {
-      context += `Site title: ${settings.title}. `;
-      if (settings.address) context += `Address: ${settings.address}. `;
-      if (settings.serviceTimes) context += `Service times: ${settings.serviceTimes}. `;
-      if (settings.email) context += `Email: ${settings.email}. `;
-      if (settings.phone) context += `Phone: ${settings.phone}. `;
-      if (settings.socialLinks?.length) {
-        context +=
-          'Social links: ' +
-          settings.socialLinks.map((s) => `${s.label} ${s.href}`).join('; ') +
-          '. ';
+    const settingsRecord = toRecord<NonNullable<Awaited<ReturnType<typeof siteSettings>>>>(settings);
+    if (settingsRecord) {
+      const st: Record<string, unknown> = {};
+      if (settingsRecord.title) st.t = settingsRecord.title;
+      if (settingsRecord.address) st.addr = settingsRecord.address;
+      if (settingsRecord.serviceTimes) st.svc = settingsRecord.serviceTimes;
+      if (settingsRecord.email) st.email = settingsRecord.email;
+      if (settingsRecord.phone) st.phone = settingsRecord.phone;
+      const socials = toArray(settingsRecord.socialLinks).map((s: any) => {
+        if (!s || typeof s !== 'object') return null;
+        const entry: Record<string, string> = {};
+        if (typeof s.label === 'string' && s.label) entry.l = s.label;
+        if (typeof s.href === 'string' && s.href) entry.u = s.href;
+        return Object.keys(entry).length ? entry : null;
+      }).filter(Boolean) as Record<string, string>[];
+      if (socials.length) st.sl = socials;
+      if (Object.keys(st).length) context.st = st;
+    }
+    const announcementRecord = toRecord<NonNullable<Awaited<ReturnType<typeof announcementLatest>>>>(announcement);
+    if (announcementRecord) {
+      const ann: Record<string, unknown> = {};
+      if (announcementRecord.title) ann.t = announcementRecord.title;
+      if (announcementRecord.message) ann.msg = announcementRecord.message;
+      if (announcementRecord.cta) {
+        const cta: Record<string, string> = {};
+        if (announcementRecord.cta.label) cta.l = announcementRecord.cta.label;
+        if (announcementRecord.cta.href) cta.u = announcementRecord.cta.href;
+        if (Object.keys(cta).length) ann.cta = cta;
       }
+      if (Object.keys(ann).length) context.ann = ann;
     }
-    if (announcement) {
-      context += `Latest announcement: ${announcement.title} - ${announcement.message}. `;
+    const missionRecord = toRecord<NonNullable<Awaited<ReturnType<typeof missionStatement>>>>(mission);
+    if (missionRecord) {
+      const ms: Record<string, unknown> = {};
+      if (missionRecord.headline) ms.h = missionRecord.headline;
+      if (missionRecord.tagline) ms.tg = missionRecord.tagline;
+      if (missionRecord.message) ms.msg = missionRecord.message;
+      if (Object.keys(ms).length) context.ms = ms;
     }
-    if (mission) {
-      context += `Mission statement: ${mission.headline}. ${mission.message || ''} `;
+    const staffList = toArray(staff).map((s: any) => {
+      if (!s || typeof s !== 'object') return null;
+      const entry: Record<string, string> = {};
+      if (typeof s.name === 'string' && s.name) entry.n = s.name;
+      if (typeof s.role === 'string' && s.role) entry.r = s.role;
+      return Object.keys(entry).length ? entry : null;
+    }).filter(Boolean) as Record<string, string>[];
+    if (staffList.length) {
+      context.sf = staffList;
     }
-    if (staff.length) {
-      context += 'Staff: ' + staff.map((s) => `${s.name} (${s.role})`).join('; ') + '. ';
+    const ministriesList = toArray(ministries).map((m: any) => {
+      if (!m || typeof m !== 'object') return null;
+      const entry: Record<string, string> = {};
+      if (typeof m.name === 'string' && m.name) entry.n = m.name;
+      if (typeof m.description === 'string' && m.description) entry.d = m.description;
+      return Object.keys(entry).length ? entry : null;
+    }).filter(Boolean) as Record<string, string>[];
+    if (ministriesList.length) {
+      context.mn = ministriesList;
     }
-    if (ministries.length) {
-      context +=
-        'Ministries: ' + ministries.map((m) => `${m.name} - ${m.description}`).join('; ') + '. ';
+    const givingList = toArray(sources.givingOptions).map((g: any) => {
+      if (!g || typeof g !== 'object') return null;
+      const entry: Record<string, string> = {};
+      if (typeof g.title === 'string' && g.title) entry.t = g.title;
+      if (typeof g.content === 'string' && g.content) entry.c = g.content;
+      if (typeof g.href === 'string' && g.href) entry.u = g.href;
+      return Object.keys(entry).length ? entry : null;
+    }).filter(Boolean) as Record<string, string>[];
+    if (givingList.length) {
+      context.gv = givingList;
     }
-    if (givingOptions.length) {
-      context +=
-        'Giving options: ' +
-        givingOptions
-          .map((g) => `${g.title} ${g.content}${g.href ? ' ' + g.href : ''}`)
-          .join('; ') +
-        '. ';
-    }
-    if (livestream) {
-      let status: string;
-      if (livestream.live?.status === 'streaming') {
-        status = 'live now';
-      } else if (livestream.live?.scheduled_time) {
-        status = `scheduled for ${dateFmt.format(new Date(livestream.live.scheduled_time))}`;
+    const livestreamRecord = toRecord<NonNullable<Awaited<ReturnType<typeof getCurrentLivestream>>>>(livestream);
+    if (livestreamRecord) {
+      const ls: Record<string, unknown> = {};
+      if (livestreamRecord.name) ls.n = livestreamRecord.name;
+      if (livestreamRecord.link) ls.u = livestreamRecord.link;
+      const liveStatus = livestreamRecord.live?.status;
+      if (liveStatus === 'streaming') {
+        ls.st = 'live';
+      } else if (livestreamRecord.live?.scheduled_time) {
+        ls.st = 'scheduled';
+        ls.sch = dateFmt.format(new Date(livestreamRecord.live.scheduled_time));
       } else {
-        status = 'offline';
+        ls.st = 'offline';
       }
-      context += `Livestream: ${livestream.name} ${status}. `;
+      if (Object.keys(ls).length) context.ls = ls;
     }
-    if (events.length) {
-      const evFmt = new Intl.DateTimeFormat('en-US', { timeZone: tz, dateStyle: 'medium' });
-      context +=
-        'Upcoming events: ' +
-        events
-          .map((e) => `${e.title} on ${evFmt.format(new Date(e.start))}${e.location ? ' at ' + e.location : ''}`)
-          .join('; ') +
-        '. ';
+    const eventsList = toArray(events).map((e: any) => {
+      if (!e || typeof e !== 'object') return null;
+      const entry: Record<string, string> = {};
+      if (typeof e.title === 'string' && e.title) entry.t = e.title;
+      if (typeof e.start === 'string' && e.start) {
+        entry.dt = evFmt.format(new Date(e.start));
+      }
+      const location = (e.location || e.loc || '') as string;
+      if (typeof location === 'string' && location) entry.loc = location;
+      const url = (e.href || e.htmlLink || '') as string;
+      if (typeof url === 'string' && url) entry.u = url;
+      return Object.keys(entry).length ? entry : null;
+    }).filter(Boolean) as Record<string, string>[];
+    if (eventsList.length) {
+      context.ev = eventsList;
     }
     if (sitemap) {
-      context += `Navigation (site map paths): ${sitemap}. `;
+      const nav = sitemap
+        .split('; ')
+        .map((p) => p.trim())
+        .filter(Boolean);
+      if (nav.length) context.nav = nav;
     }
-    return context.trim();
+    return JSON.stringify(context);
   } catch {
     return '';
   }
@@ -214,10 +296,11 @@ export async function generateChatbotReply(
   escalateReason: string;
 }> {
   const openai = getOpenAIClient(client);
-  const [context, extra] = await Promise.all([
+  const [contextJson, extra] = await Promise.all([
     buildSiteContext(),
     getChatbotExtraContext(),
   ]);
+  const compactContext = contextJson || '{}';
   const tz = process.env.TZ || 'UTC';
   const dateStr = new Intl.DateTimeFormat('en-US', {
     timeZone: tz,
@@ -238,14 +321,24 @@ export async function generateChatbotReply(
           'If a question is unrelated to the site, respond that you can only assist with website information. ' +
           'If the question is about the church or website but the answer is not present in the site content, say you are sorry and unsure, set confidence to 0, and suggest reaching out for further help. ' +
           'When it would genuinely help the visitor accomplish their goal, suggest one or two specific relevant pages on this site and include their path(s) starting with "/". Do not add links unless they clearly improve the answer. ' +
-          'Use the paths listed in the "Navigation (site map paths)" section exactly as provided when referencing internal pages; do not guess paths, including for nested pages such as About and Contact. ' +
           'Only provide external links that already appear in the site content and include the full URL. ' +
           'If the user requests to speak to a person or otherwise asks for escalation, set "escalate" to true and provide the trigger in "escalateReason". Avoid copy-paste escalation text; any escalation notice should reference the user\'s situation and kindly explain that providing their contact information is necessary for staff to reach out. ' +
           'Write "escalateReason" as if you are speaking to a staff member: a concise internal note that clearly explains why this conversation was escalated, referencing the visitor\'s context. Do not address the visitor directly in this field. ' +
           'Count how many times so far the user has asked this same or a very similar question, including the current attempt. Do not increase the count for new or different questions. Include this number as "similarityCount". Allow a visitor to repeat a question only twice; on the third time, set "escalate" to true with a friendly "escalateReason" indicating the question has been asked multiple times and a team member can follow up if they share contact details. ' +
           `The current date is ${dateStr}. ` +
-          `Site content:\n${context}\n` +
+          'Site content is provided as compact JSON. Parse it before answering. Short key legend: ' +
+          'st=site settings {t:title, addr:address, svc:service times, email, phone, sl:[{l:label, u:url}]}; ' +
+          'ann=latest announcement {t:title, msg:message, cta:{l:label, u:url}}; ' +
+          'ms=mission statement {h:headline, msg:message, tg:tagline}; ' +
+          'sf=staff array [{n:name, r:role}]; ' +
+          'mn=ministries array [{n:name, d:description}]; ' +
+          'gv=giving options array [{t:title, c:content, u:url}]; ' +
+          'ls=livestream {n:name, st:status, sch:scheduled time, u:url}; ' +
+          'ev=upcoming events array [{t:title, dt:date/time, loc:location, u:url}]; ' +
+          'nav=site paths array. ' +
+          `Site content JSON: ${compactContext}. ` +
           'Calibrate "confidence" strictly between 0 and 1, where 1 means the answer is clearly supported by the provided site content and 0 means the information is missing or uncertain; decrease confidence proportionally when context is weak or ambiguous, and never invent facts beyond the provided content. ' +
+          'Use the paths in the "nav" array exactly as provided when referencing internal pages; do not guess paths, including for nested pages such as About and Contact. ' +
           'Respond in JSON with keys "reply", "confidence", "similarityCount" (number), "escalate" (boolean), and "escalateReason" (string).',
       },
       ...messages.map(({ role, content }) => ({ role, content } as any)),
