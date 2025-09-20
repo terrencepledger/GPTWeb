@@ -44,10 +44,8 @@ export function buildChatbotSystemPrompt({
       'Use only the paths listed under "Navigation (site map paths)" and never guess other routes, including nested pages.',
       'Share external links only when they already appear in the site content and include the full URL.',
       'Set "escalate" to true whenever the visitor asks for a person or escalation, and describe the trigger in "escalateReason" with a tailored note that requests their contact information.',
-      'Write "escalateReason" as a concise internal note for staff that references the visitor\'s situation and never addresses the visitor directly.',
-      'Track how many times, including this attempt, the visitor has asked the same or a very similar question while ignoring new topics.',
-      'Set "similarityCount" to that total, and on the third repetition escalate with a friendly note explaining the repeated question and inviting contact details for follow-up.',
-      'Calibrate "confidence" strictly between 0 and 1, lowering it when context is weak or ambiguous, and never invent information beyond what is provided.',
+        'A preprocessing step already analyzed how often the visitor has repeated the current question. Use the dedicated "Repetition analysis" system message to set "similarityCount" exactly. If it indicates autoEscalate is true, set "escalate" to true and explain that the visitor has asked the same question multiple times so a team member can follow up. Otherwise, only set "escalate" to true when the visitor explicitly asks or another rule requires it. ' +
+        'Calibrate "confidence" strictly between 0 and 1, lowering it when context is weak or ambiguous, and never invent information beyond what is provided.',
       'Respond in JSON with the keys "reply", "confidence", "similarityCount" (number), "escalate" (boolean), and "escalateReason" (string).',
     );
 
@@ -70,8 +68,7 @@ export function buildChatbotSystemPrompt({
 
     directives.push('Kindly explain that a human will follow up and that staff need the visitor\'s contact information to respond.');
   } else {
-    const never: never = mode;
-    return never;
+      return mode;
   }
 
   let prompt = `Follow these rules:\n${directives.map((d) => `- ${d}`).join('\n')}`;

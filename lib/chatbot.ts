@@ -53,7 +53,121 @@ export type Message = ChatMessage;
 
 import type OpenAI from 'openai';
 import { google } from 'googleapis';
+import { JWT } from 'google-auth-library';
 import { getOpenAIClient } from './openaiClient';
+
+const REPEAT_ESCALATION_REASON = 'User repeated the question multiple times.';
+
+type RepetitionAnalysis = {
+  similarityCount: number;
+  escalate: boolean;
+};
+
+const SIMILARITY_THRESHOLD = 0.6;
+
+function normalizeForSimilarity(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[\u2019']/g, '')
+    .replace(/[^\p{L}\p{N}\s]+/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function toBigrams(text: string): string[] {
+  const result: string[] = [];
+  for (let i = 0; i < text.length - 1; i++) {
+    result.push(text.slice(i, i + 2));
+  }
+  return result;
+}
+
+function diceCoefficient(a: string, b: string): number {
+  const aBigrams = toBigrams(a);
+  const bBigrams = toBigrams(b);
+  if (!aBigrams.length || !bBigrams.length) {
+    return a && a === b ? 1 : 0;
+  }
+  const counts = new Map<string, number>();
+  for (const bg of aBigrams) {
+    counts.set(bg, (counts.get(bg) || 0) + 1);
+  }
+  let matches = 0;
+  for (const bg of bBigrams) {
+    const count = counts.get(bg) || 0;
+    if (count > 0) {
+      counts.set(bg, count - 1);
+      matches++;
+    }
+  }
+  return (2 * matches) / (aBigrams.length + bBigrams.length);
+}
+
+function canonicalizeToken(token: string): string {
+  if (token.length > 4 && token.endsWith('es')) {
+    return token.slice(0, -2);
+  }
+  if (token.length > 3 && token.endsWith('s')) {
+    return token.slice(0, -1);
+  }
+  return token;
+}
+
+function tokenize(text: string): string[] {
+  if (!text) return [];
+  return text
+    .split(' ')
+    .map((part) => canonicalizeToken(part))
+    .filter((part) => part.length >= 2);
+}
+
+function jaccardSimilarity(aTokens: string[], bTokens: string[]): number {
+  if (!aTokens.length || !bTokens.length) return 0;
+  const aSet = new Set(aTokens);
+  const bSet = new Set(bTokens);
+  let intersection = 0;
+  for (const token of aSet) {
+    if (bSet.has(token)) {
+      intersection++;
+    }
+  }
+  const union = new Set([...aSet, ...bSet]).size;
+  return union === 0 ? 0 : intersection / union;
+}
+
+function computeSimilarityScore(a: string, b: string): number {
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  const dice = diceCoefficient(a, b);
+  const tokensA = tokenize(a);
+  const tokensB = tokenize(b);
+  const jaccard = jaccardSimilarity(tokensA, tokensB);
+  return Math.max(dice, jaccard);
+}
+
+function analyzeRepetition(messages: Message[]): RepetitionAnalysis {
+  const userMessages = messages.filter(
+    (msg) => msg.role === 'user' && msg.content.trim(),
+  );
+  if (!userMessages.length) {
+    return { similarityCount: 0, escalate: false };
+  }
+  const normalized = userMessages.map((msg) => normalizeForSimilarity(msg.content));
+  const latest = normalized[normalized.length - 1];
+  if (!latest) {
+    return { similarityCount: 0, escalate: false };
+  }
+  let count = 1;
+  for (let i = 0; i < normalized.length - 1; i++) {
+    const current = normalized[i];
+    if (!current) continue;
+    const similarity = computeSimilarityScore(current, latest);
+    if (similarity >= SIMILARITY_THRESHOLD) {
+      count++;
+    }
+  }
+  return { similarityCount: count, escalate: count >= 3 };
+}
 
 // Build a simple sitemap from the Next.js app directory so the assistant knows exact page paths.
 function buildAppSitemap(): string {
@@ -137,7 +251,7 @@ const defaultSiteContextSources: SiteContextSources = {
 };
 
 const toArray = <T>(value: unknown): T[] => (Array.isArray(value) ? (value as T[]) : []);
-const toRecord = <T extends Record<string, unknown>>(value: unknown): T | null =>
+const toRecord = <T extends object>(value: unknown): T | null =>
   value && typeof value === 'object' && !Array.isArray(value) ? (value as T) : null;
 
 export async function buildSiteContext(
@@ -264,9 +378,9 @@ export async function buildSiteContext(
         entry.dt = evFmt.format(new Date(e.start));
       }
       const location = (e.location || e.loc || '') as string;
-      if (typeof location === 'string' && location) entry.loc = location;
+      if (location) entry.loc = location;
       const url = (e.href || e.htmlLink || '') as string;
-      if (typeof url === 'string' && url) entry.u = url;
+      if (url) entry.u = url;
       return Object.keys(entry).length ? entry : null;
     }).filter(Boolean) as Record<string, string>[];
     if (eventsList.length) {
@@ -297,7 +411,8 @@ export async function generateChatbotReply(
   escalateReason: string;
 }> {
   const openai = getOpenAIClient(client);
-  const [contextJson, extra] = await Promise.all([
+    const { similarityCount: computedSimilarityCount, escalate: autoEscalate } = analyzeRepetition(messages);
+    const [contextJson, extra] = await Promise.all([
     buildSiteContext(),
     getChatbotExtraContext(),
   ]);
@@ -319,6 +434,12 @@ export async function generateChatbotReply(
           dateStr,
         }),
       },
+      {
+        role: 'system',
+        content: `Repetition analysis: {"similarityCount": ${computedSimilarityCount}, "autoEscalate": ${
+          autoEscalate ? 'true' : 'false'
+        }}`,
+      },
       ...messages.map(({ role, content }) => ({ role, content } as any)),
     ],
     response_format: { type: 'json_object' },
@@ -326,21 +447,29 @@ export async function generateChatbotReply(
   const raw = completion.choices[0].message?.content ?? '{}';
   try {
     const parsed = JSON.parse(raw);
+    const reply = typeof parsed.reply === 'string' ? parsed.reply : '';
+    const confidence =
+      typeof parsed.confidence === 'number' ? parsed.confidence : 0;
+    const parsedReason =
+      typeof parsed.escalateReason === 'string' ? parsed.escalateReason : '';
+    const finalEscalate = Boolean(parsed.escalate) || autoEscalate;
+    const finalReason = finalEscalate
+      ? parsedReason || (autoEscalate ? REPEAT_ESCALATION_REASON : '')
+      : '';
     return {
-      reply: parsed.reply ?? '',
-      confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0,
-      similarityCount:
-        typeof parsed.similarityCount === 'number' ? parsed.similarityCount : 0,
-      escalate: Boolean(parsed.escalate),
-      escalateReason: typeof parsed.escalateReason === 'string' ? parsed.escalateReason : '',
+      reply,
+      confidence,
+      similarityCount: computedSimilarityCount,
+      escalate: finalEscalate,
+      escalateReason: finalReason,
     };
   } catch {
     return {
       reply: '',
       confidence: 0,
-      similarityCount: 0,
-      escalate: false,
-      escalateReason: '',
+      similarityCount: computedSimilarityCount,
+      escalate: autoEscalate,
+      escalateReason: autoEscalate ? REPEAT_ESCALATION_REASON : '',
     };
   }
 }
@@ -519,12 +648,12 @@ export async function sendEscalationEmail(
   // Normalize private key: support both literal newlines and escaped \\n
   const svcKey = svcKeyRaw.includes('\\n') ? svcKeyRaw.replace(/\\n/g, '\n') : svcKeyRaw;
 
-  const auth = new google.auth.JWT({
+  const auth = new JWT({
     email: svcEmail,
     key: svcKey,
     scopes: ['https://www.googleapis.com/auth/gmail.send','https://mail.google.com/'],
     subject: parsedFrom, // act as this user
-  } as any);
+  });
   dlog('Authorizing Gmail client as subject', maskEmail(parsedFrom));
   await auth.authorize();
   dlog('Gmail authorization successful');
