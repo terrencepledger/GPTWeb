@@ -87,9 +87,9 @@ const DISPLAY_STATUS_BADGE_TONES: Record<CalendarDisplayStatus, BadgeTone> = {
 }
 
 const STATUS_ACCENTS: Record<CalendarDisplayStatus, {border: string; tint: string}> = {
-  published: {border: 'rgb(27, 127, 75)', tint: 'rgba(27, 127, 75, 0.18)'},
-  unpublished: {border: 'rgb(180, 35, 24)', tint: 'rgba(180, 35, 24, 0.2)'},
-  draft: {border: 'rgb(138, 97, 22)', tint: 'rgba(138, 97, 22, 0.16)'},
+  published: {border: 'rgb(16, 185, 129)', tint: 'rgba(16, 185, 129, 0.24)'},
+  unpublished: {border: 'rgb(239, 68, 68)', tint: 'rgba(239, 68, 68, 0.28)'},
+  draft: {border: 'rgb(245, 158, 11)', tint: 'rgba(245, 158, 11, 0.26)'},
 }
 
 interface StatusInfo {
@@ -603,7 +603,8 @@ function StatusLegendItem(props: {status: CalendarDisplayStatus; label: string})
           height: 16,
           borderRadius: 6,
           backgroundColor: accent.tint,
-          boxShadow: `inset 0 0 0 2px ${accent.border}`,
+          border: `3px solid ${accent.border}`,
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08) inset',
           boxSizing: 'border-box',
         }}
       />
@@ -725,49 +726,55 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       --calendar-public-color: ${publicColor};
     }
     .fc .calendar-event {
-      border-radius: 8px;
+      border-radius: 10px;
     }
     .calendar-event {
       position: relative;
       box-sizing: border-box;
-      border-radius: 8px;
+      border-radius: 10px;
       background-color: var(--card-bg-color);
       color: var(--card-fg-color);
       overflow: hidden;
-      box-shadow: inset 0 0 0 2px var(--calendar-event-status-color, var(--card-border-color));
-      transition: box-shadow 0.16s ease, transform 0.16s ease;
+      border: 2px solid var(--calendar-event-status-color, var(--card-border-color));
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
     }
     .calendar-event::before {
       content: '';
       position: absolute;
-      inset: 0;
-      border-radius: inherit;
+      inset: 1px;
+      border-radius: 8px;
       background: var(--calendar-event-status-tint, transparent);
       pointer-events: none;
     }
     .calendar-event::after {
       content: '';
       position: absolute;
-      inset: 0;
-      border-radius: inherit;
+      inset: 1px;
+      border-radius: 8px;
       background: linear-gradient(
         135deg,
         transparent 0%,
         transparent 55%,
         var(--calendar-event-source-color, transparent) 100%
       );
-      opacity: 0.2;
+      opacity: 0.28;
       pointer-events: none;
     }
     .calendar-event:hover {
-      box-shadow:
-        inset 0 0 0 2px var(--calendar-event-status-color, var(--card-border-color)),
-        0 0 0 3px var(--calendar-event-status-tint, transparent);
+      transform: translateY(-1px);
+      border-color: color-mix(
+        in oklab,
+        var(--calendar-event-status-color, var(--card-border-color)) 75%,
+        white 25%
+      );
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
     }
     .calendar-event-selected {
+      transform: translateY(0);
       box-shadow:
-        inset 0 0 0 2px var(--calendar-event-status-color, var(--card-border-color)),
-        0 0 0 2px var(--card-focus-ring-color);
+        0 0 0 3px var(--calendar-event-status-tint, rgba(59, 130, 246, 0.3)),
+        0 10px 24px rgba(0, 0, 0, 0.25);
       z-index: 2;
     }
     .calendar-event-content {
@@ -854,15 +861,15 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     .fc-daygrid-day[data-calendar-selected='true'] .fc-daygrid-day-frame::after {
       content: '';
       position: absolute;
-      inset: 3px;
-      border-radius: 8px;
-      border: 2px solid var(--calendar-day-selected-color, var(--card-focus-ring-color));
-      box-shadow: 0 0 0 4px var(--calendar-day-selected-tint, rgba(59, 130, 246, 0.18));
+      inset: 2px;
+      border-radius: 10px;
+      border: 3px solid var(--calendar-day-selected-color, var(--card-focus-ring-color));
+      box-shadow: 0 0 0 6px var(--calendar-day-selected-tint, rgba(59, 130, 246, 0.22));
       pointer-events: none;
     }
     .fc-daygrid-day[data-calendar-selected='true'] .fc-daygrid-day-number {
-      color: var(--card-fg-color);
-      font-weight: 600;
+      color: var(--calendar-day-selected-color, var(--card-fg-color));
+      font-weight: 700;
     }
     .calendar-slot-label {
       font-size: 0.75rem;
