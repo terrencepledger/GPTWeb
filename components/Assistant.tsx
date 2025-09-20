@@ -62,7 +62,8 @@ export default function Assistant() {
             href={part}
             target="_blank"
             rel="noopener noreferrer"
-            className="underline hover:opacity-80 text-[var(--brand-accent)]"
+            className="underline hover:opacity-80 text-[var(--brand-accent)] break-words"
+            style={{ wordBreak: 'break-word' }}
           >
             {label}
           </a>
@@ -73,7 +74,7 @@ export default function Assistant() {
           <Link
             key={idx}
             href={part}
-            className="underline hover:opacity-80 text-[var(--brand-accent)]"
+            className="underline hover:opacity-80 text-[var(--brand-accent)] break-words"
           >
             {part}
           </Link>
@@ -81,7 +82,7 @@ export default function Assistant() {
       }
       if (emailRegex.test(part)) {
         return (
-          <a key={idx} href={`mailto:${part}`} className="underline">
+          <a key={idx} href={`mailto:${part}`} className="underline break-words">
             {part}
           </a>
         );
@@ -89,7 +90,7 @@ export default function Assistant() {
       if (phoneRegex.test(part)) {
         const tel = part.replace(/[^\d+]/g, '');
         return (
-          <a key={idx} href={`tel:${tel}`} className="underline">
+          <a key={idx} href={`tel:${tel}`} className="underline break-words">
             {part}
           </a>
         );
@@ -270,7 +271,7 @@ export default function Assistant() {
               <div className={`max-w-[85%] flex flex-col ${m.role === 'assistant' ? 'items-start' : 'items-end'}`}>
                 <div className="relative">
                   <div
-                    className="relative z-10 rounded-2xl border px-3 py-2 whitespace-pre-wrap"
+                    className="relative z-10 rounded-2xl border px-3 py-2 whitespace-pre-wrap break-words"
                     style={{
                       backgroundColor:
                         m.role === 'assistant'
@@ -278,6 +279,8 @@ export default function Assistant() {
                           : 'var(--brand-accent)',
                       color: 'var(--brand-ink)',
                       borderColor: 'var(--brand-border)',
+                      overflowWrap: 'anywhere',
+                      wordBreak: 'break-word',
                     }}
                   >
                     {renderContent(m.content)}
