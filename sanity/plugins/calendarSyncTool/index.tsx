@@ -110,31 +110,31 @@ const DISPLAY_STATUS_BADGE_TONES: Record<CalendarDisplayStatus, BadgeTone> = {
 
 const STATUS_ACCENTS: Record<CalendarDisplayStatus, StatusAccent> = {
   published: {
-    primary: '#0ea5e9',
-    text: '#042f3d',
-    surface: 'rgba(14, 165, 233, 0.28)',
-    surfaceSoft: 'rgba(56, 189, 248, 0.12)',
-    halo: 'rgba(14, 165, 233, 0.45)',
-    border: 'rgba(14, 165, 233, 0.65)',
-    indicator: 'rgba(14, 165, 233, 0.95)',
+    primary: '#38bdf8',
+    text: '#02293b',
+    surface: 'rgba(56, 189, 248, 0.38)',
+    surfaceSoft: 'rgba(56, 189, 248, 0.18)',
+    halo: 'rgba(56, 189, 248, 0.5)',
+    border: 'rgba(14, 165, 233, 0.75)',
+    indicator: 'rgba(56, 189, 248, 0.95)',
   },
   unpublished: {
-    primary: '#f97316',
-    text: '#451a03',
-    surface: 'rgba(249, 115, 22, 0.32)',
-    surfaceSoft: 'rgba(251, 146, 60, 0.16)',
-    halo: 'rgba(249, 115, 22, 0.48)',
-    border: 'rgba(249, 115, 22, 0.65)',
-    indicator: 'rgba(249, 115, 22, 0.95)',
+    primary: '#fb7185',
+    text: '#4c0519',
+    surface: 'rgba(251, 113, 133, 0.42)',
+    surfaceSoft: 'rgba(252, 165, 179, 0.2)',
+    halo: 'rgba(251, 113, 133, 0.55)',
+    border: 'rgba(239, 68, 68, 0.72)',
+    indicator: 'rgba(251, 113, 133, 0.95)',
   },
   draft: {
     primary: '#facc15',
     text: '#422006',
-    surface: 'rgba(250, 204, 21, 0.32)',
+    surface: 'rgba(250, 204, 21, 0.36)',
     surfaceSoft: 'rgba(253, 224, 71, 0.18)',
     halo: 'rgba(250, 204, 21, 0.5)',
-    border: 'rgba(250, 204, 21, 0.65)',
-    indicator: 'rgba(250, 204, 21, 0.95)',
+    border: 'rgba(202, 138, 4, 0.72)',
+    indicator: 'rgba(252, 211, 77, 0.95)',
   },
 }
 
@@ -931,7 +931,7 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     .calendar-tool-calendarCard .fc-scrollgrid {
       border-radius: 18px;
       overflow: hidden;
-      border: 1px solid color-mix(in srgb, var(--card-border-color) 72%, transparent 28%);
+      border: 1px solid color-mix(in srgb, var(--card-border-color) 68%, transparent 32%);
       background: color-mix(in srgb, var(--card-bg-color) 92%, transparent 8%);
       box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--card-border-color) 45%, transparent 55%);
     }
@@ -972,127 +972,163 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     }
     .calendar-tool-calendarCard .fc-scrollgrid-section-header,
     .calendar-tool-calendarCard .fc-scrollgrid-section-header .fc-scroller {
-      background: color-mix(in srgb, var(--card-bg-color) 82%, var(--card-border-color) 18%);
-      backdrop-filter: blur(14px);
-      border-bottom: 1px solid color-mix(in srgb, var(--card-border-color) 70%, transparent 30%);
+      background: color-mix(in srgb, var(--card-bg-color) 80%, var(--card-border-color) 20%);
+      border-bottom: 1px solid color-mix(in srgb, var(--card-border-color) 72%, transparent 28%);
+      backdrop-filter: blur(16px);
+    }
+    [data-ui-color-scheme='dark'] .calendar-tool-calendarCard .fc-scrollgrid-section-header,
+    [data-ui-color-scheme='dark'] .calendar-tool-calendarCard thead.fc-col-header {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(30, 41, 59, 0.82) 100%);
+      border-bottom-color: rgba(148, 163, 184, 0.45);
+      box-shadow: inset 0 -1px 0 rgba(15, 23, 42, 0.66);
+    }
+    [data-ui-color-scheme='dark'] .calendar-tool-calendarCard .fc-col-header-cell-cushion {
+      color: rgba(241, 245, 249, 0.96);
+      text-shadow: 0 2px 10px rgba(15, 23, 42, 0.9);
+    }
+    [data-ui-color-scheme='light'] .calendar-tool-calendarCard .fc-scrollgrid-section-header,
+    [data-ui-color-scheme='light'] .calendar-tool-calendarCard thead.fc-col-header {
+      background: linear-gradient(180deg, rgba(248, 250, 252, 0.95) 0%, rgba(226, 232, 240, 0.72) 100%);
+      border-bottom-color: rgba(148, 163, 184, 0.45);
+      box-shadow: inset 0 -1px 0 rgba(148, 163, 184, 0.24);
+    }
+    [data-ui-color-scheme='light'] .calendar-tool-calendarCard .fc-col-header-cell-cushion {
+      color: rgba(30, 41, 59, 0.92);
+      text-shadow: 0 1px 1px rgba(255, 255, 255, 0.85);
     }
     .calendar-tool-calendarCard .fc-col-header-cell {
       border: none;
     }
     .calendar-tool-calendarCard .fc-col-header-cell-cushion {
-      color: var(--card-fg-color);
       font-size: 0.78rem;
       font-weight: 700;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      padding: 0.75rem 0.35rem;
-      text-shadow: 0 1px 2px color-mix(in srgb, var(--card-border-color) 35%, transparent 65%);
+      padding: 0.75rem 0.4rem;
+      transition: color 0.2s ease;
     }
     .calendar-tool-calendarCard .fc-daygrid-day-number {
       font-weight: 600;
-      transition: color 0.2s ease;
+      border-radius: 999px;
+      padding: 0.15rem 0.45rem;
+      transition: color 0.2s ease, background-color 0.2s ease;
     }
     .calendar-tool-calendarCard .fc-theme-standard td,
     .calendar-tool-calendarCard .fc-theme-standard th {
       border-color: color-mix(in srgb, var(--card-border-color) 70%, transparent 30%);
     }
     .calendar-tool-calendarCard .fc-daygrid-day-events {
-      margin: 0.35rem 0.45rem 0.55rem 0.45rem;
+      margin: 0.35rem 0.5rem 0.6rem 0.5rem;
       display: flex;
       flex-direction: column;
-      gap: 0.45rem;
+      gap: 0.55rem;
     }
     .calendar-tool-calendarCard .fc .fc-daygrid-event {
       margin: 0;
     }
     .calendar-tool-calendarCard .fc-daygrid-day-frame {
       position: relative;
-      border-radius: 14px;
-      padding: 0.55rem 0.5rem 0.75rem 0.5rem;
+      border-radius: 16px;
+      padding: 0.6rem 0.55rem 0.8rem 0.55rem;
       background: color-mix(in srgb, var(--card-bg-color) 94%, transparent 6%);
-      transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
-      border: 1px solid transparent;
+      border: 1px solid color-mix(in srgb, var(--card-border-color) 60%, transparent 40%);
+      transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
     }
     .calendar-tool-calendarCard .fc-daygrid-day:hover .fc-daygrid-day-frame {
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.15);
+      box-shadow: 0 14px 32px rgba(15, 23, 42, 0.18);
     }
     .calendar-day-indicator {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding-inline-start: 0.35rem;
+      gap: 6px;
+      padding-inline-start: 0.4rem;
     }
     .calendar-day-indicatorChip {
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       border-radius: 999px;
-      box-shadow: 0 0 0 1px color-mix(in srgb, var(--card-bg-color) 70%, transparent 30%);
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--card-bg-color) 65%, transparent 35%);
     }
     .calendar-event {
       position: relative;
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
+      gap: 0.45rem;
       box-sizing: border-box;
-      padding: 0.65rem 0.85rem 0.75rem 0.95rem;
-      border-radius: 14px;
-      border: 1px solid transparent;
-      background: color-mix(in srgb, var(--card-bg-color) 92%, transparent 8%);
-      color: var(--card-fg-color);
-      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.18);
-      transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+      padding: 0.75rem 1rem 0.9rem 1.15rem;
+      border-radius: 16px;
+      border: 1px solid var(--calendar-event-outline, color-mix(in srgb, var(--card-border-color) 68%, transparent 32%));
+      background: var(--calendar-event-fill, color-mix(in srgb, var(--card-bg-color) 90%, transparent 10%));
+      color: var(--calendar-event-ink, var(--card-fg-color));
+      box-shadow: var(--calendar-event-shadow, ${DEFAULT_EVENT_SHADOW});
       cursor: pointer;
       min-height: 0;
       overflow: hidden;
       isolation: isolate;
+      transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+    }
+    .calendar-event::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 14px;
+      background: var(--calendar-event-sheen, linear-gradient(135deg, rgba(148, 163, 184, 0.18) 0%, rgba(148, 163, 184, 0.08) 100%));
+      pointer-events: none;
+      z-index: 0;
     }
     .calendar-event::after {
       content: '';
       position: absolute;
-      inset: 3px;
-      border-radius: 11px;
-      pointer-events: none;
-      border: 2px solid transparent;
-      box-shadow: none;
-      opacity: 0;
-      transition: opacity 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-    }
-    .calendar-event.calendar-event-selected::after {
-      opacity: 1;
-      border-color: var(--calendar-selected-color);
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--calendar-selected-color) 32%, transparent 68%);
+      top: 12px;
+      bottom: 12px;
+      left: 12px;
+      width: 6px;
+      border-radius: 999px;
+      background: var(--calendar-event-accent, var(--calendar-selected-color));
+      box-shadow: 0 0 14px color-mix(in srgb, var(--calendar-event-accent, var(--calendar-selected-color)) 42%, transparent 58%);
+      opacity: 0.9;
+      z-index: 1;
     }
     .calendar-event:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.22);
+      transform: translateY(-1px);
+      box-shadow: var(--calendar-event-hover-shadow, 0 24px 42px rgba(15, 23, 42, 0.22));
     }
     .calendar-event:active {
+      transform: translateY(0);
+    }
+    .calendar-event[data-calendar-selected='true'] {
       transform: translateY(-1px);
     }
+    .calendar-event[data-calendar-selected='true']::after {
+      opacity: 1;
+      box-shadow: 0 0 18px color-mix(in srgb, var(--calendar-event-accent, var(--calendar-selected-color)) 55%, transparent 45%);
+    }
     .calendar-event-content {
+      position: relative;
+      z-index: 2;
       display: flex;
       flex-direction: column;
       gap: 0.35rem;
-      font-size: 0.9rem;
-      line-height: 1.36;
+      font-size: 0.92rem;
+      line-height: 1.4;
       pointer-events: none;
       min-height: 0;
     }
     .calendar-event-statusIndicator {
-      width: 0.65rem;
-      height: 0.65rem;
+      width: 0.72rem;
+      height: 0.72rem;
       border-radius: 999px;
-      border: 2px solid transparent;
-      background: rgba(255, 255, 255, 0.22);
-      box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.18);
+      background: var(--calendar-event-indicator, rgba(148, 163, 184, 0.85));
+      border: 1px solid color-mix(in srgb, var(--calendar-event-indicator, rgba(148, 163, 184, 0.85)) 65%, transparent 35%);
+      box-shadow: 0 0 0 5px color-mix(in srgb, var(--calendar-event-indicator, rgba(148, 163, 184, 0.85)) 22%, transparent 78%);
       flex-shrink: 0;
     }
     .calendar-event-time {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 600;
-      letter-spacing: 0.02em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
-      color: var(--card-muted-fg-color);
+      color: var(--calendar-event-time, color-mix(in srgb, var(--calendar-event-ink, var(--card-fg-color)) 70%, transparent 30%));
     }
     .calendar-event-metaRow {
       display: flex;
@@ -1130,24 +1166,37 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     .calendar-event-note[data-calendar-overflow='true'] {
       white-space: nowrap;
     }
-    .calendar-event-selected {
-      transform: translateY(-2px);
-    }
     .calendar-event-listItem {
       display: flex;
       flex-direction: column;
       gap: 0.35rem;
-      padding: 0.8rem;
-      border-radius: 12px;
-      border: 1px solid transparent;
+      padding: 0.9rem 1rem;
+      border-radius: 14px;
+      border: 1px solid color-mix(in srgb, var(--card-border-color) 65%, transparent 35%);
       background: color-mix(in srgb, var(--card-bg-color) 92%, transparent 8%);
       box-shadow: 0 10px 26px rgba(15, 23, 42, 0.18);
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
     }
-    .calendar-event-listItem[data-calendar-source='internal'] {
-      border-left: 4px solid var(--calendar-internal-color);
+    .calendar-event-listItem::before {
+      content: '';
+      position: absolute;
+      top: 10px;
+      bottom: 10px;
+      left: 10px;
+      width: 4px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--card-border-color) 75%, transparent 25%);
+      box-shadow: 0 0 8px rgba(15, 23, 42, 0.25);
     }
-    .calendar-event-listItem[data-calendar-source='public'] {
-      border-left: 4px solid var(--calendar-public-color);
+    .calendar-event-listItem[data-calendar-source='internal']::before {
+      background: var(--calendar-internal-color);
+      box-shadow: 0 0 14px color-mix(in srgb, var(--calendar-internal-color) 48%, transparent 52%);
+    }
+    .calendar-event-listItem[data-calendar-source='public']::before {
+      background: var(--calendar-public-color);
+      box-shadow: 0 0 14px color-mix(in srgb, var(--calendar-public-color) 48%, transparent 52%);
     }
     .calendar-event-listItemTitle[data-calendar-overflow='true'] {
       display: -webkit-box;
@@ -1157,7 +1206,7 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     .calendar-slot-label {
       font-size: 0.75rem;
       font-weight: 600;
-      color: var(--card-muted-fg-color);
+      color: color-mix(in srgb, var(--card-muted-fg-color) 80%, var(--card-fg-color) 20%);
     }
     .fc .fc-timegrid-slot-label-cushion {
       padding: 0.25rem 0.5rem;
@@ -1318,92 +1367,136 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   const applyEventVisualState = useCallback(
     (element: HTMLElement, meta: EventStatusMeta | undefined, isSelected: boolean) => {
       const accent = meta?.accent
-      const accentPrimary = accent?.primary || ''
-      const fallbackColor = meta?.sourceColor || ''
-      const baseColor = accentPrimary || fallbackColor
-      if (accent) {
-        const gradient = `linear-gradient(135deg, ${
-          tintColor(accent.primary, 0.32) || accent.surface
-        } 0%, ${tintColor(accent.primary, 0.12) || accent.surfaceSoft} 100%)`
-        element.style.background = gradient
-        element.style.borderColor = tintColor(accent.primary, 0.55) || accent.border
-        element.style.color = accent.text
-      } else if (baseColor) {
-        element.style.background = `linear-gradient(135deg, ${mixColor(baseColor, 0.28)} 0%, ${mixColor(
-          baseColor,
-          0.08,
-          'var(--card-bg-color)',
-        )} 100%)`
-        element.style.borderColor = mixColor(baseColor, 0.48, 'transparent')
-        element.style.color = ''
+      const fallbackColor = (meta?.sourceColor || '').trim()
+      const accentPrimary = (accent?.primary || '').trim()
+      const baseColor = accentPrimary || fallbackColor || 'rgba(148, 163, 184, 0.85)'
+      const baseFill = accent ? accent.surface : mixColor(baseColor, 0.18, 'var(--card-bg-color)')
+      const sheen = accent
+        ? `linear-gradient(135deg, ${
+            tintColor(accent.primary, 0.4) || accent.surface
+          } 0%, ${tintColor(accent.primary, 0.16) || accent.surfaceSoft} 100%)`
+        : `linear-gradient(135deg, ${mixColor(baseColor, 0.32, 'transparent')} 0%, ${mixColor(
+            baseColor,
+            0.12,
+            'transparent',
+          )} 100%)`
+      const outline = accent ? accent.border : mixColor(baseColor, 0.52, 'transparent')
+      const glow = accent ? accent.halo : mixColor(baseColor, 0.35, 'rgba(15, 23, 42, 0.35)')
+      const indicator = accent ? accent.indicator : mixColor(baseColor, 0.76, '#ffffff')
+      const baseShadow = accent
+        ? `0 20px 36px ${tintColor(accent.primary, 0.4) || accent.halo}`
+        : fallbackColor
+        ? `0 18px 34px ${mixColor(baseColor, 0.24, 'rgba(15, 23, 42, 0.28)')}`
+        : DEFAULT_EVENT_SHADOW
+      const hoverShadow = accent
+        ? `0 26px 46px ${tintColor(accent.primary, 0.48) || accent.halo}`
+        : `0 24px 40px ${mixColor(baseColor, 0.26, 'rgba(15, 23, 42, 0.28)')}`
+      const textColor = accent?.text || ''
+      const timeColor = accent
+        ? tintColor(accent.primary, 0.92) || accent.primary
+        : mixColor(baseColor, 0.7, 'var(--card-muted-fg-color)')
+
+      element.style.background = ''
+      element.style.borderColor = ''
+      element.style.color = ''
+      element.style.boxShadow = ''
+      element.style.transform = ''
+
+      element.style.setProperty('--calendar-event-accent', baseColor)
+      element.style.setProperty('--calendar-event-fill', baseFill)
+      element.style.setProperty('--calendar-event-sheen', sheen)
+      element.style.setProperty('--calendar-event-outline', outline)
+      element.style.setProperty('--calendar-event-glow', glow)
+      element.style.setProperty('--calendar-event-shadow', baseShadow)
+      element.style.setProperty('--calendar-event-hover-shadow', hoverShadow)
+      element.style.setProperty('--calendar-event-indicator', indicator)
+
+      if (textColor) {
+        element.style.setProperty('--calendar-event-ink', textColor)
       } else {
-        element.style.background = `color-mix(in srgb, var(--card-bg-color) 92%, transparent 8%)`
-        element.style.borderColor = 'transparent'
-        element.style.color = ''
+        element.style.removeProperty('--calendar-event-ink')
       }
-      const boxShadows: string[] = []
-      if (baseColor) {
-        const accentEdge = accentPrimary
-          ? tintColor(accentPrimary, 0.95) || accentPrimary
-          : mixColor(baseColor, 0.78)
-        boxShadows.push(`inset 4px 0 0 0 ${accentEdge}`)
-      }
-      if (accent) {
-        boxShadows.push(`0 14px 32px ${tintColor(accent.primary, 0.46) || accent.halo}`)
-      } else if (baseColor) {
-        boxShadows.push(`0 14px 30px ${mixColor(baseColor, 0.24, 'rgba(15, 23, 42, 0.28)')}`)
+
+      if (timeColor) {
+        element.style.setProperty('--calendar-event-time', timeColor)
       } else {
-        boxShadows.push(DEFAULT_EVENT_SHADOW)
+        element.style.removeProperty('--calendar-event-time')
       }
-      element.style.boxShadow = boxShadows.join(', ')
-      element.style.transform = isSelected ? 'translateY(-2px)' : ''
-      if (isSelected) {
-        element.classList.add('calendar-event-selected')
-        element.setAttribute('aria-current', 'true')
-        element.setAttribute('data-calendar-selected', 'true')
-      } else {
-        element.classList.remove('calendar-event-selected')
-        element.removeAttribute('aria-current')
-        element.removeAttribute('data-calendar-selected')
-      }
+
       if (meta?.status) {
         element.setAttribute('data-calendar-status', meta.status)
       } else {
         element.removeAttribute('data-calendar-status')
       }
+
       const statusIndicator = element.querySelector<HTMLElement>('.calendar-event-statusIndicator')
       if (statusIndicator) {
-        if (accent) {
-          statusIndicator.style.background = tintColor(accent.primary, 0.3) || accent.surfaceSoft
-          statusIndicator.style.borderColor = tintColor(accent.primary, 0.58) || accent.border
-          statusIndicator.style.boxShadow = `0 0 0 4px ${
-            tintColor(accent.primary, 0.2) || accent.surfaceSoft
-          }`
-        } else if (baseColor) {
-          statusIndicator.style.background = mixColor(baseColor, 0.32)
-          statusIndicator.style.borderColor = mixColor(baseColor, 0.6, 'transparent')
-          statusIndicator.style.boxShadow = `0 0 0 4px ${mixColor(baseColor, 0.18)}`
-        } else {
-          statusIndicator.style.background = 'rgba(148, 163, 184, 0.45)'
-          statusIndicator.style.borderColor = 'rgba(148, 163, 184, 0.75)'
-          statusIndicator.style.boxShadow = '0 0 0 2px rgba(15, 23, 42, 0.28)'
-        }
+        statusIndicator.style.background = ''
+        statusIndicator.style.borderColor = ''
+        statusIndicator.style.boxShadow = ''
       }
       const timeEl = element.querySelector<HTMLElement>('.calendar-event-time')
       if (timeEl) {
-        if (accent) {
-          timeEl.style.color = tintColor(accent.primary, 0.92) || accent.primary
-        } else if (baseColor) {
-          timeEl.style.color = mixColor(baseColor, 0.7, 'var(--card-muted-fg-color)')
-        } else {
-          timeEl.style.color = ''
-        }
+        timeEl.style.color = ''
+      }
+
+      if (isSelected) {
+        element.classList.add('calendar-event-selected')
+        element.setAttribute('aria-current', 'true')
+        element.setAttribute('data-calendar-selected', 'true')
+        element.style.setProperty('--calendar-event-accent', EVENT_SELECTION_COLOR)
+        element.style.setProperty('--calendar-event-indicator', EVENT_SELECTION_COLOR)
+        element.style.setProperty(
+          '--calendar-event-fill',
+          `color-mix(in oklab, ${EVENT_SELECTION_COLOR} 28%, var(--card-bg-color) 72%)`,
+        )
+        element.style.setProperty(
+          '--calendar-event-sheen',
+          `linear-gradient(135deg, ${tintColor(EVENT_SELECTION_COLOR, 0.5)} 0%, ${tintColor(
+            EVENT_SELECTION_COLOR,
+            0.2,
+          )} 100%)`,
+        )
+        element.style.setProperty('--calendar-event-outline', EVENT_SELECTION_COLOR)
+        element.style.setProperty(
+          '--calendar-event-glow',
+          tintColor(EVENT_SELECTION_COLOR, 0.45) || EVENT_SELECTION_TINT,
+        )
+        element.style.setProperty(
+          '--calendar-event-shadow',
+          `0 26px 48px ${tintColor(EVENT_SELECTION_COLOR, 0.4) || EVENT_SELECTION_TINT}`,
+        )
+        element.style.setProperty(
+          '--calendar-event-hover-shadow',
+          `0 30px 54px ${tintColor(EVENT_SELECTION_COLOR, 0.5) || EVENT_SELECTION_TINT}`,
+        )
+        element.style.setProperty('--calendar-event-ink', '#f8fafc')
+        element.style.setProperty('--calendar-event-time', '#e2e8f0')
+      } else {
+        element.classList.remove('calendar-event-selected')
+        element.removeAttribute('aria-current')
+        element.removeAttribute('data-calendar-selected')
       }
     },
     [],
   )
 
   const clearEventVisualState = useCallback((element: HTMLElement) => {
+    const customProps = [
+      '--calendar-event-accent',
+      '--calendar-event-fill',
+      '--calendar-event-sheen',
+      '--calendar-event-outline',
+      '--calendar-event-ink',
+      '--calendar-event-glow',
+      '--calendar-event-shadow',
+      '--calendar-event-hover-shadow',
+      '--calendar-event-indicator',
+      '--calendar-event-time',
+    ]
+    customProps.forEach((prop) => {
+      element.style.removeProperty(prop)
+    })
     element.style.background = ''
     element.style.borderColor = ''
     element.style.color = ''
@@ -1460,22 +1553,25 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
           if (gradient) {
             frame.style.background = gradient
           }
-          frame.style.borderColor = tintColor(colors[0], 0.45) || colors[0]
-          frame.style.boxShadow = `inset 0 0 0 1px ${tintColor(colors[0], 0.25) || colors[0]}`
+          const accentColor = colors[0]
+          frame.style.borderColor = tintColor(accentColor, 0.58) || accentColor
+          frame.style.boxShadow = `inset 0 0 0 1px ${
+            tintColor(accentColor, 0.32) || accentColor
+          }, 0 12px 26px ${tintColor(accentColor, 0.24) || 'rgba(15, 23, 42, 0.22)'}`
         } else {
           frame.style.background = ''
-          frame.style.borderColor = ''
+          frame.style.borderColor = 'color-mix(in srgb, var(--card-border-color) 62%, transparent 38%)'
           frame.style.boxShadow = ''
         }
         if (isSelected) {
           frame.style.background = `linear-gradient(135deg, ${tintColor(
             EVENT_SELECTION_COLOR,
-            0.22,
-          )} 0%, ${tintColor(EVENT_SELECTION_COLOR, 0.08)} 100%)`
+            0.28,
+          )} 0%, ${tintColor(EVENT_SELECTION_COLOR, 0.12)} 100%)`
           frame.style.borderColor = EVENT_SELECTION_COLOR
-          frame.style.boxShadow = `inset 0 0 0 2px ${EVENT_SELECTION_COLOR}, 0 12px 28px ${tintColor(
+          frame.style.boxShadow = `inset 0 0 0 2px ${EVENT_SELECTION_COLOR}, 0 18px 36px ${tintColor(
             EVENT_SELECTION_COLOR,
-            0.35,
+            0.32,
           )}`
         }
       }
@@ -1531,29 +1627,25 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     const scheme = resolveColorScheme(element)
     if (scheme === 'dark') {
       element.style.background =
-        'color-mix(in oklab, rgba(15, 23, 42, 0.92) 72%, var(--card-bg-color) 28%)'
-      element.style.borderBottom =
-        '1px solid color-mix(in oklab, rgba(15, 23, 42, 0.78) 58%, transparent 42%)'
-      element.style.boxShadow =
-        'inset 0 -1px 0 color-mix(in oklab, rgba(15, 23, 42, 0.88) 36%, transparent 64%)'
-      element.style.color = 'rgba(241, 245, 249, 0.94)'
+        'linear-gradient(180deg, rgba(12, 20, 38, 0.98) 0%, rgba(17, 24, 39, 0.88) 100%)'
+      element.style.borderBottom = '1px solid rgba(94, 114, 140, 0.55)'
+      element.style.boxShadow = 'inset 0 -1px 0 rgba(8, 13, 26, 0.7)'
+      element.style.color = 'rgba(241, 245, 249, 0.98)'
     } else {
       element.style.background =
-        'color-mix(in oklab, var(--card-bg-color) 75%, rgba(226, 232, 240, 0.94) 25%)'
-      element.style.borderBottom =
-        '1px solid color-mix(in oklab, rgba(148, 163, 184, 0.7) 55%, transparent 45%)'
-      element.style.boxShadow =
-        'inset 0 -1px 0 color-mix(in oklab, rgba(148, 163, 184, 0.5) 35%, transparent 65%)'
+        'linear-gradient(180deg, rgba(248, 250, 252, 0.96) 0%, rgba(226, 232, 240, 0.78) 100%)'
+      element.style.borderBottom = '1px solid rgba(148, 163, 184, 0.48)'
+      element.style.boxShadow = 'inset 0 -1px 0 rgba(203, 213, 225, 0.6)'
       element.style.color = 'rgba(30, 41, 59, 0.9)'
     }
     const cushion = element.querySelector<HTMLElement>('.fc-col-header-cell-cushion')
     if (cushion) {
       if (scheme === 'dark') {
-        cushion.style.color = 'rgba(241, 245, 249, 0.96)'
-        cushion.style.textShadow = '0 1px 2px rgba(15, 23, 42, 0.9)'
+        cushion.style.color = 'rgba(248, 250, 252, 0.98)'
+        cushion.style.textShadow = '0 2px 10px rgba(8, 13, 26, 0.85)'
       } else {
-        cushion.style.color = 'rgba(30, 41, 59, 0.9)'
-        cushion.style.textShadow = '0 1px 1px rgba(255, 255, 255, 0.85)'
+        cushion.style.color = 'rgba(17, 24, 39, 0.88)'
+        cushion.style.textShadow = '0 1px 1px rgba(255, 255, 255, 0.9)'
       }
     }
   }, [])
