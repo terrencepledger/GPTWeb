@@ -1,7 +1,11 @@
 "use client";
 
 import { PortableText } from "@portabletext/react";
-import { type ReactNode, useMemo, useState } from "react";
+import type {
+  PortableTextComponents,
+  PortableTextMarkComponentProps,
+} from "@portabletext/react";
+import { useMemo, useState } from "react";
 import type { FaqItem } from "@/lib/queries";
 import FaqAssistantChip from "./FaqAssistantChip";
 
@@ -9,37 +13,34 @@ interface FaqAccordionProps {
   faqs: FaqItem[];
 }
 
-const portableTextComponents = {
+const portableTextComponents: PortableTextComponents = {
   block: {
-    normal: ({ children }: { children: ReactNode }) => (
+    normal: ({ children }) => (
       <p className="text-sm leading-relaxed text-[var(--brand-alt)]/90">{children}</p>
     ),
-    h4: ({ children }: { children: ReactNode }) => (
+    h4: ({ children }) => (
       <h4 className="text-base font-semibold text-[var(--brand-alt)]">{children}</h4>
     ),
   },
   list: {
-    bullet: ({ children }: { children: ReactNode }) => (
+    bullet: ({ children }) => (
       <ul className="ml-4 list-disc space-y-1 text-sm text-[var(--brand-alt)]/90">{children}</ul>
     ),
-    number: ({ children }: { children: ReactNode }) => (
+    number: ({ children }) => (
       <ol className="ml-4 list-decimal space-y-1 text-sm text-[var(--brand-alt)]/90">{children}</ol>
     ),
   },
   marks: {
-    strong: ({ children }: { children: ReactNode }) => (
+    strong: ({ children }) => (
       <strong className="font-semibold text-[var(--brand-alt)]">{children}</strong>
     ),
-    em: ({ children }: { children: ReactNode }) => (
+    em: ({ children }) => (
       <em className="italic text-[var(--brand-alt)]/95">{children}</em>
     ),
     link: ({
       children,
       value,
-    }: {
-      children: ReactNode;
-      value: { href?: string };
-    }) => {
+    }: PortableTextMarkComponentProps<{ href?: string }>) => {
       const href = value?.href;
       const isExternal = href?.startsWith("http");
       if (!href) return <>{children}</>;
