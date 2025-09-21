@@ -1,4 +1,6 @@
 // Minimal desk structure configuration
+import MeetPastorPreviewPane from './components/MeetPastorPreviewPane'
+
 export const structure = (S: any) =>
   S.list()
     .title('Content')
@@ -26,6 +28,10 @@ export const structure = (S: any) =>
             .title('Meet the Pastor')
             .schemaType('meetPastor')
             .documentId('meetPastor')
+            .views([
+              S.view.form(),
+              S.view.component(MeetPastorPreviewPane).title('Preview'),
+            ])
         ),
       S.documentTypeListItem('missionStatement').title('Mission Statement'),
     ])
