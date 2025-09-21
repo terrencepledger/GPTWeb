@@ -15,13 +15,13 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
   const givingRef = useRef<HTMLAnchorElement>(null);
   const shouldNudgeGiving = useNudge(givingRef);
 
-  const nav: { href: string; label: string }[] = [
+  const primaryNav: { href: string; label: string }[] = [
     { href: "/ministries", label: "Ministries" },
     { href: "/events", label: "Events" },
     { href: "/livestreams", label: "Livestreams" },
     { href: "/giving", label: "Giving" },
-    { href: "/faq", label: "FAQ" },
   ];
+  const trailingNav: { href: string; label: string }[] = [{ href: "/faq", label: "FAQ" }];
 
   const linkClasses = (active: boolean) =>
     `${active ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]`;
@@ -87,7 +87,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
             </div>
           </div>
 
-          {nav.map((item) => (
+          {primaryNav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -141,6 +141,17 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
               </Link>
             </div>
           </div>
+
+          {trailingNav.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={linkClasses(pathname.startsWith(item.href))}
+              aria-current={pathname.startsWith(item.href) ? "page" : undefined}
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
         <button
@@ -160,7 +171,11 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
         </button>
       </div>
 
-      <MobileMenu ref={mobileMenuRef} nav={nav} />
+      <MobileMenu
+        ref={mobileMenuRef}
+        primaryNav={primaryNav}
+        trailingNav={trailingNav}
+      />
     </header>
   );
 }
