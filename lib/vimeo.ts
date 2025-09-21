@@ -35,28 +35,58 @@ export async function getCurrentLivestream(): Promise<VimeoItem | null> {
   const config = await getConfig()
   if (!config) return null
   const { user, headers } = config
-  const url = `https://api.vimeo.com/users/${user}/videos?filter=live&per_page=1&sort=date&direction=desc&fields=uri,name,link,pictures.sizes.link,live.status,live.scheduled_time,live.ended_time,stats.viewers,created_time,release_time,modified_time,privacy.view,privacy.embed`
-  const t0 = Date.now()
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('[Vimeo] getCurrentLivestream → fetch', { url })
+  const params =
+    'filter=live&per_page=5&sort=date&direction=desc&fields=uri,name,link,pictures.sizes.link,live.status,live.scheduled_time,live.ended_time,stats.viewers,created_time,release_time,modified_time,privacy.view,privacy.embed'
+  const url = `https://api.vimeo.com/users/${user}/videos?${params}`
+  let res: Response
+  let dt: number
+
+  {
+    const t0 = Date.now()
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[Vimeo] getCurrentLivestream → fetch', { url })
+    }
+    res = await fetch(url, { headers, next: { revalidate: 300 } })
+    dt = Date.now() - t0
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[Vimeo] getCurrentLivestream ← response', { status: res.status, durationMs: dt })
+    }
   }
-  const res = await fetch(url, { headers, next: { revalidate: 300 } })
-  const dt = Date.now() - t0
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('[Vimeo] getCurrentLivestream ← response', { status: res.status, durationMs: dt })
+
+  if (!res.ok && res.status === 404) {
+    const meUrl = `https://api.vimeo.com/me/videos?${params}`
+    const t1 = Date.now()
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[Vimeo] /users/{user}/videos returned 404 — retrying /me/videos', { meUrl })
+    }
+    const retry = await fetch(meUrl, { headers, next: { revalidate: 300 } })
+    const dt1 = Date.now() - t1
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[Vimeo] getCurrentLivestream ← /me/videos response', { status: retry.status, durationMs: dt1 })
+    }
+    if (retry.ok) {
+      res = retry
+      dt = dt1
+    }
   }
+
   if (!res.ok) {
     const text = await res.text().catch(() => "")
     console.error('[Vimeo] current livestream request failed', res.status, text)
     return null
   }
+
   const data = await res.json()
-  const video = data.data?.[0]
+  const items: VimeoVideo[] = Array.isArray(data?.data) ? data.data : []
+  const streaming = items.find((item) => item?.live?.status === 'streaming')
+  const video = streaming || items[0]
+
   if (!video) {
     console.warn('[Vimeo] current livestream: no video returned')
     return null
   }
-  return {...video, id: idFromUri(video.uri)}
+
+  return { ...video, id: idFromUri(video.uri) }
 }
 
 export async function getRecentLivestreams(): Promise<VimeoItem[]> {
