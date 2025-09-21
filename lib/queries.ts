@@ -150,19 +150,11 @@ export const missionStatement = () =>
     }`
   );
 
-export interface MeetPastorQuote {
-  text?: string;
-  attribution?: string;
-}
-
 export interface MeetPastorSection {
   heading?: string;
   body?: PortableTextBlock[];
   image?: string;
   imageAlt?: string;
-  values?: string[];
-  highlights?: string[];
-  quote?: MeetPastorQuote;
 }
 
 export interface MeetPastorMediaItem {
@@ -173,53 +165,20 @@ export interface MeetPastorMediaItem {
   url?: string;
 }
 
-export interface MeetPastorContactMethod {
-  _key: string;
-  label?: string;
-  value?: string;
-  href?: string;
-}
-
-export interface MeetPastorTimelineEntry {
-  _key: string;
-  date?: string;
-  title?: string;
-  description?: string;
-}
-
-export interface MeetPastorTestimonial {
-  _key: string;
-  quote?: string;
-  name?: string;
-  role?: string;
-}
-
 export interface MeetPastorData {
   hero?: {
     title?: string;
     subtitle?: string;
-    tagline?: string;
     image?: string;
     imageAlt?: string;
   };
-  quickFacts?: { label?: string; value?: string }[];
-  highlightQuote?: MeetPastorQuote;
   biographySection?: MeetPastorSection;
-  visionSection?: MeetPastorSection;
   personalSection?: MeetPastorSection;
   mediaSection?: {
     heading?: string;
     intro?: PortableTextBlock[];
     items?: MeetPastorMediaItem[];
   };
-  connectSection?: {
-    heading?: string;
-    body?: PortableTextBlock[];
-    cta?: { label?: string; href?: string };
-    contactMethods?: MeetPastorContactMethod[];
-  };
-  timeline?: MeetPastorTimelineEntry[];
-  testimonials?: MeetPastorTestimonial[];
 }
 
 export const meetPastorPage = () =>
@@ -228,30 +187,20 @@ export const meetPastorPage = () =>
       "hero": hero{
         title,
         subtitle,
-        tagline,
         "image": image.asset->url,
         imageAlt
       },
-      "quickFacts": quickFacts[]{label, value},
-      "highlightQuote": highlightQuote{ text, attribution },
       "biographySection": biographySection{
         heading,
         body,
         "image": image.asset->url,
         imageAlt
       },
-      "visionSection": visionSection{
-        heading,
-        body,
-        values,
-        quote{ text, attribution }
-      },
       "personalSection": personalSection{
         heading,
         body,
         "image": image.asset->url,
-        imageAlt,
-        highlights
+        imageAlt
       },
       "mediaSection": mediaSection{
         heading,
@@ -263,29 +212,6 @@ export const meetPastorPage = () =>
           label,
           url
         }
-      },
-      "connectSection": connectSection{
-        heading,
-        body,
-        cta{ label, href },
-        contactMethods[]{
-          _key,
-          label,
-          value,
-          href
-        }
-      },
-      "timeline": timeline[]{
-        _key,
-        date,
-        title,
-        description
-      },
-      "testimonials": testimonials[]{
-        _key,
-        quote,
-        name,
-        role
       }
     }`
   );
