@@ -76,7 +76,7 @@ async function testBuildSiteContext() {
   const ctxJson = await buildSiteContext({
     siteSettings: async () =>
       ({
-        title: 'Test GPT',
+        title: 'Greater Pentecostal Temple',
         address: '123 Street',
         serviceTimes: 'Sun 10am',
         email: 'info@example.com',
@@ -131,7 +131,7 @@ async function testBuildSiteContext() {
 
   assert.ok(ctxJson);
   const parsed = JSON.parse(ctxJson);
-  assert.strictEqual(parsed.st.t, 'Test GPT');
+  assert.strictEqual(parsed.st.t, 'Greater Pentecostal Temple');
   assert.strictEqual(parsed.st.addr, '123 Street');
   assert.strictEqual(parsed.st.svc, 'Sun 10am');
   assert.strictEqual(parsed.st.email, 'info@example.com');
