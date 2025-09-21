@@ -922,6 +922,14 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       --calendar-selected-color: ${EVENT_SELECTION_COLOR};
       --calendar-selected-shadow: ${EVENT_SELECTION_TINT};
     }
+    .calendar-tool-calendarCard {
+      --calendar-header-fg-color: rgba(30, 41, 59, 0.92);
+      --calendar-header-text-shadow: 0 1px 1px rgba(255, 255, 255, 0.85);
+    }
+    [data-ui-color-scheme='dark'] .calendar-tool-calendarCard {
+      --calendar-header-fg-color: rgba(226, 232, 240, 0.96);
+      --calendar-header-text-shadow: 0 2px 10px rgba(15, 23, 42, 0.9);
+    }
     .calendar-tool-calendarCard .fc {
       --fc-page-bg-color: transparent;
       --fc-neutral-bg-color: transparent;
@@ -982,30 +990,26 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       border-bottom-color: rgba(148, 163, 184, 0.45);
       box-shadow: inset 0 -1px 0 rgba(15, 23, 42, 0.66);
     }
-    [data-ui-color-scheme='dark'] .calendar-tool-calendarCard .fc-col-header-cell-cushion {
-      color: rgba(241, 245, 249, 0.96);
-      text-shadow: 0 2px 10px rgba(15, 23, 42, 0.9);
-    }
     [data-ui-color-scheme='light'] .calendar-tool-calendarCard .fc-scrollgrid-section-header,
     [data-ui-color-scheme='light'] .calendar-tool-calendarCard thead.fc-col-header {
       background: linear-gradient(180deg, rgba(248, 250, 252, 0.95) 0%, rgba(226, 232, 240, 0.72) 100%);
       border-bottom-color: rgba(148, 163, 184, 0.45);
       box-shadow: inset 0 -1px 0 rgba(148, 163, 184, 0.24);
     }
-    [data-ui-color-scheme='light'] .calendar-tool-calendarCard .fc-col-header-cell-cushion {
-      color: rgba(30, 41, 59, 0.92);
-      text-shadow: 0 1px 1px rgba(255, 255, 255, 0.85);
-    }
     .calendar-tool-calendarCard .fc-col-header-cell {
       border: none;
     }
-    .calendar-tool-calendarCard .fc-col-header-cell-cushion {
+    .calendar-tool-calendarCard .fc-col-header-cell-cushion,
+    .calendar-tool-calendarCard .fc-col-header-cell-cushion:link,
+    .calendar-tool-calendarCard .fc-col-header-cell-cushion:visited {
       font-size: 0.78rem;
       font-weight: 700;
       letter-spacing: 0.12em;
       text-transform: uppercase;
       padding: 0.75rem 0.4rem;
       transition: color 0.2s ease;
+      color: var(--calendar-header-fg-color);
+      text-shadow: var(--calendar-header-text-shadow);
     }
     .calendar-tool-calendarCard .fc-daygrid-day-number {
       font-weight: 600;
@@ -1019,12 +1023,17 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     }
     .calendar-tool-calendarCard .fc-daygrid-day-events {
       margin: 0.35rem 0.5rem 0.6rem 0.5rem;
-      display: flex;
-      flex-direction: column;
+      position: relative;
+      display: grid;
+      grid-auto-rows: minmax(0, auto);
+      align-content: start;
       gap: 0.55rem;
+      min-height: 0;
     }
     .calendar-tool-calendarCard .fc .fc-daygrid-event {
       margin: 0;
+      width: 100%;
+      min-width: 0;
     }
     .calendar-tool-calendarCard .fc-daygrid-day-frame {
       position: relative;
@@ -1055,13 +1064,19 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       flex-direction: column;
       gap: 0.45rem;
       box-sizing: border-box;
-      padding: 0.75rem 1rem 0.9rem 1.15rem;
-      border-radius: 16px;
+      padding: 0.75rem 1rem 0.9rem 1.1rem;
+      border-radius: 14px;
       border: 1px solid var(--calendar-event-outline, color-mix(in srgb, var(--card-border-color) 68%, transparent 32%));
+      border-inline-start: 5px solid var(
+        --calendar-event-accent,
+        color-mix(in srgb, var(--card-border-color) 68%, transparent 32%)
+      );
       background: var(--calendar-event-fill, color-mix(in srgb, var(--card-bg-color) 90%, transparent 10%));
       color: var(--calendar-event-ink, var(--card-fg-color));
       box-shadow: var(--calendar-event-shadow, ${DEFAULT_EVENT_SHADOW});
       cursor: pointer;
+      width: 100%;
+      min-width: 0;
       min-height: 0;
       overflow: hidden;
       isolation: isolate;
@@ -1071,23 +1086,13 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       content: '';
       position: absolute;
       inset: 0;
-      border-radius: 14px;
-      background: var(--calendar-event-sheen, linear-gradient(135deg, rgba(148, 163, 184, 0.18) 0%, rgba(148, 163, 184, 0.08) 100%));
+      border-radius: inherit;
+      background: var(
+        --calendar-event-sheen,
+        linear-gradient(135deg, rgba(148, 163, 184, 0.18) 0%, rgba(148, 163, 184, 0.08) 100%)
+      );
       pointer-events: none;
       z-index: 0;
-    }
-    .calendar-event::after {
-      content: '';
-      position: absolute;
-      top: 12px;
-      bottom: 12px;
-      left: 12px;
-      width: 6px;
-      border-radius: 999px;
-      background: var(--calendar-event-accent, var(--calendar-selected-color));
-      box-shadow: 0 0 14px color-mix(in srgb, var(--calendar-event-accent, var(--calendar-selected-color)) 42%, transparent 58%);
-      opacity: 0.9;
-      z-index: 1;
     }
     .calendar-event:hover {
       transform: translateY(-1px);
@@ -1098,10 +1103,7 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     }
     .calendar-event[data-calendar-selected='true'] {
       transform: translateY(-1px);
-    }
-    .calendar-event[data-calendar-selected='true']::after {
-      opacity: 1;
-      box-shadow: 0 0 18px color-mix(in srgb, var(--calendar-event-accent, var(--calendar-selected-color)) 55%, transparent 45%);
+      border-inline-start-width: 6px;
     }
     .calendar-event-content {
       position: relative;
@@ -1113,6 +1115,8 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       line-height: 1.4;
       pointer-events: none;
       min-height: 0;
+      min-width: 0;
+      width: 100%;
     }
     .calendar-event-statusIndicator {
       width: 0.72rem;
@@ -1381,7 +1385,6 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
             'transparent',
           )} 100%)`
       const outline = accent ? accent.border : mixColor(baseColor, 0.52, 'transparent')
-      const glow = accent ? accent.halo : mixColor(baseColor, 0.35, 'rgba(15, 23, 42, 0.35)')
       const indicator = accent ? accent.indicator : mixColor(baseColor, 0.76, '#ffffff')
       const baseShadow = accent
         ? `0 20px 36px ${tintColor(accent.primary, 0.4) || accent.halo}`
@@ -1406,7 +1409,6 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       element.style.setProperty('--calendar-event-fill', baseFill)
       element.style.setProperty('--calendar-event-sheen', sheen)
       element.style.setProperty('--calendar-event-outline', outline)
-      element.style.setProperty('--calendar-event-glow', glow)
       element.style.setProperty('--calendar-event-shadow', baseShadow)
       element.style.setProperty('--calendar-event-hover-shadow', hoverShadow)
       element.style.setProperty('--calendar-event-indicator', indicator)
@@ -1459,10 +1461,6 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         )
         element.style.setProperty('--calendar-event-outline', EVENT_SELECTION_COLOR)
         element.style.setProperty(
-          '--calendar-event-glow',
-          tintColor(EVENT_SELECTION_COLOR, 0.45) || EVENT_SELECTION_TINT,
-        )
-        element.style.setProperty(
           '--calendar-event-shadow',
           `0 26px 48px ${tintColor(EVENT_SELECTION_COLOR, 0.4) || EVENT_SELECTION_TINT}`,
         )
@@ -1488,7 +1486,6 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       '--calendar-event-sheen',
       '--calendar-event-outline',
       '--calendar-event-ink',
-      '--calendar-event-glow',
       '--calendar-event-shadow',
       '--calendar-event-hover-shadow',
       '--calendar-event-indicator',
@@ -1826,13 +1823,14 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         const relatedPublic = entry.public
         const status = resolveCombinedStatus(relatedInternal, relatedPublic)
         const displayTitle = resolveEventTitle(primary)
+        const sanitizedDisplayTitle = stripStatusTokens(displayTitle)
         const accent = STATUS_ACCENTS[status]
         const textColor = accent.text
         const primaryKey = `${primary.source}:${primary.id}`
         const sourceColor = primary.source === 'internal' ? internalColor : publicColor
         const extendedProps: CalendarEventExtendedProps = {
           event: primary,
-          displayTitle,
+          displayTitle: sanitizedDisplayTitle,
           relatedInternal,
           relatedPublic,
           status,
@@ -1849,7 +1847,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         })
         results.push({
           id: primaryKey,
-          title: displayTitle,
+          title: sanitizedDisplayTitle,
           start: primary.start,
           end: primary.end ?? undefined,
           allDay: primary.allDay,
