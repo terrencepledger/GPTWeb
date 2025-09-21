@@ -18,6 +18,7 @@ interface EventDetail {
 
 const colorMap: Record<string, string> = {
   purple: 'rgb(92,48,166)',
+  purpleLt: 'rgb(177,156,217)',
   gold: 'rgb(214,175,54)',
   ink: 'rgb(18,18,18)',
   white: 'rgb(255,255,255)',
@@ -115,7 +116,7 @@ export default function EventPreviewPane({document}: Props) {
 
   const hasHero = Array.isArray(data.sections) && data.sections.some(s => s._type === 'heroSection')
   const subscription = data.sections?.find(s => s._type === 'subscriptionSection')
-  const showSubscribe = subscription?.showSubscribe !== false
+  const showSubscribe = subscription ? subscription.showSubscribe !== false : false
 
   return (
     <div style={{display:'flex', flexDirection:'column', height:'100%'}}>
