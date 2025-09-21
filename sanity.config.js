@@ -11,6 +11,7 @@ import staff from './sanity/schemas/staff'
 import ministry from './sanity/schemas/ministry'
 import heroSlide from './sanity/schemas/heroSlide'
 import missionStatement from './sanity/schemas/missionStatement'
+import meetPastor from './sanity/schemas/meetPastor'
 import eventDetail from './sanity/schemas/eventDetail'
 import heroSection from './sanity/schemas/sections/heroSection'
 import gallerySection from './sanity/schemas/sections/gallerySection'
@@ -84,7 +85,7 @@ export default defineConfig({
     projectId,
     dataset,
     schema: {
-        types: [announcement, siteSettings, staff, ministry, heroSlide, missionStatement, eventDetail, heroSection, gallerySection, subscriptionSection, mapSection, linkSection, chatbot, calendarSyncMapping, formSettings, page],
+        types: [announcement, siteSettings, staff, ministry, heroSlide, missionStatement, meetPastor, eventDetail, heroSection, gallerySection, subscriptionSection, mapSection, linkSection, chatbot, calendarSyncMapping, formSettings, page],
     },
     plugins: [
         structureTool({

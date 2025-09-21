@@ -67,6 +67,15 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
               role="menu"
             >
               <Link
+                href="/about/meet-the-pastor"
+                className={`block rounded px-2 py-1 cursor-pointer border border-transparent ${linkClasses(pathname === "/about/meet-the-pastor")} hover:border-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]`}
+                aria-current={pathname === "/about/meet-the-pastor" ? "page" : undefined}
+                role="menuitem"
+              >
+                Meet the Pastor
+              </Link>
+              <div className="my-1 border-t border-[var(--brand-border)]" role="separator" />
+              <Link
                 href="/about/staff"
                 className={`block rounded px-2 py-1 cursor-pointer border border-transparent ${linkClasses(pathname === "/about/staff")} hover:border-[var(--brand-alt)] focus-visible:ring-1 focus-visible:ring-[var(--brand-alt)]`}
                 aria-current={pathname === "/about/staff" ? "page" : undefined}

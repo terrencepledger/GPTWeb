@@ -19,5 +19,10 @@ export const structure = (S: any) =>
         ),
       S.documentTypeListItem('formSettings').title('Form Settings'),
       S.documentTypeListItem('staff').title('Staff'),
+      S.listItem()
+        .title('Meet the Pastor')
+        .child(
+          S.document().schemaType('meetPastor').documentId('meetPastor')
+        ),
       S.documentTypeListItem('missionStatement').title('Mission Statement'),
     ])

@@ -6,6 +6,7 @@ import ministry from './schemas/ministry';
 import heroSlide from './schemas/heroSlide';
 import chatbot from './schemas/chatbot';
 import missionStatement from './schemas/missionStatement';
+import meetPastor from './schemas/meetPastor';
 import eventDetail from './schemas/eventDetail';
 import heroSection from './schemas/sections/heroSection';
 import gallerySection from './schemas/sections/gallerySection';
@@ -23,6 +24,7 @@ export const schemaTypes = [
   ministry,
   heroSlide,
   missionStatement,
+  meetPastor,
   eventDetail,
   heroSection,
   gallerySection,

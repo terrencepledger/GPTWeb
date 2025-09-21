@@ -111,6 +111,14 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
                       >
                         <Disclosure.Panel className="ml-4 mt-2 flex flex-col gap-2">
                           <Link
+                            href="/about/meet-the-pastor"
+                            className={linkClasses(pathname === "/about/meet-the-pastor")}
+                            aria-current={pathname === "/about/meet-the-pastor" ? "page" : undefined}
+                            onClick={handleClose}
+                          >
+                            Meet the Pastor
+                          </Link>
+                          <Link
                             href="/about/staff"
                             className={linkClasses(pathname === "/about/staff")}
                             aria-current={pathname === "/about/staff" ? "page" : undefined}
