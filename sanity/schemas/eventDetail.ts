@@ -13,8 +13,9 @@ export default defineType({
     }),
     defineField({
       name: 'slug',
-      title: 'Slug',
+      title: 'Event URL',
       type: 'slug',
+      description: 'This controls the URL path for the event page.',
       options: {
         source: 'title',
         maxLength: 96,
