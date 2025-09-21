@@ -73,6 +73,7 @@ const DEFAULT_INTERNAL_COLOR = 'color-mix(in oklab, var(--brand-border) 70%, var
 const DEFAULT_PUBLIC_COLOR = 'var(--brand-accent)'
 const EVENT_SELECTION_COLOR = '#2563eb'
 const EVENT_SELECTION_TINT = 'rgba(37, 99, 235, 0.32)'
+const DEFAULT_EVENT_SHADOW = '0 10px 28px rgba(15, 23, 42, 0.18)'
 
 type CalendarDisplayStatus = 'published' | 'unpublished' | 'draft'
 
@@ -395,6 +396,7 @@ function joinApiPath(base: string, segment: string) {
 }
 
 const STATUS_TITLE_TOKENS = ['draft', 'published', 'unpublished'] as const
+const STATUS_SEPARATOR_FRAGMENT = '\\s\\-–—:·•|,/'
 
 function stripStatusTokens(value: string) {
   let result = value.trim()
@@ -423,8 +425,33 @@ function stripStatusTokens(value: string) {
         result = result.replace(pattern, '').trimEnd()
       }
     })
+    const bracketPatterns = [
+      new RegExp(`\\[\\s*${safeToken}\\s*\\]`, 'gi'),
+      new RegExp(`\\(\\s*${safeToken}\\s*\\)`, 'gi'),
+      new RegExp(`\\{\\s*${safeToken}\\s*\\}`, 'gi'),
+    ]
+    bracketPatterns.forEach((pattern) => {
+      if (pattern.test(result)) {
+        result = result.replace(pattern, ' ')
+      }
+    })
+    const separatorClass = `[${STATUS_SEPARATOR_FRAGMENT}]`
+    const joinedPattern = new RegExp(`(${separatorClass}+)${safeToken}(?=${separatorClass}+)`, 'gi')
+    result = result.replace(joinedPattern, '$1')
+    const leadingJoinerPattern = new RegExp(`(${separatorClass}+)${safeToken}`, 'gi')
+    result = result.replace(leadingJoinerPattern, '$1')
+    const trailingJoinerPattern = new RegExp(`${safeToken}(${separatorClass}+)`, 'gi')
+    result = result.replace(trailingJoinerPattern, '$1')
+    const loosePattern = new RegExp(`\\b${safeToken}\\b`, 'gi')
+    result = result.replace(loosePattern, ' ')
   })
-  result = result.replace(/^[\s\-–—:·•|]+/, '').replace(/[\s\-–—:·•|]+$/, '')
+  result = result
+    .replace(/\(\s*\)/g, ' ')
+    .replace(/\[\s*\]/g, ' ')
+    .replace(/\{\s*\}/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .replace(new RegExp(`^[${STATUS_SEPARATOR_FRAGMENT}]+`), '')
+    .replace(new RegExp(`[${STATUS_SEPARATOR_FRAGMENT}]+$`), '')
   return result.replace(/\s{2,}/g, ' ').trim()
 }
 
@@ -1084,9 +1111,7 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       white-space: nowrap;
     }
     .calendar-event-selected {
-      box-shadow: 0 0 0 2px var(--calendar-selected-color), 0 0 0 8px var(--calendar-selected-shadow), 0 22px 42px rgba(37, 99, 235, 0.35) !important;
       transform: translateY(-2px);
-      border-color: var(--calendar-selected-color) !important;
     }
     .calendar-event-listItem {
       display: flex;
@@ -1290,23 +1315,27 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       } else {
         element.style.background = ''
       }
+      const leftColor = accent?.primary || meta?.sourceColor || ''
+      const boxShadows: string[] = []
+      if (leftColor) {
+        boxShadows.push(`inset 6px 0 0 0 ${leftColor}`)
+      }
+      if (isSelected) {
+        boxShadows.push(`0 0 0 2px ${EVENT_SELECTION_COLOR}`)
+        boxShadows.push(`0 0 0 8px ${EVENT_SELECTION_TINT}`)
+      }
       if (accent) {
         element.style.borderColor = accent.border
         element.style.color = accent.text
-        element.style.boxShadow = isSelected
-          ? `0 0 0 2px ${EVENT_SELECTION_COLOR}, 0 0 0 8px ${EVENT_SELECTION_TINT}, 0 24px 48px ${accent.halo}`
-          : `0 10px 28px ${accent.halo}`
+        boxShadows.push(isSelected ? `0 24px 48px ${accent.halo}` : `0 10px 28px ${accent.halo}`)
       } else {
         element.style.borderColor = isSelected ? EVENT_SELECTION_COLOR : ''
         element.style.color = ''
-        element.style.boxShadow = isSelected
-          ? `0 0 0 2px ${EVENT_SELECTION_COLOR}, 0 0 0 8px ${EVENT_SELECTION_TINT}, 0 22px 42px rgba(37, 99, 235, 0.35)`
-          : ''
+        boxShadows.push(
+          isSelected ? `0 22px 42px rgba(37, 99, 235, 0.35)` : DEFAULT_EVENT_SHADOW,
+        )
       }
-      const leftColor = meta?.sourceColor || accent?.primary || ''
-      element.style.borderLeftWidth = '6px'
-      element.style.borderLeftStyle = 'solid'
-      element.style.borderLeftColor = leftColor || 'transparent'
+      element.style.boxShadow = boxShadows.join(', ')
       element.style.transform = isSelected ? 'translateY(-2px)' : ''
       if (isSelected) {
         element.classList.add('calendar-event-selected')
@@ -1351,9 +1380,6 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   const clearEventVisualState = useCallback((element: HTMLElement) => {
     element.style.background = ''
     element.style.borderColor = ''
-    element.style.borderLeftColor = ''
-    element.style.borderLeftWidth = ''
-    element.style.borderLeftStyle = ''
     element.style.color = ''
     element.style.boxShadow = ''
     element.style.transform = ''
@@ -1895,7 +1921,6 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         <span
           className="calendar-event-statusIndicator"
           data-calendar-status-indicator={status}
-          title={statusLabel}
         >
           <span className="calendar-event-statusIndicatorDot" aria-hidden="true" />
           <span className="calendar-sr-only">{statusLabel}</span>
@@ -1905,7 +1930,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         const timeLabel = !arg.event.allDay && baseTimeText ? baseTimeText : ''
         const displayText = fallbackTitle || 'Untitled event'
         return (
-          <div className="calendar-event-content" title={accessibleTitle} aria-label={accessibleTitle}>
+          <div className="calendar-event-content" title={displayText} aria-label={accessibleTitle}>
             {(timeLabel || statusIndicator) && (
               <div className="calendar-event-metaRow">
                 {statusIndicator}
@@ -1931,7 +1956,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         return (
           <div
             className="calendar-event-listItem"
-            title={accessibleTitle}
+            title={displayTitle}
             aria-label={accessibleTitle}
             data-calendar-source={sourceEvent.source}
           >
@@ -1950,7 +1975,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       return (
         <div
           className="calendar-event-content"
-          title={accessibleTitle}
+          title={displayTitle}
           aria-label={accessibleTitle}
           data-calendar-source={sourceEvent.source}
         >
