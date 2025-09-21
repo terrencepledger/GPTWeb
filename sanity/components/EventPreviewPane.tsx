@@ -74,7 +74,13 @@ export default function EventPreviewPane({document}: Props) {
     return () => { ignore = true; sub.unsubscribe() }
   }, [client, slug])
 
-  if (!slug) return <p style={{padding:16, textAlign:'center'}}>Enter a slug to see a preview.</p>
+  if (!slug) {
+    return (
+      <p style={{padding:16, textAlign:'center'}}>
+        Enter an event URL to see a preview.
+      </p>
+    )
+  }
   if (!data) return <p style={{padding:16, textAlign:'center'}}>Loading…</p>
 
   const sel = pickPalette(data.palette, theme)
