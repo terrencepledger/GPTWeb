@@ -1,6 +1,47 @@
 import { defineType, defineField } from 'sanity';
 import CalendarEventIdInput from '../components/CalendarEventIdInput';
 
+const lightPrimaryOptions = [
+  { title: 'Purple', value: 'purple' },
+  { title: 'Gold', value: 'gold' },
+  { title: 'White', value: 'white' },
+];
+
+const lightAccentOptions = [
+  { title: 'Gold', value: 'gold' },
+  { title: 'Purple', value: 'purple' },
+  { title: 'Purple Light', value: 'purpleLt' },
+  { title: 'Ink (Dark Text)', value: 'ink' },
+  { title: 'White', value: 'white' },
+];
+
+const lightContrastOptions = [
+  { title: 'Ink (Dark Text)', value: 'ink' },
+  { title: 'White', value: 'white' },
+  { title: 'Purple', value: 'purple' },
+];
+
+const darkPrimaryOptions = [
+  { title: 'Purple', value: 'purple' },
+  { title: 'Purple Light', value: 'purpleLt' },
+  { title: 'Black', value: 'black' },
+  { title: 'Gray', value: 'gray' },
+  { title: 'Dark Red', value: 'darkred' },
+];
+
+const darkAccentOptions = [
+  { title: 'Gold', value: 'gold' },
+  { title: 'Purple', value: 'purple' },
+  { title: 'Purple Light', value: 'purpleLt' },
+  { title: 'White', value: 'white' },
+];
+
+const darkContrastOptions = [
+  { title: 'Gold', value: 'gold' },
+  { title: 'White', value: 'white' },
+  { title: 'Purple Light', value: 'purpleLt' },
+];
+
 export default defineType({
   name: 'eventDetail',
   title: 'Event Detail',
@@ -46,9 +87,24 @@ export default defineType({
           title: 'Light Mode',
           type: 'object',
           fields: [
-            { name: 'primary', type: 'string' },
-            { name: 'accent', type: 'string' },
-            { name: 'contrast', type: 'string' },
+            defineField({
+              name: 'primary',
+              title: 'Primary',
+              type: 'string',
+              options: { list: lightPrimaryOptions },
+            }),
+            defineField({
+              name: 'accent',
+              title: 'Accent',
+              type: 'string',
+              options: { list: lightAccentOptions },
+            }),
+            defineField({
+              name: 'contrast',
+              title: 'Contrast',
+              type: 'string',
+              options: { list: lightContrastOptions },
+            }),
           ],
         }),
         defineField({
@@ -56,9 +112,24 @@ export default defineType({
           title: 'Dark Mode',
           type: 'object',
           fields: [
-            { name: 'primary', type: 'string' },
-            { name: 'accent', type: 'string' },
-            { name: 'contrast', type: 'string' },
+            defineField({
+              name: 'primary',
+              title: 'Primary',
+              type: 'string',
+              options: { list: darkPrimaryOptions },
+            }),
+            defineField({
+              name: 'accent',
+              title: 'Accent',
+              type: 'string',
+              options: { list: darkAccentOptions },
+            }),
+            defineField({
+              name: 'contrast',
+              title: 'Contrast',
+              type: 'string',
+              options: { list: darkContrastOptions },
+            }),
           ],
         }),
       ],
