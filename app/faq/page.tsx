@@ -14,8 +14,8 @@ export default async function FaqPage() {
   ]);
 
   const events = rawEvents.map((event) => {
-    const link = detailLinks.find((detail) => detail.calendarEventId === event.id);
-    const href = link ? `/events/${link.slug}` : event.htmlLink;
+    const detailLink = detailLinks.find((detail) => detail.calendarEventId === event.id);
+    const href = detailLink ? `/events/${detailLink.slug}` : "/events";
     const formattedDate = new Date(event.start).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -25,7 +25,7 @@ export default async function FaqPage() {
       id: event.id,
       title: event.title,
       dateLabel: formattedDate,
-      href: href ?? undefined,
+      href,
     };
   });
 
@@ -108,16 +108,12 @@ export default async function FaqPage() {
                         <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brand-muted)]">
                           {event.dateLabel}
                         </span>
-                        {event.href ? (
-                          <Link
-                            href={event.href}
-                            className="text-sm font-medium underline decoration-[var(--brand-alt)] underline-offset-4 hover:opacity-85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-alt)]"
-                          >
-                            {event.title}
-                          </Link>
-                        ) : (
-                          <span className="text-sm font-medium">{event.title}</span>
-                        )}
+                        <Link
+                          href={event.href}
+                          className="text-sm font-medium underline decoration-[var(--brand-alt)] underline-offset-4 hover:opacity-85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-alt)]"
+                        >
+                          {event.title}
+                        </Link>
                       </div>
                     </li>
                   ))}
