@@ -28,6 +28,8 @@ import interactionPlugin from '@fullcalendar/interaction'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import type {
+  DayCellMountArg,
+  DayHeaderMountArg,
   EventClickArg,
   EventContentArg,
   EventInput,
@@ -71,16 +73,26 @@ const DEFAULT_INTERNAL_COLOR = 'color-mix(in oklab, var(--brand-border) 70%, var
 const DEFAULT_PUBLIC_COLOR = 'var(--brand-accent)'
 const EVENT_SELECTION_COLOR = '#2563eb'
 const EVENT_SELECTION_TINT = 'rgba(37, 99, 235, 0.32)'
-const EVENT_SELECTION_SURFACE = 'rgba(37, 99, 235, 0.2)'
 
 type CalendarDisplayStatus = 'published' | 'unpublished' | 'draft'
 
 type BadgeTone = React.ComponentProps<typeof Badge>['tone']
 
 type StatusAccent = {
-  border: string
-  tint: string
+  primary: string
+  text: string
   surface: string
+  surfaceSoft: string
+  halo: string
+  border: string
+  indicator: string
+}
+
+type DayStatusFlags = Record<CalendarDisplayStatus, boolean>
+
+type DayCellEntry = {
+  root: HTMLElement
+  indicator: HTMLElement | null
 }
 
 const DISPLAY_STATUS_LABELS: Record<CalendarDisplayStatus, string> = {
@@ -97,19 +109,31 @@ const DISPLAY_STATUS_BADGE_TONES: Record<CalendarDisplayStatus, BadgeTone> = {
 
 const STATUS_ACCENTS: Record<CalendarDisplayStatus, StatusAccent> = {
   published: {
-    border: '#16a34a',
-    tint: 'rgba(34, 197, 94, 0.28)',
-    surface: 'rgba(34, 197, 94, 0.18)',
+    primary: '#0ea5e9',
+    text: '#042f3d',
+    surface: 'rgba(14, 165, 233, 0.28)',
+    surfaceSoft: 'rgba(56, 189, 248, 0.12)',
+    halo: 'rgba(14, 165, 233, 0.45)',
+    border: 'rgba(14, 165, 233, 0.65)',
+    indicator: 'rgba(14, 165, 233, 0.95)',
   },
   unpublished: {
-    border: '#ef4444',
-    tint: 'rgba(239, 68, 68, 0.32)',
-    surface: 'rgba(239, 68, 68, 0.18)',
+    primary: '#f97316',
+    text: '#451a03',
+    surface: 'rgba(249, 115, 22, 0.32)',
+    surfaceSoft: 'rgba(251, 146, 60, 0.16)',
+    halo: 'rgba(249, 115, 22, 0.48)',
+    border: 'rgba(249, 115, 22, 0.65)',
+    indicator: 'rgba(249, 115, 22, 0.95)',
   },
   draft: {
-    border: '#eab308',
-    tint: 'rgba(234, 179, 8, 0.34)',
-    surface: 'rgba(234, 179, 8, 0.2)',
+    primary: '#facc15',
+    text: '#422006',
+    surface: 'rgba(250, 204, 21, 0.32)',
+    surfaceSoft: 'rgba(253, 224, 71, 0.18)',
+    halo: 'rgba(250, 204, 21, 0.5)',
+    border: 'rgba(250, 204, 21, 0.65)',
+    indicator: 'rgba(250, 204, 21, 0.95)',
   },
 }
 
@@ -287,18 +311,14 @@ interface CalendarEventExtendedProps {
   status?: CalendarDisplayStatus
   combinedKey?: string
   primaryKey?: string
-  statusColor?: string
+  statusAccent?: StatusAccent
   sourceColor?: string
-  statusSurface?: string
-  statusBorder?: string
 }
 
 type EventStatusMeta = {
   status?: CalendarDisplayStatus
-  color?: string
+  accent?: StatusAccent
   sourceColor?: string
-  surface?: string
-  border?: string
 }
 
 const CALENDAR_VIEW_CONTAINER_STYLE: React.CSSProperties = {
@@ -408,6 +428,82 @@ function stripStatusTokens(value: string) {
   return result.replace(/\s{2,}/g, ' ').trim()
 }
 
+function hexToRgb(hex: string): [number, number, number] | null {
+  const normalized = hex.trim().replace(/^#/, '')
+  if (!normalized) return null
+  const expanded =
+    normalized.length === 3
+      ? normalized
+          .split('')
+          .map((char) => char + char)
+          .join('')
+      : normalized.length === 6
+      ? normalized
+      : null
+  if (!expanded) return null
+  const value = Number.parseInt(expanded, 16)
+  if (Number.isNaN(value)) return null
+  const r = (value >> 16) & 255
+  const g = (value >> 8) & 255
+  const b = value & 255
+  return [r, g, b]
+}
+
+function tintColor(hex: string, alpha: number) {
+  const rgb = hexToRgb(hex)
+  if (!rgb) return ''
+  const clamped = Math.max(0, Math.min(1, alpha))
+  return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${clamped})`
+}
+
+function buildDayStatusBackground(colors: string[]) {
+  if (!colors.length) return ''
+  if (colors.length === 1) {
+    const primary = colors[0]
+    return `linear-gradient(135deg, ${tintColor(primary, 0.35)} 0%, ${tintColor(primary, 0.12)} 100%)`
+  }
+  if (colors.length === 2) {
+    const [first, second] = colors
+    return `linear-gradient(135deg, ${tintColor(first, 0.32)} 0%, ${tintColor(second, 0.28)} 100%)`
+  }
+  const [first, second, third] = colors
+  return `linear-gradient(135deg, ${tintColor(first, 0.32)} 0%, ${tintColor(second, 0.26)} 48%, ${tintColor(third, 0.24)} 100%)`
+}
+
+function formatDateKey(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function collectEventDateKeys(event: CalendarSyncEvent) {
+  const startDate = new Date(event.start)
+  if (Number.isNaN(startDate.getTime())) return []
+  const rawEnd = event.end ? new Date(event.end) : new Date(startDate.getTime())
+  const effectiveEnd = (() => {
+    if (Number.isNaN(rawEnd.getTime())) {
+      return new Date(startDate.getTime())
+    }
+    if (event.allDay && event.end) {
+      const adjusted = new Date(rawEnd.getTime() - 86400000)
+      return adjusted.getTime() >= startDate.getTime() ? adjusted : new Date(startDate.getTime())
+    }
+    return rawEnd.getTime() >= startDate.getTime() ? rawEnd : new Date(startDate.getTime())
+  })()
+
+  const cursor = new Date(startDate.getTime())
+  cursor.setHours(0, 0, 0, 0)
+  const final = new Date(effectiveEnd.getTime())
+  final.setHours(0, 0, 0, 0)
+  const keys: string[] = []
+  while (cursor.getTime() <= final.getTime()) {
+    keys.push(formatDateKey(cursor))
+    cursor.setDate(cursor.getDate() + 1)
+  }
+  return keys
+}
+
 function resolveEventTitle(event: CalendarSyncEvent) {
   const candidates = [
     event.title,
@@ -510,8 +606,9 @@ function formatEventTimeLabel(event: CalendarSyncEvent, fallbackTimezone?: strin
 
 function buildFormState(event: CalendarSyncEvent): FormState {
   const source = event.publicPayload || event.sanitized || ({} as PublicEventPayload)
+  const rawTitle = source.title || event.title || ''
   return {
-    title: source.title || event.title || '',
+    title: stripStatusTokens(rawTitle),
     blurb: source.blurb || '',
     location: source.location || '',
     displayNotes: source.displayNotes || '',
@@ -643,7 +740,7 @@ function StatusLegendItem(props: {status: CalendarDisplayStatus; label: string})
           padding: '0.2rem 0.6rem 0.2rem 0.45rem',
           borderRadius: '999px',
           background: accent.surface,
-          color: 'var(--card-fg-color)',
+          color: accent.text,
           border: `1px solid ${accent.border}`,
           fontSize: '0.65rem',
           fontWeight: 600,
@@ -658,7 +755,7 @@ function StatusLegendItem(props: {status: CalendarDisplayStatus; label: string})
             width: 8,
             height: 8,
             borderRadius: '999px',
-            backgroundColor: accent.border,
+            backgroundColor: accent.indicator,
             boxShadow: '0 0 0 2px color-mix(in srgb, var(--card-bg-color) 70%, transparent 30%)',
             flexShrink: 0,
           }}
@@ -781,90 +878,36 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       --calendar-internal-color: ${internalColor};
       --calendar-public-color: ${publicColor};
       --calendar-selected-color: ${EVENT_SELECTION_COLOR};
-      --calendar-selected-tint: ${EVENT_SELECTION_TINT};
-      --calendar-selected-surface: ${EVENT_SELECTION_SURFACE};
-      --calendar-grid-border: rgba(148, 163, 184, 0.32);
-      --calendar-grid-surface: rgba(248, 250, 252, 0.94);
-      --calendar-header-bg: rgba(241, 245, 249, 0.96);
-      --calendar-header-text: #1f2937;
-      --calendar-header-subtle: rgba(71, 85, 105, 0.75);
-      --calendar-toolbar-bg: rgba(241, 245, 249, 0.96);
-      --calendar-toolbar-button-bg: rgba(255, 255, 255, 0.9);
-      --calendar-toolbar-button-hover: rgba(59, 130, 246, 0.14);
-      --calendar-event-shadow: rgba(15, 23, 42, 0.15);
-    }
-    :where([data-ui-color-scheme='dark']) .calendar-tool-root {
-      --calendar-grid-border: rgba(148, 163, 184, 0.28);
-      --calendar-grid-surface: rgba(30, 41, 59, 0.64);
-      --calendar-header-bg: rgba(15, 23, 42, 0.92);
-      --calendar-header-text: #e2e8f0;
-      --calendar-header-subtle: rgba(148, 163, 184, 0.78);
-      --calendar-toolbar-bg: rgba(15, 23, 42, 0.92);
-      --calendar-toolbar-button-bg: rgba(30, 41, 59, 0.88);
-      --calendar-toolbar-button-hover: rgba(96, 165, 250, 0.3);
-      --calendar-event-shadow: rgba(15, 23, 42, 0.4);
+      --calendar-selected-shadow: ${EVENT_SELECTION_TINT};
     }
     .calendar-tool-calendarCard .fc {
       --fc-page-bg-color: transparent;
-      --fc-neutral-bg-color: var(--calendar-grid-surface);
-      --fc-border-color: var(--calendar-grid-border);
-      --fc-list-event-hover-bg-color: rgba(148, 163, 184, 0.15);
+      --fc-neutral-bg-color: transparent;
+      --fc-list-event-hover-bg-color: rgba(148, 163, 184, 0.16);
+      --fc-border-color: color-mix(in srgb, var(--card-border-color) 75%, transparent 25%);
     }
     .calendar-tool-calendarCard .fc-scrollgrid {
-      border: 1px solid var(--calendar-grid-border);
-      background: var(--calendar-grid-surface);
-      border-radius: 16px;
+      border-radius: 18px;
       overflow: hidden;
-    }
-    .calendar-tool-calendarCard .fc-scrollgrid-section-header,
-    .calendar-tool-calendarCard .fc-scrollgrid-section-header .fc-scroller {
-      background: var(--calendar-header-bg);
-    }
-    .calendar-tool-calendarCard thead.fc-col-header {
-      border-bottom: 1px solid var(--calendar-grid-border);
-    }
-    .calendar-tool-calendarCard .fc-col-header-cell {
-      border: none;
-    }
-    .calendar-tool-calendarCard .fc-col-header-cell-cushion {
-      color: var(--calendar-header-text);
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      padding: 0.75rem 0.25rem;
-    }
-    .calendar-tool-calendarCard .fc-col-header-cell-cushion:hover,
-    .calendar-tool-calendarCard .fc-col-header-cell-cushion:focus-visible {
-      color: var(--card-fg-color);
-      text-decoration: none;
-    }
-    .calendar-tool-calendarCard .fc-daygrid-day-number {
-      color: var(--calendar-header-text);
-      font-weight: 600;
-    }
-    .calendar-tool-calendarCard .fc-theme-standard td,
-    .calendar-tool-calendarCard .fc-theme-standard th {
-      border-color: var(--calendar-grid-border);
-    }
-    .calendar-tool-calendarCard .fc-daygrid-day-frame {
-      background: var(--calendar-grid-surface);
+      border: 1px solid color-mix(in srgb, var(--card-border-color) 72%, transparent 28%);
+      background: color-mix(in srgb, var(--card-bg-color) 92%, transparent 8%);
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--card-border-color) 45%, transparent 55%);
     }
     .calendar-tool-calendarCard .fc-toolbar.fc-header-toolbar {
       padding: 0.75rem;
-      background: var(--calendar-toolbar-bg);
-      border-bottom: 1px solid var(--calendar-grid-border);
+      background: color-mix(in srgb, var(--card-bg-color) 88%, transparent 12%);
+      border-bottom: 1px solid color-mix(in srgb, var(--card-border-color) 70%, transparent 30%);
+      backdrop-filter: blur(14px);
     }
     .calendar-tool-calendarCard .fc-toolbar-title {
-      color: var(--calendar-header-text);
-      font-size: 1.28rem;
+      color: var(--card-fg-color);
       font-weight: 700;
       letter-spacing: 0.04em;
     }
     .calendar-tool-calendarCard .fc-toolbar .fc-button {
-      background: var(--calendar-toolbar-button-bg);
-      border: 1px solid var(--calendar-grid-border);
-      color: var(--calendar-header-text);
+      background: color-mix(in srgb, var(--card-bg-color) 94%, transparent 6%);
+      border: 1px solid color-mix(in srgb, var(--card-border-color) 70%, transparent 30%);
+      color: var(--card-fg-color);
       text-transform: uppercase;
       font-size: 0.68rem;
       letter-spacing: 0.08em;
@@ -873,51 +916,49 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     }
     .calendar-tool-calendarCard .fc-toolbar .fc-button:hover,
     .calendar-tool-calendarCard .fc-toolbar .fc-button:focus-visible {
-      background: var(--calendar-toolbar-button-hover);
-      color: var(--card-fg-color);
+      background: color-mix(in srgb, var(--card-fg-color) 12%, var(--card-bg-color) 88%);
       border-color: var(--calendar-selected-color);
-      box-shadow: 0 0 0 2px var(--calendar-selected-tint);
+      box-shadow: 0 0 0 2px var(--calendar-selected-shadow);
+      color: var(--card-fg-color);
     }
     .calendar-tool-calendarCard .fc-toolbar .fc-button:disabled {
       opacity: 0.6;
       box-shadow: none;
-      border-color: var(--calendar-grid-border);
-      background: transparent;
-      color: var(--calendar-header-subtle);
     }
-    .calendar-tool-calendarCard .fc-toolbar .fc-button .fc-icon {
-      margin: 0;
-      color: inherit;
+    .calendar-tool-calendarCard thead.fc-col-header {
+      border: none;
     }
-    .calendar-tool-calendarCard .fc-toolbar-chunk {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    .calendar-tool-calendarCard .fc-scrollgrid-section-header,
+    .calendar-tool-calendarCard .fc-scrollgrid-section-header .fc-scroller {
+      background: color-mix(in srgb, var(--card-bg-color) 82%, var(--card-border-color) 18%);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid color-mix(in srgb, var(--card-border-color) 70%, transparent 30%);
     }
-    .calendar-tool-calendarCard .fc .fc-toolbar-chunk > .fc-button-group {
-      gap: 0.35rem;
+    .calendar-tool-calendarCard .fc-col-header-cell {
+      border: none;
     }
-    .calendar-tool-calendarCard .fc-button-group .fc-button {
-      margin: 0;
-    }
-    .calendar-tool-calendarCard .fc-toolbar-title::first-letter {
+    .calendar-tool-calendarCard .fc-col-header-cell-cushion {
+      color: var(--card-fg-color);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
+      padding: 0.75rem 0.35rem;
+      text-shadow: 0 1px 2px color-mix(in srgb, var(--card-border-color) 35%, transparent 65%);
     }
-    .calendar-tool-calendarCard .fc-timegrid-axis-frame {
-      color: var(--calendar-header-subtle);
+    .calendar-tool-calendarCard .fc-daygrid-day-number {
       font-weight: 600;
+      transition: color 0.2s ease;
     }
-    .calendar-tool-calendarCard .fc-daygrid-day-top {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      padding: 0.75rem 0.75rem 0 0.75rem;
+    .calendar-tool-calendarCard .fc-theme-standard td,
+    .calendar-tool-calendarCard .fc-theme-standard th {
+      border-color: color-mix(in srgb, var(--card-border-color) 70%, transparent 30%);
     }
-    .calendar-tool-calendarCard .fc .fc-daygrid-day-events {
-      margin: 0.35rem;
+    .calendar-tool-calendarCard .fc-daygrid-day-events {
+      margin: 0.35rem 0.45rem 0.55rem 0.45rem;
       display: flex;
       flex-direction: column;
-      gap: 0.35rem;
+      gap: 0.45rem;
     }
     .calendar-tool-calendarCard .fc .fc-daygrid-event-harness {
       display: contents;
@@ -925,68 +966,148 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     .calendar-tool-calendarCard .fc .fc-daygrid-event {
       margin: 0;
     }
+    .calendar-tool-calendarCard .fc-daygrid-day-frame {
+      position: relative;
+      border-radius: 14px;
+      padding: 0.55rem 0.5rem 0.75rem 0.5rem;
+      background: color-mix(in srgb, var(--card-bg-color) 94%, transparent 6%);
+      transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+      border: 1px solid transparent;
+    }
+    .calendar-tool-calendarCard .fc-daygrid-day:hover .fc-daygrid-day-frame {
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.15);
+    }
+    .calendar-day-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding-inline-start: 0.35rem;
+    }
+    .calendar-day-indicatorChip {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      box-shadow: 0 0 0 1px color-mix(in srgb, var(--card-bg-color) 70%, transparent 30%);
+    }
     .calendar-event {
       position: relative;
       display: flex;
       flex-direction: column;
-      gap: 0.35rem;
-      padding: 0.45rem 0.6rem 0.55rem 0.85rem;
-      border-radius: 12px;
-      border: 1px solid var(--calendar-event-status-border, rgba(148, 163, 184, 0.35));
-      border-left: 6px solid var(--calendar-event-status-color, var(--card-focus-ring-color));
-      background: var(--calendar-event-status-surface, rgba(148, 163, 184, 0.18));
+      gap: 0.4rem;
+      padding: 0.65rem 0.85rem 0.75rem 0.95rem;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      background: color-mix(in srgb, var(--card-bg-color) 92%, transparent 8%);
       color: var(--card-fg-color);
-      box-shadow: 0 8px 20px var(--calendar-event-shadow);
-      transition: box-shadow 0.2s ease, transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.18);
+      transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+      cursor: pointer;
       min-height: 0;
       overflow: hidden;
     }
+    .calendar-event:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.22);
+    }
+    .calendar-event:active {
+      transform: translateY(-1px);
+    }
     .calendar-event-content {
-      position: relative;
       display: flex;
       flex-direction: column;
       gap: 0.35rem;
-      font-size: 0.86rem;
-      line-height: 1.35;
+      font-size: 0.9rem;
+      line-height: 1.36;
       pointer-events: none;
       min-height: 0;
-    }
-    .calendar-event:hover {
-      box-shadow: 0 12px 28px var(--calendar-event-shadow);
-      transform: translateY(-1px);
-    }
-    .calendar-event:active {
-      transform: translateY(0);
-      box-shadow: 0 10px 22px var(--calendar-event-shadow);
-    }
-    .calendar-event .calendar-event-title,
-    .calendar-event .calendar-event-listItemTitle {
-      font-weight: 600;
-      letter-spacing: 0.01em;
-    }
-    .calendar-event .calendar-event-note {
-      font-size: 0.8rem;
-      opacity: 0.88;
     }
     .calendar-event-statusIndicator {
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
-      padding: 0.15rem 0.45rem;
-      border-radius: 9999px;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
       font-size: 0.68rem;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.12em;
       font-weight: 700;
-      color: var(--calendar-event-status-color, var(--card-fg-color));
-      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid transparent;
+      background: rgba(255, 255, 255, 0.16);
+      color: inherit;
     }
     .calendar-event-statusIndicatorDot {
-      width: 0.45rem;
-      height: 0.45rem;
-      border-radius: 9999px;
-      background: var(--calendar-event-status-color, var(--card-focus-ring-color));
-      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55);
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 999px;
+    }
+    .calendar-event-time {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--card-muted-fg-color);
+    }
+    .calendar-event-metaRow {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      min-width: 0;
+    }
+    .calendar-event-metaRow > * {
+      min-width: 0;
+    }
+    .calendar-event-title,
+    .calendar-event-listItemTitle,
+    .calendar-event-note {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .calendar-event-title,
+    .calendar-event-listItemTitle {
+      font-weight: 600;
+    }
+    .calendar-event-note {
+      font-size: 0.8rem;
+    }
+    .calendar-event[data-calendar-overflow='true'] .calendar-event-content,
+    .calendar-event[data-calendar-overflow='true'] .calendar-event-listItem {
+      overflow: hidden;
+    }
+    .calendar-event-title[data-calendar-overflow='true'],
+    .calendar-event-listItemTitle[data-calendar-overflow='true'] {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+    }
+    .calendar-event-note[data-calendar-overflow='true'] {
+      white-space: nowrap;
+    }
+    .calendar-event-selected {
+      box-shadow: 0 0 0 2px var(--calendar-selected-color), 0 0 0 8px var(--calendar-selected-shadow), 0 22px 42px rgba(37, 99, 235, 0.35) !important;
+      transform: translateY(-2px);
+      border-color: var(--calendar-selected-color) !important;
+    }
+    .calendar-event-listItem {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      padding: 0.8rem;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: color-mix(in srgb, var(--card-bg-color) 92%, transparent 8%);
+      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.18);
+    }
+    .calendar-event-listItem[data-calendar-source='internal'] {
+      border-left: 4px solid var(--calendar-internal-color);
+    }
+    .calendar-event-listItem[data-calendar-source='public'] {
+      border-left: 4px solid var(--calendar-public-color);
+    }
+    .calendar-event-listItemTitle[data-calendar-overflow='true'] {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
     }
     .calendar-sr-only {
       position: absolute;
@@ -999,163 +1120,13 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       white-space: nowrap;
       border: 0;
     }
-    .calendar-event-time {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--calendar-header-subtle);
-      letter-spacing: 0.02em;
-      text-transform: uppercase;
-    }
-    .calendar-event-metaRow {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      flex-wrap: wrap;
-      min-width: 0;
-    }
-    .calendar-event-metaRow > * {
-      min-width: 0;
-    }
-    .calendar-event-metaRow span {
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .calendar-event-title {
-      font-size: 0.92rem;
-      line-height: 1.35;
-    }
-    .calendar-event-title,
-    .calendar-event-listItemTitle,
-    .calendar-event-note {
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .calendar-event-title[data-calendar-overflow='true'],
-    .calendar-event-listItemTitle[data-calendar-overflow='true'] {
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-    }
-    .fc-daygrid-event .calendar-event-content {
-      gap: 0.32rem;
-    }
-    .fc-daygrid-event .calendar-event-title[data-calendar-overflow='true'] {
-      -webkit-line-clamp: 3;
-    }
-    .calendar-event-listItemTitle[data-calendar-overflow='true'] {
-      -webkit-line-clamp: 3;
-    }
-    .calendar-event-note[data-calendar-overflow='true'] {
-      white-space: nowrap;
-    }
-    .calendar-event[data-calendar-overflow='true'] .calendar-event-content,
-    .calendar-event[data-calendar-overflow='true'] .calendar-event-listItem {
-      overflow: hidden;
-    }
-    .fc-timegrid-event .calendar-event-content {
-      gap: 0.48rem;
-      font-size: 0.92rem;
-      line-height: 1.38;
-    }
-    .calendar-event.calendar-event-drift {
-      outline: 2px dashed var(--calendar-event-status-color, var(--card-border-color));
-      outline-offset: -6px;
-      background-image: repeating-linear-gradient(
-        135deg,
-        transparent,
-        transparent 8px,
-        rgba(15, 23, 42, 0.08) 8px,
-        rgba(15, 23, 42, 0.08) 16px
-      );
-    }
-    .calendar-event-selected {
-      background: var(--calendar-selected-surface);
-      border-color: var(--calendar-selected-color);
-      border-left-color: var(--calendar-selected-color);
-      box-shadow:
-        0 0 0 2px var(--calendar-selected-color),
-        0 0 0 8px var(--calendar-selected-tint),
-        0 14px 30px rgba(37, 99, 235, 0.3);
-      transform: translateY(-1px);
-      z-index: 3;
-    }
-    .calendar-event-listItem {
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-      padding: 0.75rem;
-      background: var(--calendar-grid-surface);
-      border-radius: 12px;
-      border: 1px solid var(--calendar-grid-border);
-      color: var(--card-fg-color);
-      transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-      box-shadow: 0 6px 16px var(--calendar-event-shadow);
-    }
-    .calendar-event-listItem[data-calendar-source='internal'] {
-      border-inline-start: 4px solid var(--calendar-internal-color);
-    }
-    .calendar-event-listItem[data-calendar-source='public'] {
-      border-inline-start: 4px solid var(--calendar-public-color);
-    }
-    .calendar-event-listItem .calendar-event-metaRow {
-      margin-bottom: 0.1rem;
-    }
-    .calendar-event-listItemTitle {
-      font-weight: 600;
-      word-break: break-word;
-      overflow-wrap: anywhere;
-    }
-    .calendar-event-note {
-      font-size: 0.8rem;
-      color: var(--calendar-header-subtle);
-    }
-    .calendar-event-drift {
-      background-image: repeating-linear-gradient(
-        135deg,
-        transparent,
-        transparent 8px,
-        rgba(15, 23, 42, 0.08) 8px,
-        rgba(15, 23, 42, 0.08) 16px
-      );
-      outline: 2px dashed var(--calendar-event-status-color, var(--card-border-color));
-      outline-offset: -6px;
-    }
-    .fc-daygrid-day[data-calendar-selected='true'] .fc-daygrid-day-frame {
-      position: relative;
-    }
-    .fc-daygrid-day[data-calendar-selected='true'] .fc-daygrid-day-frame::before {
-      content: '';
-      position: absolute;
-      inset: 4px;
-      border-radius: 12px;
-      background: var(--calendar-selected-surface);
-      pointer-events: none;
-    }
-    .fc-daygrid-day[data-calendar-selected='true'] .fc-daygrid-day-frame::after {
-      content: '';
-      position: absolute;
-      inset: 4px;
-      border-radius: 12px;
-      border: 2px solid var(--calendar-selected-color);
-      box-shadow: 0 0 0 6px var(--calendar-selected-tint);
-      pointer-events: none;
-    }
-    .fc-daygrid-day[data-calendar-selected='true'] .fc-daygrid-day-number {
-      color: var(--calendar-selected-color);
-      font-weight: 700;
-    }
     .calendar-slot-label {
       font-size: 0.75rem;
       font-weight: 600;
-      color: var(--calendar-header-subtle);
-      opacity: 0.95;
-      letter-spacing: 0.04em;
+      color: var(--card-muted-fg-color);
     }
     .fc .fc-timegrid-slot-label-cushion {
       padding: 0.25rem 0.5rem;
-    }
-    .fc .fc-toolbar.fc-header-toolbar {
-      padding-bottom: 0.75rem;
     }
   `
 }
@@ -1196,11 +1167,14 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   const [data, setData] = useState<CalendarSyncResponse | null>(null)
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
   const [formState, setFormState] = useState<FormState | null>(null)
+  const [dayStatusSummary, setDayStatusSummary] = useState<Record<string, DayStatusFlags>>({})
+  const [colorSchemeNonce, setColorSchemeNonce] = useState(0)
   const [actionLoading, setActionLoading] = useState(false)
   const calendarRef = useRef<FullCalendar | null>(null)
   const eventElementsRef = useRef<Map<string, Set<HTMLElement>>>(new Map())
-  const eventDayCellsRef = useRef<Map<string, Set<HTMLElement>>>(new Map())
   const eventStatusRef = useRef<Map<string, EventStatusMeta>>(new Map())
+  const dayCellRegistryRef = useRef<Map<string, Set<DayCellEntry>>>(new Map())
+  const dayHeaderCellsRef = useRef<Set<HTMLElement>>(new Set())
   const activeFetchRef = useRef<AbortController | null>(null)
   const fetchIdRef = useRef(0)
   const eventOverflowObserversRef = useRef<Map<HTMLElement, ResizeObserver>>(new Map())
@@ -1307,6 +1281,200 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     [clearOverflowState],
   )
 
+  const applyEventVisualState = useCallback(
+    (element: HTMLElement, meta: EventStatusMeta | undefined, isSelected: boolean) => {
+      const accent = meta?.accent
+      const background = accent ? `linear-gradient(135deg, ${accent.surface} 0%, ${accent.surfaceSoft} 100%)` : ''
+      if (background) {
+        element.style.background = background
+      } else {
+        element.style.background = ''
+      }
+      if (accent) {
+        element.style.borderColor = accent.border
+        element.style.color = accent.text
+        element.style.boxShadow = isSelected
+          ? `0 0 0 2px ${EVENT_SELECTION_COLOR}, 0 0 0 8px ${EVENT_SELECTION_TINT}, 0 24px 48px ${accent.halo}`
+          : `0 10px 28px ${accent.halo}`
+      } else {
+        element.style.borderColor = isSelected ? EVENT_SELECTION_COLOR : ''
+        element.style.color = ''
+        element.style.boxShadow = isSelected
+          ? `0 0 0 2px ${EVENT_SELECTION_COLOR}, 0 0 0 8px ${EVENT_SELECTION_TINT}, 0 22px 42px rgba(37, 99, 235, 0.35)`
+          : ''
+      }
+      const leftColor = meta?.sourceColor || accent?.primary || ''
+      element.style.borderLeftWidth = '6px'
+      element.style.borderLeftStyle = 'solid'
+      element.style.borderLeftColor = leftColor || 'transparent'
+      element.style.transform = isSelected ? 'translateY(-2px)' : ''
+      if (isSelected) {
+        element.classList.add('calendar-event-selected')
+        element.setAttribute('aria-current', 'true')
+        element.setAttribute('data-calendar-selected', 'true')
+      } else {
+        element.classList.remove('calendar-event-selected')
+        element.removeAttribute('aria-current')
+        element.removeAttribute('data-calendar-selected')
+      }
+      if (meta?.status) {
+        element.setAttribute('data-calendar-status', meta.status)
+      } else {
+        element.removeAttribute('data-calendar-status')
+      }
+      const statusIndicator = element.querySelector<HTMLElement>('.calendar-event-statusIndicator')
+      if (statusIndicator) {
+        if (accent) {
+          statusIndicator.style.background = tintColor(accent.primary, 0.22) || accent.surfaceSoft
+          statusIndicator.style.borderColor = tintColor(accent.primary, 0.45) || accent.border
+          statusIndicator.style.color = accent.text
+        } else {
+          statusIndicator.style.background = 'rgba(255, 255, 255, 0.16)'
+          statusIndicator.style.borderColor = 'transparent'
+          statusIndicator.style.color = ''
+        }
+      }
+      const dot = element.querySelector<HTMLElement>('.calendar-event-statusIndicatorDot')
+      if (dot) {
+        const dotColor = accent ? accent.indicator : leftColor || EVENT_SELECTION_COLOR
+        dot.style.background = dotColor
+        dot.style.boxShadow = accent ? `0 0 0 2px ${tintColor(accent.primary, 0.3) || accent.surfaceSoft}` : ''
+      }
+      const timeEl = element.querySelector<HTMLElement>('.calendar-event-time')
+      if (timeEl) {
+        timeEl.style.color = accent ? tintColor(accent.primary, 0.9) || accent.primary : ''
+      }
+    },
+    [],
+  )
+
+  const clearEventVisualState = useCallback((element: HTMLElement) => {
+    element.style.background = ''
+    element.style.borderColor = ''
+    element.style.borderLeftColor = ''
+    element.style.borderLeftWidth = ''
+    element.style.borderLeftStyle = ''
+    element.style.color = ''
+    element.style.boxShadow = ''
+    element.style.transform = ''
+    element.classList.remove('calendar-event-selected')
+    element.removeAttribute('aria-current')
+    element.removeAttribute('data-calendar-selected')
+    element.removeAttribute('data-calendar-status')
+    element.removeAttribute('data-calendar-linked')
+    const statusIndicator = element.querySelector<HTMLElement>('.calendar-event-statusIndicator')
+    if (statusIndicator) {
+      statusIndicator.style.background = ''
+      statusIndicator.style.borderColor = ''
+      statusIndicator.style.color = ''
+    }
+    const dot = element.querySelector<HTMLElement>('.calendar-event-statusIndicatorDot')
+    if (dot) {
+      dot.style.background = ''
+      dot.style.boxShadow = ''
+    }
+    const timeEl = element.querySelector<HTMLElement>('.calendar-event-time')
+    if (timeEl) {
+      timeEl.style.color = ''
+    }
+  }, [])
+
+  const applyDayCellState = useCallback(
+    (entry: DayCellEntry, summary: DayStatusFlags | undefined, isSelected: boolean) => {
+      const {root, indicator} = entry
+      const frame = root.querySelector<HTMLElement>('.fc-daygrid-day-frame')
+      const numberEl = root.querySelector<HTMLElement>('.fc-daygrid-day-number')
+      const statusOrder: CalendarDisplayStatus[] = ['unpublished', 'published', 'draft']
+      const statuses = statusOrder.filter((status) => summary?.[status])
+      const colors = statuses.map((status) => STATUS_ACCENTS[status].primary)
+      if (frame) {
+        if (colors.length) {
+          const gradient = buildDayStatusBackground(colors)
+          if (gradient) {
+            frame.style.background = gradient
+          }
+          frame.style.borderColor = tintColor(colors[0], 0.45) || colors[0]
+          frame.style.boxShadow = `inset 0 0 0 1px ${tintColor(colors[0], 0.25) || colors[0]}`
+        } else {
+          frame.style.background = ''
+          frame.style.borderColor = ''
+          frame.style.boxShadow = ''
+        }
+        if (isSelected) {
+          frame.style.boxShadow = `0 0 0 2px ${EVENT_SELECTION_COLOR}, 0 0 0 8px ${EVENT_SELECTION_TINT}`
+          frame.style.borderColor = EVENT_SELECTION_COLOR
+        }
+      }
+      if (indicator) {
+        while (indicator.firstChild) indicator.removeChild(indicator.firstChild)
+        if (colors.length) {
+          indicator.style.display = 'inline-flex'
+          const doc = indicator.ownerDocument || (typeof document !== 'undefined' ? document : null)
+          if (doc) {
+            colors.slice(0, 3).forEach((color) => {
+              const chip = doc.createElement('span')
+              chip.className = 'calendar-day-indicatorChip'
+              chip.style.background = color
+              indicator.appendChild(chip)
+            })
+          }
+        } else {
+          indicator.style.display = 'none'
+        }
+      }
+      if (numberEl) {
+        numberEl.style.color = isSelected ? EVENT_SELECTION_COLOR : colors[0] || ''
+      }
+      if (isSelected) {
+        root.setAttribute('data-calendar-day-selected', 'true')
+      } else {
+        root.removeAttribute('data-calendar-day-selected')
+      }
+    },
+    [],
+  )
+
+  const clearDayCellState = useCallback((entry: DayCellEntry) => {
+    const {root, indicator} = entry
+    const frame = root.querySelector<HTMLElement>('.fc-daygrid-day-frame')
+    if (frame) {
+      frame.style.background = ''
+      frame.style.borderColor = ''
+      frame.style.boxShadow = ''
+    }
+    const numberEl = root.querySelector<HTMLElement>('.fc-daygrid-day-number')
+    if (numberEl) {
+      numberEl.style.color = ''
+    }
+    if (indicator) {
+      while (indicator.firstChild) indicator.removeChild(indicator.firstChild)
+      indicator.style.display = 'none'
+    }
+    root.removeAttribute('data-calendar-day-selected')
+  }, [])
+
+  const applyDayHeaderState = useCallback((element: HTMLElement) => {
+    element.style.background = 'color-mix(in srgb, var(--card-bg-color) 80%, var(--card-border-color) 20%)'
+    element.style.borderBottom = '1px solid color-mix(in srgb, var(--card-border-color) 70%, transparent 30%)'
+    element.style.boxShadow = 'inset 0 -1px 0 color-mix(in srgb, var(--card-border-color) 40%, transparent 60%)'
+    const cushion = element.querySelector<HTMLElement>('.fc-col-header-cell-cushion')
+    if (cushion) {
+      cushion.style.color = 'var(--card-fg-color)'
+      cushion.style.textShadow = '0 1px 1px color-mix(in srgb, var(--card-border-color) 35%, transparent 65%)'
+    }
+  }, [])
+
+  const clearDayHeaderState = useCallback((element: HTMLElement) => {
+    element.style.background = ''
+    element.style.borderBottom = ''
+    element.style.boxShadow = ''
+    const cushion = element.querySelector<HTMLElement>('.fc-col-header-cell-cushion')
+    if (cushion) {
+      cushion.style.color = ''
+      cushion.style.textShadow = ''
+    }
+  }, [])
+
   useEffect(() => {
     let cancelled = false
     if (!hasCurrentUser) {
@@ -1384,24 +1552,25 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       setLoading(false)
       eventElementsRef.current.forEach((elements) => {
         elements.forEach((element) => {
+          clearEventVisualState(element)
           detachOverflowObserver(element)
-          element.style.removeProperty('--calendar-event-status-color')
-          element.style.removeProperty('--calendar-event-status-border')
-          element.style.removeProperty('--calendar-event-status-surface')
-          element.style.removeProperty('--calendar-event-source-color')
-          element.style.backgroundColor = ''
-          element.classList.remove('calendar-event-selected')
-          element.removeAttribute('data-calendar-selected')
-          element.removeAttribute('aria-current')
         })
       })
       eventElementsRef.current.clear()
-      eventDayCellsRef.current.forEach((cells) => {
-        cells.forEach((cell) => {
-          cell.removeAttribute('data-calendar-selected')
+      dayCellRegistryRef.current.forEach((cells) => {
+        cells.forEach((entry) => {
+          clearDayCellState(entry)
+          if (entry.indicator?.parentElement) {
+            entry.indicator.parentElement.removeChild(entry.indicator)
+          }
         })
       })
-      eventDayCellsRef.current.clear()
+      dayCellRegistryRef.current.clear()
+      dayHeaderCellsRef.current.forEach((header) => {
+        clearDayHeaderState(header)
+      })
+      dayHeaderCellsRef.current.clear()
+      setDayStatusSummary({})
       eventOverflowObserversRef.current.forEach((observer) => observer.disconnect())
       eventOverflowObserversRef.current.clear()
       eventOverflowRafRef.current.clear()
@@ -1411,7 +1580,13 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         activeFetchRef.current = null
       }
     }
-  }, [accessState, detachOverflowObserver])
+  }, [
+    accessState,
+    clearDayCellState,
+    clearDayHeaderState,
+    clearEventVisualState,
+    detachOverflowObserver,
+  ])
 
   const projectEvents = useCallback(
     (payload: CalendarSyncResponse): EventInput[] => {
@@ -1420,6 +1595,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         {key: string; internal?: CalendarSyncEvent; public?: CalendarSyncEvent}
       >()
       const aliasBySourceId = new Map<string, string>()
+      const daySummary: Record<string, DayStatusFlags> = {}
 
       payload.public.forEach((event, index) => {
         const fallbackId = event.mapping?.publicEventId || event.relatedPublicEventId || `${event.start}:${index}`
@@ -1464,7 +1640,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         const status = resolveCombinedStatus(relatedInternal, relatedPublic)
         const displayTitle = resolveEventTitle(primary)
         const accent = STATUS_ACCENTS[status]
-        const textColor = 'var(--card-fg-color)'
+        const textColor = accent.text
         const primaryKey = `${primary.source}:${primary.id}`
         const sourceColor = primary.source === 'internal' ? internalColor : publicColor
         const extendedProps: CalendarEventExtendedProps = {
@@ -1475,27 +1651,32 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
           status,
           combinedKey: entry.key,
           primaryKey,
-          statusColor: accent.border,
-          statusSurface: accent.surface,
-          statusBorder: accent.tint,
+          statusAccent: accent,
           sourceColor,
         }
+        const dayKeys = collectEventDateKeys(primary)
+        dayKeys.forEach((dayKey) => {
+          const existing = daySummary[dayKey] || {published: false, unpublished: false, draft: false}
+          existing[status] = true
+          daySummary[dayKey] = existing
+        })
         results.push({
           id: primaryKey,
           title: displayTitle,
           start: primary.start,
           end: primary.end ?? undefined,
           allDay: primary.allDay,
-          backgroundColor: accent.surface,
-          borderColor: accent.tint,
+          backgroundColor: 'transparent',
+          borderColor: 'transparent',
           textColor,
           extendedProps,
         })
       })
 
+      setDayStatusSummary(daySummary)
       return results
     },
-    [internalColor, publicColor],
+    [internalColor, publicColor, setDayStatusSummary],
   )
 
   const requestSnapshot = useCallback(
@@ -1528,6 +1709,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   const eventSource = useCallback<EventSourceFunc>(
     (info, successCallback, failureCallback) => {
       if (accessState !== 'authorized' || !authorizedEmail) {
+        setDayStatusSummary({})
         successCallback([])
         return
       }
@@ -1558,6 +1740,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
           if (controller.signal.aborted) return
           const message = err instanceof Error ? err.message : 'Failed to load events'
           const details = err instanceof Error && 'details' in err ? ((err as any).details as CalendarAccessDetails | undefined) : undefined
+          setDayStatusSummary({})
           if (fetchId === fetchIdRef.current) {
             setErrorState({message, details})
           }
@@ -1587,6 +1770,11 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     const list = source === 'public' ? data.public : data.internal
     return list.find((item) => item.id === id)
   }, [data, selectedKey])
+
+  const selectedDateKeys = useMemo(() => {
+    if (!selectedEvent) return [] as string[]
+    return collectEventDateKeys(selectedEvent)
+  }, [selectedEvent])
 
   useEffect(() => {
     if (selectedEvent) {
@@ -1836,73 +2024,22 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         eventElementsRef.current.set(key, elements)
       }
       elements.add(arg.el)
-      if (extended?.statusColor) {
-        arg.el.style.setProperty('--calendar-event-status-color', extended.statusColor)
-      } else {
-        arg.el.style.removeProperty('--calendar-event-status-color')
-      }
-      if (extended?.statusBorder) {
-        arg.el.style.setProperty('--calendar-event-status-border', extended.statusBorder)
-      } else {
-        arg.el.style.removeProperty('--calendar-event-status-border')
-      }
-      if (extended?.statusSurface) {
-        arg.el.style.setProperty('--calendar-event-status-surface', extended.statusSurface)
-        arg.el.style.backgroundColor = extended.statusSurface
-      } else {
-        arg.el.style.removeProperty('--calendar-event-status-surface')
-        arg.el.style.backgroundColor = ''
-      }
-      if (extended?.sourceColor) {
-        arg.el.style.setProperty('--calendar-event-source-color', extended.sourceColor)
-      } else {
-        arg.el.style.removeProperty('--calendar-event-source-color')
-      }
-      eventStatusRef.current.set(key, {
+      const meta: EventStatusMeta = {
         status: extended?.status,
-        color: extended?.statusColor,
-        border: extended?.statusBorder,
-        surface: extended?.statusSurface,
+        accent: extended?.statusAccent,
         sourceColor: extended?.sourceColor,
-      })
-      const dayCell = arg.el.closest('.fc-daygrid-day') as HTMLElement | null
-      if (dayCell) {
-        let dayCells = eventDayCellsRef.current.get(key)
-        if (!dayCells) {
-          dayCells = new Set<HTMLElement>()
-          eventDayCellsRef.current.set(key, dayCells)
-        }
-        dayCells.add(dayCell)
       }
-      if (extended?.status) {
-        arg.el.setAttribute('data-calendar-status', extended.status)
-      } else {
-        arg.el.removeAttribute('data-calendar-status')
-      }
+      eventStatusRef.current.set(key, meta)
       if (extended?.relatedInternal && extended.relatedPublic) {
         arg.el.setAttribute('data-calendar-linked', 'true')
       } else {
         arg.el.removeAttribute('data-calendar-linked')
       }
-      if (key === selectedKey) {
-        arg.el.classList.add('calendar-event-selected')
-        arg.el.setAttribute('aria-current', 'true')
-        arg.el.setAttribute('data-calendar-selected', 'true')
-        if (dayCell) {
-          dayCell.setAttribute('data-calendar-selected', 'true')
-        }
-      } else {
-        arg.el.classList.remove('calendar-event-selected')
-        arg.el.removeAttribute('aria-current')
-        arg.el.removeAttribute('data-calendar-selected')
-        if (dayCell) {
-          dayCell.removeAttribute('data-calendar-selected')
-        }
-      }
+      applyEventVisualState(arg.el, meta, key === selectedKey)
       attachOverflowObserver(arg.el)
       scheduleOverflowMeasurement(arg.el)
     },
-    [attachOverflowObserver, scheduleOverflowMeasurement, selectedKey],
+    [applyEventVisualState, attachOverflowObserver, scheduleOverflowMeasurement, selectedKey],
   )
 
   const handleEventWillUnmount = useCallback((arg: EventMountArg) => {
@@ -1916,11 +2053,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         : ''
     const key = extended?.primaryKey || (event ? `${event.source}:${event.id}` : fallbackId)
     if (!key) return
-    arg.el.style.removeProperty('--calendar-event-status-color')
-    arg.el.style.removeProperty('--calendar-event-status-border')
-    arg.el.style.removeProperty('--calendar-event-status-surface')
-    arg.el.style.removeProperty('--calendar-event-source-color')
-    arg.el.style.backgroundColor = ''
+    clearEventVisualState(arg.el)
     detachOverflowObserver(arg.el)
     const elements = eventElementsRef.current.get(key)
     if (elements) {
@@ -1929,97 +2062,141 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         eventElementsRef.current.delete(key)
       }
     }
-    const dayCell = arg.el.closest('.fc-daygrid-day') as HTMLElement | null
-    if (dayCell) {
-      const dayCells = eventDayCellsRef.current.get(key)
-      if (dayCells) {
-        dayCells.delete(dayCell)
-        if (dayCells.size === 0) {
-          eventDayCellsRef.current.delete(key)
-        }
-      }
-      dayCell.removeAttribute('data-calendar-selected')
-    }
-    if (!eventElementsRef.current.has(key) && !eventDayCellsRef.current.has(key)) {
+    if (!eventElementsRef.current.has(key)) {
       eventStatusRef.current.delete(key)
     }
-  }, [detachOverflowObserver])
+  }, [clearEventVisualState, detachOverflowObserver])
+
+  const handleDayCellDidMount = useCallback(
+    (arg: DayCellMountArg) => {
+      const dateKey = formatDateKey(arg.date)
+      let cells = dayCellRegistryRef.current.get(dateKey)
+      if (!cells) {
+        cells = new Set<DayCellEntry>()
+        dayCellRegistryRef.current.set(dateKey, cells)
+      }
+      const top = arg.el.querySelector<HTMLElement>('.fc-daygrid-day-top')
+      const doc = arg.el.ownerDocument || (typeof document !== 'undefined' ? document : null)
+      let indicator: HTMLElement | null = null
+      if (top && doc) {
+        indicator = doc.createElement('span')
+        indicator.className = 'calendar-day-indicator'
+        indicator.setAttribute('aria-hidden', 'true')
+        top.appendChild(indicator)
+      }
+      const entry: DayCellEntry = {root: arg.el, indicator}
+      cells.add(entry)
+      const summary = dayStatusSummary[dateKey]
+      const isSelected = selectedDateKeys.includes(dateKey)
+      applyDayCellState(entry, summary, isSelected)
+    },
+    [applyDayCellState, dayStatusSummary, selectedDateKeys],
+  )
+
+  const handleDayCellWillUnmount = useCallback(
+    (arg: DayCellMountArg) => {
+      const dateKey = formatDateKey(arg.date)
+      const cells = dayCellRegistryRef.current.get(dateKey)
+      if (!cells) return
+      for (const entry of Array.from(cells)) {
+        if (entry.root === arg.el) {
+          clearDayCellState(entry)
+          if (entry.indicator?.parentElement) {
+            entry.indicator.parentElement.removeChild(entry.indicator)
+          }
+          cells.delete(entry)
+          break
+        }
+      }
+      if (cells.size === 0) {
+        dayCellRegistryRef.current.delete(dateKey)
+      }
+    },
+    [clearDayCellState],
+  )
+
+  const handleDayHeaderDidMount = useCallback(
+    (arg: DayHeaderMountArg) => {
+      dayHeaderCellsRef.current.add(arg.el)
+      applyDayHeaderState(arg.el)
+    },
+    [applyDayHeaderState],
+  )
+
+  const handleDayHeaderWillUnmount = useCallback(
+    (arg: DayHeaderMountArg) => {
+      clearDayHeaderState(arg.el)
+      dayHeaderCellsRef.current.delete(arg.el)
+    },
+    [clearDayHeaderState],
+  )
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined
+    const root = document.documentElement
+    if (!root) return undefined
+    const observer = new MutationObserver(() => {
+      setColorSchemeNonce((value) => value + 1)
+    })
+    observer.observe(root, {attributes: true, attributeFilter: ['data-ui-color-scheme']})
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    dayHeaderCellsRef.current.forEach((header) => {
+      applyDayHeaderState(header)
+    })
+  }, [applyDayHeaderState, colorSchemeNonce])
 
   useEffect(() => {
     eventElementsRef.current.forEach((elements, key) => {
       const meta = eventStatusRef.current.get(key)
       elements.forEach((element) => {
-        if (meta?.color) {
-          element.style.setProperty('--calendar-event-status-color', meta.color)
-        } else {
-          element.style.removeProperty('--calendar-event-status-color')
-        }
-        if (meta?.border) {
-          element.style.setProperty('--calendar-event-status-border', meta.border)
-        } else {
-          element.style.removeProperty('--calendar-event-status-border')
-        }
-        if (meta?.surface) {
-          element.style.setProperty('--calendar-event-status-surface', meta.surface)
-          element.style.backgroundColor = meta.surface
-        } else {
-          element.style.removeProperty('--calendar-event-status-surface')
-          element.style.backgroundColor = ''
-        }
-        if (meta?.sourceColor) {
-          element.style.setProperty('--calendar-event-source-color', meta.sourceColor)
-        } else {
-          element.style.removeProperty('--calendar-event-source-color')
-        }
-        if (key === selectedKey) {
-          element.classList.add('calendar-event-selected')
-          element.setAttribute('aria-current', 'true')
-          element.setAttribute('data-calendar-selected', 'true')
-        } else {
-          element.classList.remove('calendar-event-selected')
-          element.removeAttribute('aria-current')
-          element.removeAttribute('data-calendar-selected')
-        }
+        applyEventVisualState(element, meta, key === selectedKey)
         scheduleOverflowMeasurement(element)
       })
     })
-    eventDayCellsRef.current.forEach((cells, key) => {
-      cells.forEach((cell) => {
-        if (key === selectedKey) {
-          cell.setAttribute('data-calendar-selected', 'true')
-        } else {
-          cell.removeAttribute('data-calendar-selected')
-        }
+  }, [applyEventVisualState, colorSchemeNonce, scheduleOverflowMeasurement, selectedKey])
+
+  useEffect(() => {
+    const selectedSet = new Set(selectedDateKeys)
+    dayCellRegistryRef.current.forEach((cells, dateKey) => {
+      const summary = dayStatusSummary[dateKey]
+      const isSelected = selectedSet.has(dateKey)
+      cells.forEach((entry) => {
+        applyDayCellState(entry, summary, isSelected)
       })
     })
-  }, [scheduleOverflowMeasurement, selectedKey])
+  }, [applyDayCellState, colorSchemeNonce, dayStatusSummary, selectedDateKeys])
 
   useEffect(() => {
     return () => {
       eventElementsRef.current.forEach((elements) => {
         elements.forEach((element) => {
+          clearEventVisualState(element)
           detachOverflowObserver(element)
-          element.style.removeProperty('--calendar-event-status-color')
-          element.style.removeProperty('--calendar-event-status-border')
-          element.style.removeProperty('--calendar-event-source-color')
-          element.classList.remove('calendar-event-selected')
-          element.removeAttribute('data-calendar-selected')
-          element.removeAttribute('aria-current')
         })
       })
       eventElementsRef.current.clear()
-      eventDayCellsRef.current.forEach((cells) => {
-        cells.forEach((cell) => {
-          cell.removeAttribute('data-calendar-selected')
+      dayCellRegistryRef.current.forEach((cells) => {
+        cells.forEach((entry) => {
+          clearDayCellState(entry)
+          if (entry.indicator?.parentElement) {
+            entry.indicator.parentElement.removeChild(entry.indicator)
+          }
         })
       })
-      eventDayCellsRef.current.clear()
+      dayCellRegistryRef.current.clear()
+      dayHeaderCellsRef.current.forEach((header) => {
+        clearDayHeaderState(header)
+      })
+      dayHeaderCellsRef.current.clear()
       eventOverflowObserversRef.current.forEach((observer) => observer.disconnect())
       eventOverflowObserversRef.current.clear()
       eventOverflowRafRef.current.clear()
       eventStatusRef.current.clear()
     }
-  }, [detachOverflowObserver])
+  }, [clearDayCellState, clearDayHeaderState, clearEventVisualState, detachOverflowObserver])
 
   const refresh = useCallback(() => {
     if (accessState !== 'authorized') return
@@ -2466,6 +2643,10 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                 eventClassNames={eventClassNames}
                 eventDidMount={handleEventDidMount}
                 eventWillUnmount={handleEventWillUnmount}
+                dayCellDidMount={handleDayCellDidMount}
+                dayCellWillUnmount={handleDayCellWillUnmount}
+                dayHeaderDidMount={handleDayHeaderDidMount}
+                dayHeaderWillUnmount={handleDayHeaderWillUnmount}
               />
             </div>
             {loading && (
