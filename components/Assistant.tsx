@@ -57,7 +57,7 @@ export default function Assistant() {
     );
     const parts = text.split(regex).filter(Boolean);
     const accentLinkClass =
-      'underline text-[#f4f4f5] decoration-[#f4f4f5] hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f4f4f5]';
+      'underline text-neutral-50 decoration-neutral-50 hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-50';
     return parts.map((part, idx) => {
       if (/^https?:\/\//.test(part)) {
         const trimmed = stripInvisibleCharacters(part);
@@ -323,7 +323,7 @@ export default function Assistant() {
                       <div className="mt-1 text-sm">
                         <button
                           type="button"
-                          className="underline text-[#f4f4f5] decoration-[#f4f4f5] hover:opacity-80 focus:outline-none focus:ring-1 focus:ring-[#f4f4f5] cursor-pointer bg-transparent p-0 font-normal"
+                          className="underline text-neutral-50 decoration-neutral-50 hover:opacity-80 focus:outline-none focus:ring-1 focus:ring-neutral-50 cursor-pointer bg-transparent p-0 font-normal"
                           onClick={() => {
                             const pct = Math.max(
                               0,
