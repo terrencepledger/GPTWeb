@@ -3,6 +3,19 @@
 import { useState } from "react";
 import type { CalendarEvent } from "@/lib/googleCalendar";
 
+// Parse Google Calendar ISO strings safely for local calendar rendering.
+// - All-day events come as YYYY-MM-DD (no time, UTC when parsed natively),
+//   so we must construct a local Date to avoid timezone day-shift.
+// - Timed events include a time or timezone; native Date parsing is fine.
+function parseEventStartLocal(start: string): Date {
+  // YYYY-MM-DD (all-day)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(start)) {
+    const [y, m, d] = start.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+  return new Date(start);
+}
+
 export default function EventCalendar({ events }: { events: CalendarEvent[] }) {
   const [current, setCurrent] = useState(() => {
     const d = new Date();
@@ -16,9 +29,8 @@ export default function EventCalendar({ events }: { events: CalendarEvent[] }) {
     year === today.getFullYear() && month === today.getMonth();
 
   const monthEvents = events.filter((ev) => {
-    const d = new Date(ev.start);
+    const d = parseEventStartLocal(ev.start);
     return d.getFullYear() === year && d.getMonth() === month;
-    
   });
 
   const firstWeekday = new Date(year, month, 1).getDay();
@@ -77,24 +89,52 @@ export default function EventCalendar({ events }: { events: CalendarEvent[] }) {
               <div>
                 <div className="font-semibold">{d}</div>
                 {monthEvents
-                  .filter((ev) => new Date(ev.start).getDate() === d)
+                  .filter((ev) => parseEventStartLocal(ev.start).getDate() === d)
                   .map((ev) => (
                     ev.href ? (
                       <a
                         key={ev.id}
                         href={ev.href}
+                        title={ev.title}
                         className="group block mt-1 rounded border border-[var(--brand-border)] bg-[var(--brand-accent)]/20 p-0.5 no-underline hover:no-underline focus:no-underline focus-visible:no-underline visited:no-underline active:no-underline transition-colors hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
                         style={{ textDecoration: 'none' }}
                       >
-                        <div>{ev.title}</div>
+                        <div
+                          className="break-words"
+                          style={{
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical' as const,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            lineHeight: 1.2,
+                            maxHeight: '2.4em',
+                          }}
+                        >
+                          {ev.title}
+                        </div>
                         <span className="text-[0.625rem] text-[var(--brand-accent)] underline">Learn more</span>
                       </a>
                     ) : (
                       <div
                         key={ev.id}
+                        title={ev.title}
                         className="mt-1 rounded border border-[var(--brand-border)] bg-[var(--brand-accent)]/20 p-0.5"
                       >
-                        <div>{ev.title}</div>
+                        <div
+                          className="break-words"
+                          style={{
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical' as const,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            lineHeight: 1.2,
+                            maxHeight: '2.4em',
+                          }}
+                        >
+                          {ev.title}
+                        </div>
                       </div>
                     )
                   ))}

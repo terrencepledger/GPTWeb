@@ -417,13 +417,13 @@ function stripStatusTokens(value: string) {
   STATUS_TITLE_TOKENS.forEach((token) => {
     const safeToken = token
     const leadingPatterns = [
-      new RegExp(`^\\s*\\[\\s*${safeToken}\\s*\\](?:\\s*[:\\-–—·•|]\\s*|\\s+)?`, 'i'),
+      new RegExp(`^\\s*${safeToken}(?:\\s*[:\\-–—·•|]\\s*|\\s+)?`, 'i'),
       new RegExp(`^\\s*\\(\\s*${safeToken}\\s*\\)(?:\\s*[:\\-–—·•|]\\s*|\\s+)?`, 'i'),
       new RegExp(`^\\s*${safeToken}(?:\\s*[:\\-–—·•|]\\s*|\\s+)?`, 'i'),
       new RegExp(`^\\s*${safeToken}(?=\\d)`, 'i'),
     ]
     const trailingPatterns = [
-      new RegExp(`(?:\\s*[:\\-–—·•|]\\s*|\\s+)?\\[\\s*${safeToken}\\s*\\]\\s*$`, 'i'),
+      new RegExp(`(?:\\s*[:\\-–—·•|]\\s*|\\s+)?${safeToken}\\s*$`, 'i'),
       new RegExp(`(?:\\s*[:\\-–—·•|]\\s*|\\s+)?\\(\\s*${safeToken}\\s*\\)\\s*$`, 'i'),
       new RegExp(`(?:\\s*[:\\-–—·•|]\\s*|\\s+)?${safeToken}\\s*$`, 'i'),
     ]
@@ -459,8 +459,8 @@ function stripStatusTokens(value: string) {
   })
   result = result
     .replace(/\(\s*\)/g, ' ')
-    .replace(/\[\s*\]/g, ' ')
-    .replace(/\{\s*\}/g, ' ')
+    .replace(/\[\s*]/g, ' ')
+    .replace(/\{\s*}/g, ' ')
     .replace(/\s{2,}/g, ' ')
     .replace(new RegExp(`^[${STATUS_SEPARATOR_FRAGMENT}]+`), '')
     .replace(new RegExp(`[${STATUS_SEPARATOR_FRAGMENT}]+$`), '')
@@ -531,10 +531,23 @@ function formatDateKey(date: Date) {
   return `${year}-${month}-${day}`
 }
 
+// Parse event start/end safely for Studio calendar rendering.
+// - All-day events often arrive as YYYY-MM-DD (interpreted as UTC by Date),
+//   which can shift to the previous local day in US timezones.
+// - For all-day date strings, construct a local Date(y, m-1, d) instead.
+// - For timed ISO strings, native Date parsing is fine.
+function parseEventDateLocal(value: string, allDay: boolean) {
+  if (allDay && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const [y, m, d] = value.split('-').map(Number)
+    return new Date(y, m - 1, d)
+  }
+  return new Date(value)
+}
+
 function collectEventDateKeys(event: CalendarSyncEvent) {
-  const startDate = new Date(event.start)
+  const startDate = parseEventDateLocal(event.start, event.allDay)
   if (Number.isNaN(startDate.getTime())) return []
-  const rawEnd = event.end ? new Date(event.end) : new Date(startDate.getTime())
+  const rawEnd = event.end ? parseEventDateLocal(event.end, event.allDay) : new Date(startDate.getTime())
   const effectiveEnd = (() => {
     if (Number.isNaN(rawEnd.getTime())) {
       return new Date(startDate.getTime())
@@ -576,8 +589,8 @@ function resolveEventTitle(event: CalendarSyncEvent) {
 }
 
 function formatDateRange(event: CalendarSyncEvent) {
-  const start = new Date(event.start)
-  const end = event.end ? new Date(event.end) : null
+  const start = parseEventDateLocal(event.start, event.allDay)
+  const end = event.end ? parseEventDateLocal(event.end, event.allDay) : null
   if (event.allDay) {
     const startDate = start.toLocaleDateString(undefined, {
       month: 'short',
@@ -622,12 +635,12 @@ function getEventTimezone(event: CalendarSyncEvent, fallback?: string) {
 
 function formatEventTimeLabel(event: CalendarSyncEvent, fallbackTimezone?: string) {
   if (event.allDay) return ''
-  const start = new Date(event.start)
-  if (!(start instanceof Date) || Number.isNaN(start.getTime())) return ''
+  const start = parseEventDateLocal(event.start, event.allDay)
+  if (Number.isNaN(start.getTime())) return ''
 
   let end: Date | null = null
   if (event.end) {
-    const maybeEnd = new Date(event.end)
+    const maybeEnd = parseEventDateLocal(event.end, event.allDay)
     if (!Number.isNaN(maybeEnd.getTime())) {
       end = maybeEnd
     }
@@ -1040,6 +1053,73 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       width: 100%;
       max-width: 100%;
     }
+    /* Neutralize FullCalendar's internal event backgrounds so only our tile carries status color */
+    .calendar-tool-calendarCard .fc .fc-event,
+    .calendar-tool-calendarCard .fc .fc-daygrid-event,
+    .calendar-tool-calendarCard .fc .fc-timegrid-event {
+      background: transparent !important;
+      border-color: transparent !important;
+    }
+    .calendar-tool-calendarCard .fc .fc-event-main,
+    .calendar-tool-calendarCard .fc .fc-event-main-frame,
+    .calendar-tool-calendarCard .fc .fc-event-title,
+    .calendar-tool-calendarCard .fc .fc-event-time,
+    .calendar-tool-calendarCard .fc .fc-h-event .fc-event-title-container,
+    .calendar-tool-calendarCard .fc .fc-daygrid-dot-event,
+    .calendar-tool-calendarCard .fc .fc-daygrid-dot-event .fc-event-title {
+      background: transparent !important;
+      border-color: transparent !important;
+      box-shadow: none !important;
+    }
+    .calendar-tool-calendarCard .fc .fc-daygrid-event a,
+    .calendar-tool-calendarCard .fc .fc-timegrid-event a {
+      background: transparent !important;
+    }
+    .calendar-tool-calendarCard .fc a:focus,
+    .calendar-tool-calendarCard .fc a:focus-visible,
+    .calendar-tool-calendarCard .fc a:hover {
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+    /* Force FullCalendar theme vars to be transparent so it never paints event pills */
+    .calendar-tool-calendarCard .fc {
+      --fc-event-bg-color: transparent !important;
+      --fc-event-border-color: transparent !important;
+      --fc-event-text-color: inherit !important;
+      --fc-event-selected-overlay-color: transparent !important;
+    }
+    /* As a final guard, ensure our own title nodes never pick up a background */
+    .calendar-tool-calendarCard .calendar-event-title,
+    .calendar-tool-calendarCard .calendar-event-listItemTitle {
+      background: transparent !important;
+    }
+    /* Ensure titles fit within dayGrid tiles by default */
+    .calendar-tool-calendarCard .fc .fc-daygrid-event .fc-event-main,
+    .calendar-tool-calendarCard .fc .fc-daygrid-event .fc-event-main-frame,
+    .calendar-tool-calendarCard .fc .fc-daygrid-event .calendar-event-content,
+    .calendar-tool-calendarCard .fc .fc-daygrid-event .calendar-event-title {
+      min-width: 0 !important;
+    }
+    .calendar-tool-calendarCard .fc .fc-daygrid-event .calendar-event-content {
+      font-size: 0.85rem;
+      line-height: 1.2;
+      gap: 0.2rem;
+      min-width: 0 !important;
+      overflow: hidden; /* contain children */
+    }
+    /* Ensure titles fit within dayGrid tiles by default: wrap, then clamp with ellipsis */
+    .calendar-tool-calendarCard .fc .fc-daygrid-event .calendar-event-title {
+      display: -webkit-box !important;
+      -webkit-box-orient: vertical !important;
+      -webkit-line-clamp: 2 !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      white-space: normal !important;
+      word-break: break-word !important;
+      overflow-wrap: anywhere !important;
+      line-height: 1.2 !important;
+      max-height: 2.4em !important; /* 2 lines * 1.2 line-height fallback for non-WebKit */
+    }
     .calendar-tool-calendarCard .fc-daygrid-day-frame {
       position: relative;
       border-radius: 16px;
@@ -1152,8 +1232,11 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
     .calendar-event-note {
       display: block;
       max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      overflow: visible;
+      text-overflow: clip;
+      white-space: normal;
+      word-break: break-word;
+      overflow-wrap: anywhere;
     }
     .calendar-event-title,
     .calendar-event-listItemTitle {
@@ -2051,14 +2134,35 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         const timeLabel = !arg.event.allDay && baseTimeText ? baseTimeText : ''
         const displayText = fallbackTitle || 'Untitled event'
         return (
-          <div className="calendar-event-content" title={displayText} aria-label={accessibleTitle}>
+          <div
+            className="calendar-event-content"
+            title={displayText}
+            aria-label={accessibleTitle}
+            style={{ minWidth: 0, overflow: 'hidden' }}
+          >
             {(timeLabel || statusIndicator) && (
               <div className="calendar-event-metaRow">
                 {statusIndicator}
                 {timeLabel ? <span className="calendar-event-time">{timeLabel}</span> : null}
               </div>
             )}
-            <span className="calendar-event-title">{displayText}</span>
+            <span
+              className="calendar-event-title"
+              style={{
+                display: '-webkit-box',
+                WebkitBoxOrient: 'vertical' as const,
+                WebkitLineClamp: 2,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'normal',
+                wordBreak: 'break-word',
+                overflowWrap: 'anywhere',
+                lineHeight: 1.2,
+                maxHeight: '2.4em',
+              }}
+            >
+              {displayText}
+            </span>
           </div>
         )
       }
@@ -2099,6 +2203,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
           title={displayTitle}
           aria-label={accessibleTitle}
           data-calendar-source={sourceEvent.source}
+          style={{ minWidth: 0, overflow: 'hidden' }}
         >
           {(timeLabel || statusIndicator) && (
             <div className="calendar-event-metaRow">
@@ -2106,7 +2211,23 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
               {timeLabel ? <span className="calendar-event-time">{timeLabel}</span> : null}
             </div>
           )}
-          <span className="calendar-event-title">{displayTitle}</span>
+          <span
+            className="calendar-event-title"
+            style={{
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical' as const,
+              WebkitLineClamp: 2,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'normal',
+              wordBreak: 'break-word',
+              overflowWrap: 'anywhere',
+              lineHeight: 1.2,
+              maxHeight: '2.4em',
+            }}
+          >
+            {displayTitle}
+          </span>
         </div>
       )
     },
@@ -2156,12 +2277,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
     (arg: EventMountArg) => {
       const extended = arg.event.extendedProps as CalendarEventExtendedProps
       const event = extended?.event
-      const fallbackId =
-        typeof arg.event.id === 'string'
-          ? arg.event.id
-          : typeof arg.event.id === 'number'
-          ? String(arg.event.id)
-          : ''
+      const fallbackId = arg.event.id
       const key = extended?.primaryKey || (event ? `${event.source}:${event.id}` : fallbackId)
       if (!key) return
       let elements = eventElementsRef.current.get(key)
@@ -2183,16 +2299,14 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
       }
       const rawDisplay =
         (extended?.displayTitle && extended.displayTitle.trim()) ||
-        (typeof arg.event.title === 'string' ? arg.event.title : '') ||
+        (arg.event.title) ||
         ''
       const sanitizedDisplay = stripStatusTokens(rawDisplay)
       enforceEventTitleSanitization(arg.el, sanitizedDisplay)
-      if (typeof arg.event.title === 'string') {
         const cleanedTitle = stripStatusTokens(arg.event.title)
         if (cleanedTitle !== arg.event.title) {
-          arg.event.setProp('title', cleanedTitle)
+            arg.event.setProp('title', cleanedTitle)
         }
-      }
       applyEventVisualState(arg.el, meta, key === selectedKey)
       attachOverflowObserver(arg.el)
       scheduleOverflowMeasurement(arg.el)
@@ -2209,12 +2323,7 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
   const handleEventWillUnmount = useCallback((arg: EventMountArg) => {
     const extended = arg.event.extendedProps as CalendarEventExtendedProps
     const event = extended?.event
-    const fallbackId =
-      typeof arg.event.id === 'string'
-        ? arg.event.id
-        : typeof arg.event.id === 'number'
-        ? String(arg.event.id)
-        : ''
+    const fallbackId = arg.event.id
     const key = extended?.primaryKey || (event ? `${event.source}:${event.id}` : fallbackId)
     if (!key) return
     clearEventVisualState(arg.el)
@@ -2509,27 +2618,26 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
 
   const internalSummary = data?.calendars.internal
   const publicSummary = data?.calendars.public
-  const selectedEventTitle = selectedEvent ? resolveEventTitle(selectedEvent) : ''
-  const driftNotices = selectedEvent?.drift ?? []
-  const driftHasError = driftNotices.some((notice) => notice.level === 'error')
-  const driftHasWarning = driftNotices.some((notice) => notice.level === 'warning')
+    selectedEvent ? resolveEventTitle(selectedEvent) : '';
+    const driftNotices = selectedEvent?.drift ?? []
+    driftNotices.some((notice) => notice.level === 'error');
+    driftNotices.some((notice) => notice.level === 'warning');
 
-  const generatedAtLabel = useMemo(() => {
-    if (!data?.meta?.generatedAt) return null
-    try {
-      return new Intl.DateTimeFormat(undefined, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-      }).format(new Date(data.meta.generatedAt))
-    } catch {
-      return new Date(data.meta.generatedAt).toLocaleString()
-    }
-  }, [data?.meta?.generatedAt])
-
-  const calendarButtonText = useMemo(
+    const generatedAtLabel = useMemo(() => {
+        if (!data?.meta?.generatedAt) return null
+        try {
+            return new Intl.DateTimeFormat(undefined, {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+            }).format(new Date(data.meta.generatedAt))
+        } catch {
+            return new Date(data.meta.generatedAt).toLocaleString()
+        }
+    }, [data?.meta?.generatedAt])
+    const calendarButtonText = useMemo(
     () => ({
       dayGridMonth: 'Month grid',
       timeGridWeek: 'Week grid',
@@ -2544,11 +2652,11 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
         dayMaxEventRows: 4,
       },
       timeGridWeek: {
-        slotLabelFormat: {hour: 'numeric', minute: '2-digit'},
+        slotLabelFormat: {hour: 'numeric' as const, minute: '2-digit' as const},
         expandRows: true,
       },
       timeGridDay: {
-        slotLabelFormat: {hour: 'numeric', minute: '2-digit'},
+        slotLabelFormat: {hour: 'numeric' as const, minute: '2-digit' as const},
         expandRows: true,
       },
     }),
@@ -2804,9 +2912,8 @@ function CalendarSyncToolComponent(props: CalendarSyncToolOptions) {
                 views={calendarViewOptions}
                 events={eventSource}
                 eventContent={renderEventContent}
-                eventTimeFormat={{hour: 'numeric', minute: '2-digit'}}
+                eventTimeFormat={{hour: 'numeric' as const, minute: '2-digit' as const}}
                 height="auto"
-                style={{flex: '1 1 auto', minHeight: 0, width: '100%'}}
                 slotDuration="00:30:00"
                 slotLabelContent={renderSlotLabel}
                 nowIndicator

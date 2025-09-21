@@ -5,12 +5,6 @@ export default defineType({
   title: 'Page',
   type: 'document',
   hidden: true,
-  __experimental_actions: [] as (
-    | 'create'
-    | 'delete'
-    | 'publish'
-    | 'update'
-  )[],
   fields: [
     defineField({
       name: 'title',
