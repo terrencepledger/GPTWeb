@@ -22,7 +22,10 @@ export const structure = (S: any) =>
       S.listItem()
         .title('Meet the Pastor')
         .child(
-          S.document().schemaType('meetPastor').documentId('meetPastor')
+          S.document()
+            .title('Meet the Pastor')
+            .schemaType('meetPastor')
+            .documentId('meetPastor')
         ),
       S.documentTypeListItem('missionStatement').title('Mission Statement'),
     ])
