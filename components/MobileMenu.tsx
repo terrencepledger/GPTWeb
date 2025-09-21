@@ -16,7 +16,8 @@ export type MobileMenuHandle = {
 };
 
 interface MobileMenuProps {
-  nav: NavItem[];
+  primaryNav: NavItem[];
+  trailingNav: NavItem[];
 }
 
 function linkClasses(active: boolean) {
@@ -24,7 +25,7 @@ function linkClasses(active: boolean) {
 }
 
 
-function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHandle>) {
+function MobileMenuInner({ primaryNav, trailingNav }: MobileMenuProps, ref: React.Ref<MobileMenuHandle>) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -135,7 +136,7 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
                     </div>
                   )}
                 </Disclosure>
-                {nav.map((item) => (
+                {primaryNav.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
@@ -197,6 +198,18 @@ function MobileMenuInner({ nav }: MobileMenuProps, ref: React.Ref<MobileMenuHand
                     </div>
                   )}
                 </Disclosure>
+
+                {trailingNav.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={linkClasses(pathname.startsWith(item.href))}
+                    aria-current={pathname.startsWith(item.href) ? "page" : undefined}
+                    onClick={handleClose}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
               </nav>
             </Dialog.Panel>
           </Transition.Child>

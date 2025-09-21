@@ -21,6 +21,7 @@ import chatbot from './sanity/schemas/chatbot'
 import calendarSyncMapping from './sanity/schemas/calendarSyncMapping'
 import formSettings from './sanity/schemas/formSettings'
 import page from './sanity/schemas/page'
+import faq from './sanity/schemas/faq'
 
 // Desk structure
 import {structure} from './sanity/deskStructure'
@@ -84,7 +85,7 @@ export default defineConfig({
     projectId,
     dataset,
     schema: {
-        types: [announcement, siteSettings, staff, ministry, heroSlide, missionStatement, eventDetail, heroSection, gallerySection, subscriptionSection, mapSection, linkSection, chatbot, calendarSyncMapping, formSettings, page],
+        types: [announcement, siteSettings, staff, ministry, heroSlide, missionStatement, eventDetail, heroSection, gallerySection, subscriptionSection, mapSection, linkSection, chatbot, calendarSyncMapping, formSettings, faq, page],
     },
     plugins: [
         structureTool({

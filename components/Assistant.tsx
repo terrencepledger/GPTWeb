@@ -28,6 +28,8 @@ export default function Assistant() {
   const logRef = useRef<HTMLDivElement>(null);
   const baseBottom = 24;
   const [viewportOffset, setViewportOffset] = useState(0);
+  const openTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const ANIM_MS = 1000;
 
   useEffect(() => {
     const viewport = window.visualViewport;
@@ -57,7 +59,7 @@ export default function Assistant() {
     );
     const parts = text.split(regex).filter(Boolean);
     const accentLinkClass =
-      'underline text-neutral-50 decoration-neutral-50 hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-50';
+      'underline text-[var(--brand-alt)] decoration-[var(--brand-alt)] hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-alt)]';
     return parts.map((part, idx) => {
       if (/^https?:\/\//.test(part)) {
         const trimmed = stripInvisibleCharacters(part);
@@ -142,10 +144,10 @@ export default function Assistant() {
     }, timeout);
   }, []);
 
-  function resetNudge() {
+  const resetNudge = useCallback(() => {
     setNudge(false);
     if (!openRef.current) scheduleNudge();
-  }
+  }, [scheduleNudge]);
 
   useEffect(() => {
     const id = setTimeout(() => {
@@ -239,7 +241,7 @@ export default function Assistant() {
     ]);
   }
 
-  function dock() {
+  const dock = useCallback(() => {
     const el = containerRef.current;
     const header = document.querySelector('header');
     if (!el || !header) return;
@@ -251,15 +253,58 @@ export default function Assistant() {
     setOffset({ x: targetX - rect.left, y: targetY - rect.top });
     setDocked(true);
     resetNudge();
-  }
+  }, [resetNudge]);
 
-  function undock() {
+  const undock = useCallback(() => {
     setOffset({ x: 0, y: 0 });
     setDocked(false);
     resetNudge();
-  }
+  }, [resetNudge]);
 
-  const ANIM_MS = 1000;
+  const openAssistant = useCallback(
+    (prompt?: string) => {
+      if (prompt !== undefined) {
+        setInput(prompt);
+      }
+      const doOpen = () => {
+        setOpen(true);
+      };
+      resetNudge();
+      if (openTimeoutRef.current) {
+        clearTimeout(openTimeoutRef.current);
+        openTimeoutRef.current = null;
+      }
+      if (docked) {
+        undock();
+        openTimeoutRef.current = setTimeout(() => {
+          doOpen();
+          openTimeoutRef.current = null;
+        }, ANIM_MS);
+      } else {
+        doOpen();
+      }
+    },
+    [docked, resetNudge, undock]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (openTimeoutRef.current) {
+        clearTimeout(openTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<{ prompt?: string }>).detail || {};
+      openAssistant(detail.prompt);
+    };
+    window.addEventListener('assistant:open', handler as EventListener);
+    return () => {
+      window.removeEventListener('assistant:open', handler as EventListener);
+    };
+  }, [openAssistant]);
 
   return (
     <div
@@ -323,7 +368,7 @@ export default function Assistant() {
                       <div className="mt-1 text-sm">
                         <button
                           type="button"
-                          className="underline text-neutral-50 decoration-neutral-50 hover:opacity-80 focus:outline-none focus:ring-1 focus:ring-neutral-50 cursor-pointer bg-transparent p-0 font-normal"
+                          className="underline text-[var(--brand-alt)] decoration-[var(--brand-alt)] hover:opacity-80 focus:outline-none focus:ring-1 focus:ring-[var(--brand-alt)] cursor-pointer bg-transparent p-0 font-normal"
                           onClick={() => {
                             const pct = Math.max(
                               0,
@@ -500,15 +545,7 @@ export default function Assistant() {
         <button
           type="button"
           aria-label="Open assistant"
-          onClick={() => {
-            resetNudge();
-            if (docked) {
-              undock();
-              setTimeout(() => setOpen(true), ANIM_MS);
-            } else {
-              setOpen(true);
-            }
-          }}
+          onClick={() => openAssistant()}
           className={`flex h-14 w-14 items-center justify-center rounded-full shadow-lg cursor-pointer border hover:opacity-90 ${nudge ? 'animate-shake' : ''}`}
           style={{
             backgroundColor: 'var(--brand-accent)',
