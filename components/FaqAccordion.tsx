@@ -40,14 +40,14 @@ const portableTextComponents: PortableTextComponents = {
     link: ({
       children,
       value,
-    }: PortableTextMarkComponentProps<{ href?: string }>) => {
+    }: PortableTextMarkComponentProps<{ _type: "link"; href?: string }>) => {
       const href = value?.href;
       const isExternal = href?.startsWith("http");
       if (!href) return <>{children}</>;
       return (
         <a
           href={href}
-          className="underline decoration-[var(--brand-alt)] underline-offset-2 hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-alt)]"
+          className="underline decoration-[var(--brand-alt)] underline-offset-2 hover:opacity-80 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-alt)]"
           target={isExternal ? "_blank" : undefined}
           rel={isExternal ? "noreferrer" : undefined}
         >
