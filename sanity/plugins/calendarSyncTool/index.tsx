@@ -1002,9 +1002,6 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       flex-direction: column;
       gap: 0.45rem;
     }
-    .calendar-tool-calendarCard .fc .fc-daygrid-event-harness {
-      display: contents;
-    }
     .calendar-tool-calendarCard .fc .fc-daygrid-event {
       margin: 0;
     }
@@ -1036,6 +1033,7 @@ function buildCustomCalendarStyles(internalColor: string, publicColor: string) {
       display: flex;
       flex-direction: column;
       gap: 0.4rem;
+      box-sizing: border-box;
       padding: 0.65rem 0.85rem 0.75rem 0.95rem;
       border-radius: 14px;
       border: 1px solid transparent;
