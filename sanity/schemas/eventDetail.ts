@@ -36,6 +36,10 @@ export default defineType({
       name: 'palette',
       title: 'Palette',
       type: 'object',
+      initialValue: {
+        light: { primary: 'purple', accent: 'gold', contrast: 'white' },
+        dark: { primary: 'purpleLt', accent: 'gold', contrast: 'gold' },
+      },
       fields: [
         defineField({
           name: 'light',

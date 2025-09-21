@@ -38,6 +38,7 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
   const colorMap: Record<string, string> = {
     purple: "rgb(92,48,166)",
+    purpleLt: "rgb(177,156,217)",
     gold: "rgb(214,175,54)",
     ink: "rgb(18,18,18)",
     white: "rgb(255,255,255)",
@@ -86,7 +87,8 @@ export default async function Page({ params }: { params: { slug: string } }) {
     !!s && s._type === "subscriptionSection";
 
   const subscription = detail.sections?.find(isSubscriptionSection);
-  const subscribeUrl = subscription?.showSubscribe !== false ? calendar?.htmlLink : undefined;
+  const subscribeUrl =
+    subscription && subscription.showSubscribe !== false ? calendar?.htmlLink : undefined;
 
   return (
     <>
