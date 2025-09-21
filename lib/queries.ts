@@ -1,4 +1,5 @@
 import groq from 'groq';
+import type {PortableTextBlock} from 'sanity';
 import {sanity} from './sanity';
 
 export interface HeroSlide {
@@ -146,6 +147,29 @@ export const missionStatement = () =>
       tagline,
       "backgroundImage": backgroundImage.asset->url,
       message
+    }`
+  );
+
+export interface FaqItem {
+  _id: string;
+  question: string;
+  answer: PortableTextBlock[];
+  category?: string;
+  position?: number;
+  isTrending?: boolean;
+  assistantPrompt?: string;
+}
+
+export const faqsAll = () =>
+  sanity.fetch<FaqItem[]>(
+    groq`*[_type == "faq"] | order(coalesce(position, 9999) asc, question asc){
+      _id,
+      question,
+      answer,
+      category,
+      position,
+      isTrending,
+      assistantPrompt
     }`
   );
 

@@ -74,6 +74,21 @@
     background-color: var(--brand-overlay-muted);
   }
 
+  .assistant-chip {
+    @apply inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-surface)];
+    background-color: color-mix(in oklab, var(--brand-alt) 78%, var(--brand-primary) 22%);
+    color: var(--brand-ink);
+    border-color: color-mix(in oklab, var(--brand-border) 70%, transparent);
+    box-shadow:
+      0 6px 14px -10px color-mix(in oklab, var(--brand-primary) 65%, transparent),
+      0 0 0 1px color-mix(in oklab, var(--brand-border) 30%, transparent);
+  }
+
+  .assistant-chip:hover,
+  .assistant-chip:focus-visible {
+    transform: translateY(-1px) scale(1.03);
+  }
+
 }
 
 @layer utilities {
@@ -289,6 +304,51 @@
     will-change: box-shadow;
   }
 
+  @keyframes assistant-chip-glow {
+    0%,
+    100% {
+      box-shadow:
+        0 6px 14px -10px color-mix(in oklab, var(--brand-primary) 45%, transparent),
+        0 0 0 1px color-mix(in oklab, var(--brand-border) 28%, transparent);
+    }
+    50% {
+      box-shadow:
+        0 8px 24px -10px color-mix(in oklab, var(--brand-primary) 72%, transparent),
+        0 0 18px 4px color-mix(in oklab, var(--brand-accent) 45%, transparent);
+    }
+  }
+
+  @keyframes assistant-chip-rock {
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    20% {
+      transform: translateY(-1px) rotate(-2deg);
+    }
+    40% {
+      transform: translateY(1px) rotate(2deg);
+    }
+    60% {
+      transform: translateY(-1px) rotate(-1.5deg);
+    }
+    80% {
+      transform: translateY(1px) rotate(1deg);
+    }
+  }
+
+  .assistant-chip-animate {
+    animation:
+      assistant-chip-glow 4800ms ease-in-out infinite,
+      assistant-chip-rock 5200ms ease-in-out infinite;
+    will-change: transform, box-shadow;
+  }
+
+  .assistant-chip-animate:hover,
+  .assistant-chip-animate:focus-visible {
+    animation-play-state: paused;
+  }
+
   /* Shake nudge animation */
   @keyframes nudge-shake {
     0% { transform: translateX(0) rotate(0); }
@@ -412,7 +472,8 @@
     .shimmer-text,
     .shimmer-text-slow,
     .glow-text,
-    .glow-text-hover {
+    .glow-text-hover,
+    .assistant-chip-animate {
       animation: none;
       opacity: 1 !important;
       transform: none !important;
