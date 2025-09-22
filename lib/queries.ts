@@ -72,6 +72,13 @@ export interface SiteSettings {
   logo?: string;
   socialLinks?: SocialLink[];
   givingOptions?: GivingOption[];
+  planVisit?: {
+    leadPastor?: Staff;
+    pastorMessage?: string;
+    churchImage?: { url?: string; alt?: string };
+    youthMinistry?: Ministry;
+    youthInvite?: string;
+  };
 }
 
 export const siteSettings = () =>
@@ -85,7 +92,27 @@ export const siteSettings = () =>
       serviceTimes,
       "logo": logo.asset->url,
       "socialLinks": socialLinks[]{label, href, description, icon},
-      "givingOptions": givingOptions[]{title, content, href}
+      "givingOptions": givingOptions[]{title, content, href},
+      "planVisit": {
+        "leadPastor": planVisit.leadPastor->{
+          _id,
+          name,
+          role,
+          "image": image.asset->url
+        },
+        pastorMessage: planVisit.pastorMessage,
+        "churchImage": planVisit.churchImage{
+          "url": asset->url,
+          "alt": coalesce(alt, "")
+        },
+        "youthMinistry": planVisit.youthMinistry->{
+          _id,
+          name,
+          description,
+          "staffImage": staffImage.asset->url
+        },
+        youthInvite: planVisit.youthInvite
+      }
     }`
   );
 

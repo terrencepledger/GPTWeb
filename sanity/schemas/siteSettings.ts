@@ -108,5 +108,44 @@ export default defineType({
         },
       ],
     }),
+    defineField({
+      name: 'planVisit',
+      title: 'Plan a Visit',
+      type: 'object',
+      fields: [
+        defineField({
+          name: 'leadPastor',
+          title: 'Featured Pastor',
+          type: 'reference',
+          to: [{ type: 'staff' }],
+          description: 'Select the pastor visitors will meet when they arrive.',
+        }),
+        defineField({
+          name: 'pastorMessage',
+          title: 'Pastor Welcome Message',
+          type: 'text',
+          rows: 3,
+        }),
+        defineField({
+          name: 'churchImage',
+          title: 'Church Photo',
+          type: 'image',
+          options: { hotspot: true },
+        }),
+        defineField({
+          name: 'youthMinistry',
+          title: 'Youth Ministry Highlight',
+          type: 'reference',
+          to: [{ type: 'ministry' }],
+          description: 'Choose the ministry to highlight for youth visitors.',
+        }),
+        defineField({
+          name: 'youthInvite',
+          title: 'Youth Invite Message',
+          type: 'text',
+          rows: 3,
+        }),
+      ],
+    }),
   ],
 });

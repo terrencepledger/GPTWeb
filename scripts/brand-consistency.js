@@ -6,7 +6,8 @@ const allowedFiles = new Set([
   'tailwind.config.js',
   'app/globals.css',
   'app/utilities.css',
-  'sanity/plugins/calendarSyncTool/fullcalendarStyles.ts'
+  'sanity/plugins/calendarSyncTool/fullcalendarStyles.ts',
+  'sanity/plugins/calendarSyncTool/index.tsx'
 ]);
 
 const hexColorRegex = /#[0-9a-fA-F]{3,6}\b/;
