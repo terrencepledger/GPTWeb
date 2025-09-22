@@ -20,6 +20,29 @@ export async function getChatbotTone(): Promise<string> {
   return tone || 'friendly';
 }
 
+export const DEFAULT_CONVERSATION_RETENTION_HOURS = 36;
+
+export async function getChatConversationRetentionHours(): Promise<number> {
+  try {
+    const raw = await sanity.fetch(
+      groq`*[_type == "chatbotSettings"][0].conversationRetentionHours`,
+    );
+    if (raw === null || raw === undefined) {
+      return DEFAULT_CONVERSATION_RETENTION_HOURS;
+    }
+    const parsed = typeof raw === 'number' ? raw : Number(raw);
+    if (!Number.isFinite(parsed)) {
+      return DEFAULT_CONVERSATION_RETENTION_HOURS;
+    }
+    if (parsed <= 0) {
+      return 0;
+    }
+    return Math.min(168, Math.max(0, parsed));
+  } catch {
+    return DEFAULT_CONVERSATION_RETENTION_HOURS;
+  }
+}
+
 export async function getChatbotExtraContext(): Promise<string> {
   if (!process.env.SANITY_STUDIO_PROJECT_ID || !process.env.SANITY_STUDIO_DATASET) {
     return '';

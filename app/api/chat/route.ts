@@ -4,8 +4,10 @@ import {
   sendEscalationEmail,
   generateChatbotReply,
   escalationNotice,
+  getChatConversationRetentionHours,
 } from '@/lib/chatbot';
 import type { ChatMessage, EscalationInfo } from '@/types/chat';
+import { persistConversationTranscript } from '@/lib/chatConversations';
 
 function sanitizeMessages(input: unknown): ChatMessage[] {
   if (!Array.isArray(input)) return [];
@@ -26,6 +28,13 @@ function sanitizeMessages(input: unknown): ChatMessage[] {
   return msgs;
 }
 
+function normalizeConversationId(value: unknown): string {
+  if (typeof value !== 'string') return '';
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+  return /^[A-Za-z0-9_-]{3,128}$/.test(trimmed) ? trimmed : '';
+}
+
 export async function POST(req: Request) {
   const body = await req.json();
   const incoming = (body && Array.isArray(body.messages)) ? body.messages : [];
@@ -33,9 +42,23 @@ export async function POST(req: Request) {
   const escalate = Boolean(body?.escalate);
   const info = body?.info as EscalationInfo | undefined;
   const reason = typeof body?.reason === 'string' ? body.reason : '';
+  const conversationId = normalizeConversationId(body?.conversationId);
+  const retentionPromise = conversationId
+    ? getChatConversationRetentionHours()
+    : Promise.resolve(0);
 
   if (escalate && info) {
     await sendEscalationEmail(info, messages, reason);
+    if (conversationId) {
+      const retentionHours = await retentionPromise.catch(() => 0);
+      await persistConversationTranscript({
+        conversationId,
+        messages,
+        retentionHours,
+        escalated: true,
+        escalationReason: reason,
+      });
+    }
     return NextResponse.json({ status: 'escalated' });
   }
 
@@ -48,17 +71,63 @@ export async function POST(req: Request) {
   if (manual || similarityCount >= 3) {
     const last = messages[messages.length - 1]?.content || '';
     const notice = await escalationNotice(tone, last);
+    const replyTimestamp = new Date().toISOString();
+    if (conversationId) {
+      const retentionHours = await retentionPromise.catch(() => 0);
+      await persistConversationTranscript({
+        conversationId,
+        messages: [
+          ...messages,
+          {
+            role: 'assistant',
+            content: notice,
+            timestamp: replyTimestamp,
+            confidence,
+          },
+        ],
+        retentionHours,
+        escalated: true,
+        escalationReason:
+          escalateReason || (similarityCount >= 3 ? 'User repeated the question multiple times.' : ''),
+      });
+    }
     return NextResponse.json({
       escalate: true,
       reply: notice,
       confidence,
       similarityCount,
       reason: escalateReason || (similarityCount >= 3 ? 'User repeated the question multiple times.' : ''),
+      timestamp: replyTimestamp,
     });
   }
 
   const softThreshold = 0.3;
   const softEscalate = confidence <= softThreshold;
 
-  return NextResponse.json({ reply, confidence, similarityCount, softEscalate });
+  const replyTimestamp = new Date().toISOString();
+  const assistantMessage: ChatMessage = {
+    role: 'assistant',
+    content: reply,
+    confidence,
+    softEscalate: Boolean(softEscalate),
+    timestamp: replyTimestamp,
+  };
+
+  if (conversationId) {
+    const retentionHours = await retentionPromise.catch(() => 0);
+    await persistConversationTranscript({
+      conversationId,
+      messages: [...messages, assistantMessage],
+      retentionHours,
+      escalated: false,
+    });
+  }
+
+  return NextResponse.json({
+    reply,
+    confidence,
+    similarityCount,
+    softEscalate,
+    timestamp: replyTimestamp,
+  });
 }
