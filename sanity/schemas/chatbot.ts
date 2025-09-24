@@ -32,5 +32,18 @@ export default defineType({
       validation: (Rule) => Rule.email().warning("Should be a valid email address"),
       description: "Destination mailbox for escalations",
     }),
+    defineField({
+      name: "conversationRetentionHours",
+      title: "Conversation Retention (hours)",
+      type: "number",
+      description:
+        "How long sanitized assistant chats should remain available inside Studio. Defaults to 36 hours. Set to 0 to disable logging.",
+      validation: (Rule) =>
+        Rule.min(0)
+          .max(168)
+          .precision(2)
+          .warning("Retention should be between 0 and 168 hours."),
+      initialValue: 36,
+    }),
   ],
 });

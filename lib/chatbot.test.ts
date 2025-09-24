@@ -185,6 +185,8 @@ async function testGenerateChatbotReply() {
     assert.strictEqual(firstResult.similarityCount, 1);
     assert.strictEqual(firstResult.escalate, false);
     assert.strictEqual(firstResult.escalateReason, '');
+    assert.ok(Array.isArray(firstResult.contextKeys));
+    assert.ok(firstResult.contextKeys.includes('st'));
     const firstAnalysis = parseRepetition(calls[0]);
     assert.strictEqual(firstAnalysis.similarityCount, 1);
     assert.strictEqual(firstAnalysis.autoEscalate, false);
@@ -228,6 +230,8 @@ async function testGenerateChatbotReply() {
     assert.strictEqual(repeatedResult.similarityCount, 3);
     assert.strictEqual(repeatedResult.escalate, true);
     assert.strictEqual(repeatedResult.escalateReason, 'User repeated the question multiple times.');
+    assert.ok(Array.isArray(repeatedResult.contextKeys));
+    assert.ok(repeatedResult.contextKeys.includes('st'));
     const secondAnalysis = parseRepetition(calls[1]);
     assert.strictEqual(secondAnalysis.similarityCount, 3);
     assert.strictEqual(secondAnalysis.autoEscalate, true);
@@ -249,6 +253,8 @@ async function testGenerateChatbotReply() {
     assert.strictEqual(manualResult.similarityCount, 1);
     assert.strictEqual(manualResult.escalate, true);
     assert.strictEqual(manualResult.escalateReason, 'Visitor asked for a person.');
+    assert.ok(Array.isArray(manualResult.contextKeys));
+    assert.ok(manualResult.contextKeys.includes('st'));
     assert.ok(captured.system?.includes('Site content JSON:'));
 }
 

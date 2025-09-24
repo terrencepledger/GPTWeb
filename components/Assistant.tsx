@@ -5,6 +5,16 @@ import type {ChatMessage} from '@/types/chat';
 import Link from 'next/link';
 import {stripInvisibleCharacters, stripTrailingUrlJunk} from '@/lib/textSanitizers';
 
+const CONVERSATION_STORAGE_KEY = 'assistant:conversation';
+
+function buildConversationId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  const random = Math.random().toString(36).slice(2, 10);
+  return `conv-${Date.now().toString(36)}-${random}`;
+}
+
 export default function Assistant() {
   const [open, setOpen] = useState(false);
   const [docked, setDocked] = useState(false);
@@ -13,6 +23,8 @@ export default function Assistant() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: 'assistant', content: 'Hi! How can I help you today?', timestamp: new Date().toISOString() },
   ]);
+  const [conversationId, setConversationId] = useState('');
+  const [retentionMs, setRetentionMs] = useState(0);
   const [input, setInput] = useState('');
   const [collectInfo, setCollectInfo] = useState(false);
   const [info, setInfo] = useState({ name: '', contact: '', email: '', details: '' });
@@ -149,12 +161,80 @@ export default function Assistant() {
     if (!openRef.current) scheduleNudge();
   }, [scheduleNudge]);
 
+  const ensureConversationId = useCallback(() => {
+    if (conversationId) {
+      return conversationId;
+    }
+    const generated = buildConversationId();
+    setConversationId(generated);
+    return generated;
+  }, [conversationId]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    let storedId: string | undefined;
+    try {
+      const raw = window.localStorage.getItem(CONVERSATION_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as {
+          conversationId?: string;
+          messages?: ChatMessage[];
+          expiresAt?: string;
+        };
+        const expiresAt = parsed?.expiresAt ? new Date(parsed.expiresAt).getTime() : 0;
+        if (expiresAt && expiresAt < Date.now()) {
+          window.localStorage.removeItem(CONVERSATION_STORAGE_KEY);
+        } else {
+          if (Array.isArray(parsed?.messages) && parsed.messages.length) {
+            setMessages(parsed.messages);
+          }
+          if (typeof parsed?.conversationId === 'string' && parsed.conversationId) {
+            storedId = parsed.conversationId;
+            setConversationId(parsed.conversationId);
+          }
+        }
+      }
+    } catch {
+      window.localStorage.removeItem(CONVERSATION_STORAGE_KEY);
+    }
+    if (!storedId) {
+      setConversationId((current) => current || buildConversationId());
+    }
+  }, []);
+
   useEffect(() => {
     const id = setTimeout(() => {
       setEntered(true);
       setEnterOffset(0);
     }, 500);
     return () => clearTimeout(id);
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    const loadSettings = async () => {
+      try {
+        const res = await fetch('/api/chat/settings');
+        if (!res.ok) {
+          throw new Error('Failed to load chat settings');
+        }
+        const data = await res.json();
+        if (!active) return;
+        const rawHours = typeof data?.retentionHours === 'number' ? data.retentionHours : Number(data?.retentionHours);
+        const hours = Number.isFinite(rawHours) ? Math.max(0, rawHours) : 0;
+        setRetentionMs(hours > 0 ? hours * 60 * 60 * 1000 : 0);
+      } catch {
+        if (active) {
+          setRetentionMs(0);
+        }
+      }
+    };
+    loadSettings();
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -187,9 +267,34 @@ export default function Assistant() {
     last?.scrollIntoView({ block: 'start' });
   }, [messages, thinking]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    if (!conversationId) {
+      return;
+    }
+    if (retentionMs <= 0) {
+      window.localStorage.removeItem(CONVERSATION_STORAGE_KEY);
+      return;
+    }
+    try {
+      const payload = {
+        conversationId,
+        messages,
+        expiresAt: new Date(Date.now() + retentionMs).toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      window.localStorage.setItem(CONVERSATION_STORAGE_KEY, JSON.stringify(payload));
+    } catch {
+      // Ignore storage errors (e.g., Safari private mode)
+    }
+  }, [conversationId, messages, retentionMs]);
+
   async function sendMessage(e: FormEvent) {
     e.preventDefault();
     resetNudge();
+    const id = ensureConversationId();
     const now = new Date().toISOString();
     const outgoing: ChatMessage[] = [
       ...messages,
@@ -201,17 +306,21 @@ export default function Assistant() {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: outgoing }),
+      body: JSON.stringify({ messages: outgoing, conversationId: id }),
     });
     const data = await res.json();
+    const replyTimestamp = typeof data?.timestamp === 'string' ? data.timestamp : new Date().toISOString();
+    const replyText = typeof data?.reply === 'string' ? data.reply : '';
+    const replyConfidence = typeof data?.confidence === 'number' ? data.confidence : undefined;
+    const replySoftEscalate = Boolean(data?.softEscalate);
     setMessages((prev) => [
       ...prev,
       {
         role: 'assistant',
-        content: data.reply,
-        confidence: data.confidence,
-        softEscalate: Boolean(data.softEscalate),
-        timestamp: new Date().toISOString(),
+        content: replyText,
+        confidence: replyConfidence,
+        softEscalate: replySoftEscalate,
+        timestamp: replyTimestamp,
       },
     ]);
     if (data.escalate) {
@@ -225,10 +334,17 @@ export default function Assistant() {
   async function sendInfo(e: FormEvent) {
     e.preventDefault();
     resetNudge();
-      const res = await fetch('/api/chat', {
+    const id = ensureConversationId();
+    const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ escalate: true, info, messages: messages, reason: escalationReason }),
+      body: JSON.stringify({
+        escalate: true,
+        info,
+        messages,
+        reason: escalationReason,
+        conversationId: id,
+      }),
     });
     setCollectInfo(false);
     setMessages((prev) => [

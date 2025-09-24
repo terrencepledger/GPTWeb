@@ -2,6 +2,7 @@
 import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {analyticsTool} from './sanity/plugins/analyticsTool'
+import {assistantConversationsTool} from './sanity/plugins/assistantConversationsTool'
 import {calendarSyncTool} from './sanity/plugins/calendarSyncTool'
 
 // Schemas
@@ -18,6 +19,7 @@ import subscriptionSection from './sanity/schemas/sections/subscriptionSection'
 import mapSection from './sanity/schemas/sections/mapSection'
 import linkSection from './sanity/schemas/sections/linkSection'
 import chatbot from './sanity/schemas/chatbot'
+import assistantConversation from './sanity/schemas/assistantConversation'
 import calendarSyncMapping from './sanity/schemas/calendarSyncMapping'
 import formSettings from './sanity/schemas/formSettings'
 import page from './sanity/schemas/page'
@@ -85,7 +87,7 @@ export default defineConfig({
     projectId,
     dataset,
     schema: {
-        types: [announcement, siteSettings, staff, ministry, heroSlide, missionStatement, eventDetail, heroSection, gallerySection, subscriptionSection, mapSection, linkSection, chatbot, calendarSyncMapping, formSettings, faq, page],
+        types: [announcement, siteSettings, staff, ministry, heroSlide, missionStatement, eventDetail, heroSection, gallerySection, subscriptionSection, mapSection, linkSection, chatbot, assistantConversation, calendarSyncMapping, formSettings, faq, page],
     },
     plugins: [
         structureTool({
@@ -97,6 +99,7 @@ export default defineConfig({
         analyticsTool({
             url: (viteEnv && (viteEnv).SANITY_STUDIO_GA_DASHBOARD_URL) || nodeEnv.SANITY_STUDIO_GA_DASHBOARD_URL || nodeEnv.NEXT_PUBLIC_GA_DASHBOARD_URL,
         }),
+        assistantConversationsTool(),
         calendarSyncTool({
             apiBaseUrl: calendarApiBaseEnv,
             internalColor: 'color-mix(in oklab, var(--brand-border) 70%, var(--brand-surface) 30%)',

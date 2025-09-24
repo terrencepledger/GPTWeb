@@ -5,6 +5,7 @@ import formSettings from './schemas/formSettings';
 import ministry from './schemas/ministry';
 import heroSlide from './schemas/heroSlide';
 import chatbot from './schemas/chatbot';
+import assistantConversation from './schemas/assistantConversation';
 import missionStatement from './schemas/missionStatement';
 import eventDetail from './schemas/eventDetail';
 import faq from './schemas/faq';
@@ -31,6 +32,7 @@ export const schemaTypes = [
   mapSection,
   linkSection,
   chatbot,
+  assistantConversation,
   page,
   calendarSyncMapping,
   faq,

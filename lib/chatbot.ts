@@ -20,6 +20,29 @@ export async function getChatbotTone(): Promise<string> {
   return tone || 'friendly';
 }
 
+export const DEFAULT_CONVERSATION_RETENTION_HOURS = 36;
+
+export async function getChatConversationRetentionHours(): Promise<number> {
+  try {
+    const raw = await sanity.fetch(
+      groq`*[_type == "chatbotSettings"][0].conversationRetentionHours`,
+    );
+    if (raw === null || raw === undefined) {
+      return DEFAULT_CONVERSATION_RETENTION_HOURS;
+    }
+    const parsed = typeof raw === 'number' ? raw : Number(raw);
+    if (!Number.isFinite(parsed)) {
+      return DEFAULT_CONVERSATION_RETENTION_HOURS;
+    }
+    if (parsed <= 0) {
+      return 0;
+    }
+    return Math.min(168, Math.max(0, parsed));
+  } catch {
+    return DEFAULT_CONVERSATION_RETENTION_HOURS;
+  }
+}
+
 export async function getChatbotExtraContext(): Promise<string> {
   if (!process.env.SANITY_STUDIO_PROJECT_ID || !process.env.SANITY_STUDIO_DATASET) {
     return '';
@@ -396,6 +419,18 @@ export async function buildSiteContext(
   }
 }
 
+function listContextKeysFromJson(json: string): string[] {
+  try {
+    const parsed = JSON.parse(json);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return Object.keys(parsed).filter((key) => typeof key === 'string').sort();
+    }
+  } catch {
+    // ignore parse errors – fallback to empty list
+  }
+  return [];
+}
+
 export async function generateChatbotReply(
   messages: Message[],
   tone: string,
@@ -406,6 +441,7 @@ export async function generateChatbotReply(
   similarityCount: number;
   escalate: boolean;
   escalateReason: string;
+  contextKeys: string[];
 }> {
   const openai = getOpenAIClient(client);
     const { similarityCount: computedSimilarityCount, escalate: autoEscalate } = analyzeRepetition(messages);
@@ -414,6 +450,7 @@ export async function generateChatbotReply(
     getChatbotExtraContext(),
   ]);
   const compactContext = contextJson || '{}';
+  const contextKeys = listContextKeysFromJson(compactContext);
   const tz = process.env.TZ || 'UTC';
   const dateStr = new Intl.DateTimeFormat('en-US', {
     timeZone: tz,
@@ -459,6 +496,7 @@ export async function generateChatbotReply(
       similarityCount: computedSimilarityCount,
       escalate: finalEscalate,
       escalateReason: finalReason,
+      contextKeys,
     };
   } catch {
     return {
@@ -467,6 +505,7 @@ export async function generateChatbotReply(
       similarityCount: computedSimilarityCount,
       escalate: autoEscalate,
       escalateReason: autoEscalate ? REPEAT_ESCALATION_REASON : '',
+      contextKeys,
     };
   }
 }
