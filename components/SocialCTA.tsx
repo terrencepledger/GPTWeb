@@ -72,13 +72,18 @@ function getSocialDescription({
   icon?: string;
 }): string {
   const trimmed = description?.trim();
-  if (trimmed) return trimmed;
   const hrefValue = href.trim();
   if (!hrefValue) return "";
   const iconKey = icon ? icon.toLowerCase() : "";
-  if (iconKey === "sms" || hrefValue.toLowerCase().startsWith("sms:")) {
-    return deriveSmsDescription(hrefValue);
+  const isSms = iconKey === "sms" || hrefValue.toLowerCase().startsWith("sms:");
+  if (isSms) {
+    const derived = deriveSmsDescription(hrefValue);
+    if (trimmed && derived) {
+      return `${trimmed} ${derived}`;
+    }
+    return trimmed || derived;
   }
+  if (trimmed) return trimmed;
   return "";
 }
 
