@@ -63,7 +63,14 @@ export async function POST(req: Request) {
   }
 
   const tone = await getChatbotTone();
-  let { reply, confidence, similarityCount, escalate: manual, escalateReason } = await generateChatbotReply(
+  const {
+    reply,
+    confidence,
+    similarityCount,
+    escalate: manual,
+    escalateReason,
+    contextKeys,
+  } = await generateChatbotReply(
     messages,
     tone,
   );
@@ -89,6 +96,7 @@ export async function POST(req: Request) {
         escalated: true,
         escalationReason:
           escalateReason || (similarityCount >= 3 ? 'User repeated the question multiple times.' : ''),
+        contextKeys,
       });
     }
     return NextResponse.json({
@@ -98,6 +106,7 @@ export async function POST(req: Request) {
       similarityCount,
       reason: escalateReason || (similarityCount >= 3 ? 'User repeated the question multiple times.' : ''),
       timestamp: replyTimestamp,
+      contextKeys,
     });
   }
 
@@ -120,6 +129,7 @@ export async function POST(req: Request) {
       messages: [...messages, assistantMessage],
       retentionHours,
       escalated: false,
+      contextKeys,
     });
   }
 
@@ -129,5 +139,6 @@ export async function POST(req: Request) {
     similarityCount,
     softEscalate,
     timestamp: replyTimestamp,
+    contextKeys,
   });
 }

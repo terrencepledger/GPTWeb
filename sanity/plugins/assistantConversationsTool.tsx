@@ -32,9 +32,23 @@ type ConversationDocument = {
   escalated?: boolean
   escalationSummary?: string
   messages?: ConversationMessage[]
+  lowestConfidence?: number
+  softEscalateCount?: number
+  faqCoverage?: 'gap' | 'covered' | 'unknown'
+  faqGapReasons?: string[]
+  resolutionState?: 'escalated' | 'followUpSuggested' | 'visitorAbandoned' | 'completed' | 'unknown'
+  contextKeys?: string[]
+  topicKeywords?: string[]
 }
 
-type SortMode = 'recent' | 'status'
+type SortMode =
+  | 'recent'
+  | 'status'
+  | 'volume'
+  | 'confidence'
+  | 'faq'
+  | 'resolution'
+  | 'context'
 
 type QueryResult = {
   settings?: {
@@ -54,6 +68,13 @@ const QUERY = `{
     messageCount,
     escalated,
     escalationSummary,
+    lowestConfidence,
+    softEscalateCount,
+    faqCoverage,
+    faqGapReasons,
+    resolutionState,
+    contextKeys,
+    topicKeywords,
     messages[]{
       role,
       content,
@@ -63,6 +84,46 @@ const QUERY = `{
     }
   }
 }`
+
+const CONTEXT_LABELS: Record<string, string> = {
+  st: 'Site details',
+  gv: 'Giving options',
+  ann: 'Announcements',
+  ms: 'Mission statement',
+  sf: 'Staff directory',
+  mn: 'Ministries',
+  ls: 'Livestream',
+  ev: 'Upcoming events',
+  nav: 'Site navigation',
+}
+
+const COVERAGE_LABELS: Record<NonNullable<ConversationDocument['faqCoverage']>, string> = {
+  gap: 'FAQ gap',
+  covered: 'FAQ covered',
+  unknown: 'Needs review',
+}
+
+const COVERAGE_TONES: Record<NonNullable<ConversationDocument['faqCoverage']>, 'critical' | 'positive' | 'caution'> = {
+  gap: 'critical',
+  covered: 'positive',
+  unknown: 'caution',
+}
+
+const RESOLUTION_LABELS: Record<NonNullable<ConversationDocument['resolutionState']>, string> = {
+  escalated: 'Escalated',
+  followUpSuggested: 'Suggested follow-up',
+  visitorAbandoned: 'Visitor left',
+  completed: 'Completed',
+  unknown: 'Unknown',
+}
+
+const RESOLUTION_TONES: Record<NonNullable<ConversationDocument['resolutionState']>, 'critical' | 'positive' | 'caution' | 'default'> = {
+  escalated: 'critical',
+  followUpSuggested: 'caution',
+  visitorAbandoned: 'caution',
+  completed: 'positive',
+  unknown: 'default',
+}
 
 function coerceNumber(value: unknown): number {
   const parsed = typeof value === 'number' ? value : Number(value)
@@ -82,6 +143,14 @@ function formatConfidence(value?: number): string | null {
   }
   const pct = Math.max(0, Math.min(100, Math.round(value * 100)))
   return `${pct}% confidence`
+}
+
+function formatPercentage(value?: number): string | null {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return null
+  }
+  const pct = Math.max(0, Math.min(100, Math.round(value * 100)))
+  return `${pct}%`
 }
 
 function roleLabel(role?: string): string {
@@ -109,6 +178,50 @@ function timestampValue(value?: string, fallback?: string): number {
     }
   }
   return 0
+}
+
+function messageCountValue(conversation: ConversationDocument): number {
+  return conversation.messageCount ?? conversation.messages?.length ?? 0
+}
+
+function coverageLabel(value?: ConversationDocument['faqCoverage']): string | null {
+  if (!value) return null
+  return COVERAGE_LABELS[value] ?? null
+}
+
+function coverageTone(value?: ConversationDocument['faqCoverage']): 'critical' | 'positive' | 'caution' | 'default' {
+  if (!value) return 'default'
+  return COVERAGE_TONES[value] ?? 'default'
+}
+
+function resolutionLabel(value?: ConversationDocument['resolutionState']): string | null {
+  if (!value) return null
+  return RESOLUTION_LABELS[value] ?? null
+}
+
+function resolutionTone(value?: ConversationDocument['resolutionState']): 'critical' | 'positive' | 'caution' | 'default' {
+  if (!value) return 'default'
+  return RESOLUTION_TONES[value] ?? 'default'
+}
+
+function confidenceTone(value?: number): 'critical' | 'caution' | 'positive' | 'default' {
+  if (typeof value !== 'number' || Number.isNaN(value)) return 'default'
+  if (value < 0.3) return 'critical'
+  if (value < 0.6) return 'caution'
+  return 'positive'
+}
+
+function mapContextKeys(keys?: string[]): string[] {
+  if (!Array.isArray(keys) || keys.length === 0) return []
+  return keys
+    .map((key) => (typeof key === 'string' ? key.trim() : ''))
+    .filter((key) => key)
+    .map((key) => CONTEXT_LABELS[key] || key.toUpperCase())
+}
+
+function firstContextLabel(conversation: ConversationDocument): string {
+  const labels = mapContextKeys(conversation.contextKeys).sort((a, b) => a.localeCompare(b))
+  return labels[0] || ''
 }
 
 function AssistantConversationsToolComponent() {
@@ -143,8 +256,24 @@ function AssistantConversationsToolComponent() {
     fetchConversations()
   }, [fetchConversations])
 
+  const sortOptions: { id: SortMode; label: string }[] = useMemo(
+    () => [
+      { id: 'recent', label: 'Most recent' },
+      { id: 'status', label: 'Escalated first' },
+      { id: 'volume', label: 'Message volume' },
+      { id: 'confidence', label: 'Lowest confidence' },
+      { id: 'faq', label: 'FAQ coverage' },
+      { id: 'resolution', label: 'Resolution status' },
+      { id: 'context', label: 'Context triggers' },
+    ],
+    [],
+  )
+
   const sortedConversations = useMemo(() => {
     const ordered = [...conversations]
+    const compareRecent = (a: ConversationDocument, b: ConversationDocument) =>
+      timestampValue(b.lastInteractionAt, b.startedAt) - timestampValue(a.lastInteractionAt, a.startedAt)
+
     if (sortMode === 'status') {
       ordered.sort((a, b) => {
         const aEsc = a.escalated ? 0 : 1
@@ -152,17 +281,74 @@ function AssistantConversationsToolComponent() {
         if (aEsc !== bEsc) {
           return aEsc - bEsc
         }
-        const aTime = timestampValue(a.lastInteractionAt, a.startedAt)
-        const bTime = timestampValue(b.lastInteractionAt, b.startedAt)
-        return bTime - aTime
+        return compareRecent(a, b)
       })
       return ordered
     }
-    ordered.sort((a, b) => {
-      const aTime = timestampValue(a.lastInteractionAt, a.startedAt)
-      const bTime = timestampValue(b.lastInteractionAt, b.startedAt)
-      return bTime - aTime
-    })
+
+    if (sortMode === 'volume') {
+      ordered.sort((a, b) => {
+        const diff = messageCountValue(b) - messageCountValue(a)
+        if (diff !== 0) return diff
+        return compareRecent(a, b)
+      })
+      return ordered
+    }
+
+    if (sortMode === 'confidence') {
+      ordered.sort((a, b) => {
+        const aVal = typeof a.lowestConfidence === 'number' ? a.lowestConfidence : 2
+        const bVal = typeof b.lowestConfidence === 'number' ? b.lowestConfidence : 2
+        if (aVal !== bVal) return aVal - bVal
+        return compareRecent(a, b)
+      })
+      return ordered
+    }
+
+    if (sortMode === 'faq') {
+      const coverageOrder: Record<string, number> = { gap: 0, unknown: 1, covered: 2 }
+      ordered.sort((a, b) => {
+        const aOrder = a.faqCoverage ? coverageOrder[a.faqCoverage] ?? 99 : 99
+        const bOrder = b.faqCoverage ? coverageOrder[b.faqCoverage] ?? 99 : 99
+        if (aOrder !== bOrder) return aOrder - bOrder
+        return compareRecent(a, b)
+      })
+      return ordered
+    }
+
+    if (sortMode === 'resolution') {
+      const resolutionOrder: Record<string, number> = {
+        escalated: 0,
+        followUpSuggested: 1,
+        visitorAbandoned: 2,
+        completed: 3,
+        unknown: 4,
+      }
+      ordered.sort((a, b) => {
+        const aOrder = a.resolutionState ? resolutionOrder[a.resolutionState] ?? 99 : 99
+        const bOrder = b.resolutionState ? resolutionOrder[b.resolutionState] ?? 99 : 99
+        if (aOrder !== bOrder) return aOrder - bOrder
+        return compareRecent(a, b)
+      })
+      return ordered
+    }
+
+    if (sortMode === 'context') {
+      ordered.sort((a, b) => {
+        const aLabel = firstContextLabel(a)
+        const bLabel = firstContextLabel(b)
+        if (aLabel && bLabel) {
+          const cmp = aLabel.localeCompare(bLabel)
+          if (cmp !== 0) return cmp
+        } else if (aLabel || bLabel) {
+          return aLabel ? -1 : 1
+        }
+        return compareRecent(a, b)
+      })
+      return ordered
+    }
+
+    ordered.sort(compareRecent)
     return ordered
   }, [conversations, sortMode])
 
@@ -187,23 +373,18 @@ function AssistantConversationsToolComponent() {
             </Text>
           </Box>
           <Flex align="center" wrap="wrap" style={{gap: '0.5rem'}}>
-            <Inline space={2}>
-              <Button
-                text="Most recent"
-                mode={sortMode === 'recent' ? 'default' : 'ghost'}
-                tone={sortMode === 'recent' ? 'primary' : 'default'}
-                onClick={() => handleSortChange('recent')}
-                disabled={loading}
-                aria-pressed={sortMode === 'recent'}
-              />
-              <Button
-                text="Escalated first"
-                mode={sortMode === 'status' ? 'default' : 'ghost'}
-                tone={sortMode === 'status' ? 'primary' : 'default'}
-                onClick={() => handleSortChange('status')}
-                disabled={loading}
-                aria-pressed={sortMode === 'status'}
-              />
+            <Inline space={2} style={{flexWrap: 'wrap'}}>
+              {sortOptions.map((option) => (
+                <Button
+                  key={option.id}
+                  text={option.label}
+                  mode={sortMode === option.id ? 'default' : 'ghost'}
+                  tone={sortMode === option.id ? 'primary' : 'default'}
+                  onClick={() => handleSortChange(option.id)}
+                  disabled={loading}
+                  aria-pressed={sortMode === option.id}
+                />
+              ))}
             </Inline>
             <Button
               icon={RefreshIcon}
@@ -239,7 +420,30 @@ function AssistantConversationsToolComponent() {
         ) : (
           <Stack space={4}>
             {sortedConversations.map((conversation) => {
-              const messageCount = conversation.messageCount ?? conversation.messages?.length ?? 0
+              const messageCount = messageCountValue(conversation)
+              const coverage = coverageLabel(conversation.faqCoverage)
+              const coverageBadgeTone = coverageTone(conversation.faqCoverage)
+              const resolution = resolutionLabel(conversation.resolutionState)
+              const resolutionBadgeTone = resolutionTone(conversation.resolutionState)
+              const aggregateConfidence = formatPercentage(conversation.lowestConfidence)
+              const aggregateConfidenceTone = confidenceTone(conversation.lowestConfidence)
+              const contextLabels = mapContextKeys(conversation.contextKeys).sort((a, b) =>
+                a.localeCompare(b),
+              )
+              const keywords = (Array.isArray(conversation.topicKeywords)
+                ? conversation.topicKeywords
+                : [])
+                .map((kw) => (typeof kw === 'string' ? kw.trim() : ''))
+                .filter((kw) => kw)
+              const gapReasons = (Array.isArray(conversation.faqGapReasons)
+                ? conversation.faqGapReasons
+                : [])
+                .map((reason) => (typeof reason === 'string' ? reason.trim() : ''))
+                .filter((reason) => reason)
+              const softEscalateCount =
+                typeof conversation.softEscalateCount === 'number'
+                  ? conversation.softEscalateCount
+                  : 0
               return (
                 <Card key={conversation._id} padding={4} radius={3} shadow={1} tone="transparent" border>
                   <Stack space={4}>
@@ -262,18 +466,73 @@ function AssistantConversationsToolComponent() {
                         </Text>
                       </Stack>
                       <Stack space={2} style={{minWidth: '8rem'}} align="flex-end">
-                        <Badge
-                          tone={conversation.escalated ? 'caution' : 'positive'}
-                          text={conversation.escalated ? 'Escalated' : 'Completed'}
-                        />
+                        <Flex wrap="wrap" justify="flex-end" style={{gap: '0.5rem'}}>
+                          {resolution && <Badge tone={resolutionBadgeTone} text={resolution} />}
+                          {coverage && <Badge tone={coverageBadgeTone} text={coverage} />}
+                        </Flex>
+                        {aggregateConfidence && (
+                          <Badge
+                            tone={aggregateConfidenceTone === 'default' ? 'default' : aggregateConfidenceTone}
+                            text={`Confidence floor ${aggregateConfidence}`}
+                          />
+                        )}
                         <Text size={1} muted>
                           {messageCount} message{messageCount === 1 ? '' : 's'}
                         </Text>
+                        {softEscalateCount > 0 && (
+                          <Text size={1} muted>
+                            Suggested follow-ups: {softEscalateCount}
+                          </Text>
+                        )}
                       </Stack>
                     </Flex>
+                    {(contextLabels.length > 0 || keywords.length > 0) && (
+                      <Stack space={2}>
+                        {contextLabels.length > 0 && (
+                          <Flex align="center" wrap="wrap" style={{gap: '0.5rem'}}>
+                            <Text size={1} weight="semibold">
+                              Context triggers:
+                            </Text>
+                            <Flex align="center" wrap="wrap" style={{gap: '0.35rem'}}>
+                              {contextLabels.map((label) => (
+                                <Badge key={label} tone="primary" mode="outline" text={label} />
+                              ))}
+                            </Flex>
+                          </Flex>
+                        )}
+                        {keywords.length > 0 && (
+                          <Flex align="center" wrap="wrap" style={{gap: '0.5rem'}}>
+                            <Text size={1} weight="semibold">
+                              Topic keywords:
+                            </Text>
+                            <Flex align="center" wrap="wrap" style={{gap: '0.35rem'}}>
+                              {keywords.map((keyword) => (
+                                <Badge key={keyword} tone="default" mode="outline" text={keyword} />
+                              ))}
+                            </Flex>
+                          </Flex>
+                        )}
+                      </Stack>
+                    )}
                     {conversation.escalationSummary && (
                       <Card padding={3} radius={2} shadow={1} tone="caution">
                         <Text size={1}>{conversation.escalationSummary}</Text>
+                      </Card>
+                    )}
+                    {gapReasons.length > 0 && conversation.faqCoverage === 'gap' && (
+                      <Card padding={3} radius={2} shadow={1} tone="caution">
+                        <Stack space={2}>
+                          <Text size={1} weight="semibold">
+                            Potential FAQ opportunities
+                          </Text>
+                          <Stack as="ul" space={1} style={{paddingLeft: '1rem'}}>
+                            {gapReasons.map((reason, idx) => (
+                              <Text key={`${reason}-${idx}`} as="li" size={1}>
+                                {reason}
+                              </Text>
+                            ))}
+                          </Stack>
+                        </Stack>
                       </Card>
                     )}
                     <Stack space={3}>

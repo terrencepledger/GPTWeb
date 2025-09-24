@@ -419,6 +419,18 @@ export async function buildSiteContext(
   }
 }
 
+function listContextKeysFromJson(json: string): string[] {
+  try {
+    const parsed = JSON.parse(json);
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return Object.keys(parsed).filter((key) => typeof key === 'string').sort();
+    }
+  } catch {
+    // ignore parse errors – fallback to empty list
+  }
+  return [];
+}
+
 export async function generateChatbotReply(
   messages: Message[],
   tone: string,
@@ -429,6 +441,7 @@ export async function generateChatbotReply(
   similarityCount: number;
   escalate: boolean;
   escalateReason: string;
+  contextKeys: string[];
 }> {
   const openai = getOpenAIClient(client);
     const { similarityCount: computedSimilarityCount, escalate: autoEscalate } = analyzeRepetition(messages);
@@ -437,6 +450,7 @@ export async function generateChatbotReply(
     getChatbotExtraContext(),
   ]);
   const compactContext = contextJson || '{}';
+  const contextKeys = listContextKeysFromJson(compactContext);
   const tz = process.env.TZ || 'UTC';
   const dateStr = new Intl.DateTimeFormat('en-US', {
     timeZone: tz,
@@ -482,6 +496,7 @@ export async function generateChatbotReply(
       similarityCount: computedSimilarityCount,
       escalate: finalEscalate,
       escalateReason: finalReason,
+      contextKeys,
     };
   } catch {
     return {
@@ -490,6 +505,7 @@ export async function generateChatbotReply(
       similarityCount: computedSimilarityCount,
       escalate: autoEscalate,
       escalateReason: autoEscalate ? REPEAT_ESCALATION_REASON : '',
+      contextKeys,
     };
   }
 }
