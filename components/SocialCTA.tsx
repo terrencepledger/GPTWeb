@@ -20,6 +20,68 @@ const DAY_ALIASES: Record<number, string[]> = {
   6: ["saturday", "sat"],
 };
 
+function formatPhoneNumber(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  const digits = trimmed.replace(/\D/g, "");
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  }
+  if (digits.length === 11 && digits.startsWith("1")) {
+    return `+1 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+  }
+  return trimmed;
+}
+
+function parseSmsHref(href: string): { number: string; body: string } | null {
+  const match = href.match(/^sms:(?:\/\/)?([^?]*)?(?:\?(.*))?$/i);
+  if (!match) return null;
+  const rawNumber = match[1] ?? "";
+  const rawQuery = match[2] ?? "";
+  const decodedNumber = rawNumber ? decodeURIComponent(rawNumber) : "";
+  const firstNumber = decodedNumber.split(/[;,]/)[0]?.trim() ?? "";
+  const params = new URLSearchParams(rawQuery);
+  const bodyParam = params.get("body") ?? params.get("text") ?? "";
+  const body = bodyParam.replace(/\s+/g, " ").trim();
+  return { number: firstNumber, body };
+}
+
+function deriveSmsDescription(href: string): string {
+  const parsed = parseSmsHref(href);
+  if (!parsed) return "";
+  const formattedNumber = parsed.number ? formatPhoneNumber(parsed.number) : "";
+  if (formattedNumber && parsed.body) {
+    return `Text "${parsed.body}" to ${formattedNumber} from your phone.`;
+  }
+  if (formattedNumber) {
+    return `Text ${formattedNumber} from your phone.`;
+  }
+  if (parsed.body) {
+    return `Text "${parsed.body}" from your phone.`;
+  }
+  return "";
+}
+
+function getSocialDescription({
+  description,
+  href,
+  icon,
+}: {
+  description?: string;
+  href: string;
+  icon?: string;
+}): string {
+  const trimmed = description?.trim();
+  if (trimmed) return trimmed;
+  const hrefValue = href.trim();
+  if (!hrefValue) return "";
+  const iconKey = icon ? icon.toLowerCase() : "";
+  if (iconKey === "sms" || hrefValue.toLowerCase().startsWith("sms:")) {
+    return deriveSmsDescription(hrefValue);
+  }
+  return "";
+}
+
 function extractServiceDays(serviceTimes?: string): number[] {
   const lower = (serviceTimes ?? "").toLowerCase();
   const days = new Set<number>();
@@ -38,10 +100,11 @@ function SocialCard({ href, label, description, Icon }: SocialItem) {
       target="_blank"
       rel="noopener noreferrer"
       className="group flex h-full flex-col items-center justify-center gap-2 rounded-full border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 text-center transition-colors hover:bg-[color:color-mix(in_oklab,var(--brand-surface)_85%,white_15%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] no-underline hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
+      aria-label={description ? `${label}. ${description}` : label}
     >
       <Icon className="h-8 w-8 text-[var(--brand-accent)] transition-all group-hover:scale-105 group-hover:text-[var(--brand-primary-contrast)]" />
       <h3 className="text-base font-semibold text-[var(--brand-accent)] group-hover:text-[var(--brand-primary-contrast)]">{label}</h3>
-      <p className="text-sm text-[var(--brand-alt)]">{description}</p>
+      {description ? <p className="text-sm text-[var(--brand-alt)]">{description}</p> : null}
     </a>
   );
 }
@@ -86,7 +149,12 @@ export default async function SocialCTA() {
     .map(({ label, href, description = "", icon }) => {
       const Icon = SocialIcons[icon];
       if (!Icon || !href) return null;
-      return { label, href, description, Icon };
+      return {
+        label,
+        href,
+        description: getSocialDescription({ description, href, icon }),
+        Icon,
+      };
     })
     .filter(Boolean) as SocialItem[];
 
