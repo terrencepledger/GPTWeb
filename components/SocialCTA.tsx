@@ -41,7 +41,14 @@ function parseSmsHref(href: string): { number: string; body: string } | null {
   const decodedNumber = rawNumber ? decodeURIComponent(rawNumber) : "";
   const firstNumber = decodedNumber.split(/[;,]/)[0]?.trim() ?? "";
   const params = new URLSearchParams(rawQuery);
-  const bodyParam = params.get("body") ?? params.get("text") ?? "";
+  let bodyParam = "";
+  for (const [key, value] of params.entries()) {
+    const normalizedKey = key.trim().toLowerCase();
+    if (normalizedKey === "body" || normalizedKey === "text") {
+      bodyParam = value;
+      break;
+    }
+  }
   const body = bodyParam.replace(/\s+/g, " ").trim();
   return { number: firstNumber, body };
 }
@@ -152,7 +159,7 @@ export default async function SocialCTA() {
 
   const socials: SocialItem[] = (settings?.socialLinks ?? [])
     .map(({ label, href, description = "", icon }) => {
-      const Icon = SocialIcons[icon];
+      const Icon = icon ? SocialIcons[icon] ?? SocialIcons[icon.toLowerCase()] : undefined;
       if (!Icon || !href) return null;
       return {
         label,
