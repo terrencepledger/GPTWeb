@@ -77,10 +77,22 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   } catch {}
   const themeAttr = isEmbedded ? (cookies().get("preview-theme")?.value || "light") : undefined;
 
+  const parseTime = (value?: string | null) => {
+    if (!value) return null;
+    const time = Date.parse(value);
+    return Number.isFinite(time) ? time : null;
+  };
+
   let banner: { id: string; message: string; cta?: { label: string; href: string } } | null = null;
   if (livestream?.live?.status === "streaming") {
+    const sessionEpoch =
+      parseTime(livestream.live?.scheduled_time) ??
+      parseTime(livestream.modified_time) ??
+      parseTime(livestream.release_time) ??
+      parseTime(livestream.created_time);
+    const sessionSuffix = sessionEpoch ? `:${sessionEpoch}` : "";
     banner = {
-      id: `live:${livestream.id}`,
+      id: `live:${livestream.id}${sessionSuffix}`,
       message: "We're live now! Join our livestream.",
       cta: { label: "Watch now", href: "/livestreams" },
     };
