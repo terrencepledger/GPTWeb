@@ -100,7 +100,7 @@ export const siteSettings = () =>
           role,
           "image": image.asset->url
         },
-        pastorMessage: planVisit.pastorMessage,
+        "pastorMessage": planVisit.pastorMessage,
         "churchImage": planVisit.churchImage{
           "url": asset->url,
           "alt": coalesce(alt, "")
@@ -111,7 +111,7 @@ export const siteSettings = () =>
           description,
           "staffImage": staffImage.asset->url
         },
-        youthInvite: planVisit.youthInvite
+        "youthInvite": planVisit.youthInvite
       }
     }`
   );
