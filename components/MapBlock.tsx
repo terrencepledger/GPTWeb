@@ -1,15 +1,24 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef } from "react";
 
 type MapBlockProps = {
   address?: string;
   zoom?: number;
   apiKey?: string;
+  imageUrl?: string;
+  imageAlt?: string;
 };
 
 declare const google: any;
-export default function MapBlock({ address, zoom = 15, apiKey }: MapBlockProps) {
+export default function MapBlock({
+  address,
+  zoom = 15,
+  apiKey,
+  imageUrl,
+  imageAlt,
+}: MapBlockProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const markerRef = useRef<any>();
@@ -18,6 +27,7 @@ export default function MapBlock({ address, zoom = 15, apiKey }: MapBlockProps) 
 
   const hasAddress = typeof address === "string" && address.trim().length > 0;
   const addressQuery = hasAddress ? encodeURIComponent(address as string) : "";
+  const showImage = Boolean(imageUrl);
 
   const tryBounce = () => {
     if (revealDoneRef.current && markerRef.current) {
@@ -62,7 +72,7 @@ export default function MapBlock({ address, zoom = 15, apiKey }: MapBlockProps) 
   }, []);
 
   useEffect(() => {
-    if (!apiKey || !mapRef.current) return;
+    if (showImage || !apiKey || !mapRef.current) return;
 
     function initMap() {
       const map = new google.maps.Map(mapRef.current as HTMLElement, {
@@ -106,9 +116,9 @@ export default function MapBlock({ address, zoom = 15, apiKey }: MapBlockProps) 
       script.addEventListener("load", initMap);
       document.head.appendChild(script);
     }
-  }, [address, apiKey, hasAddress, zoom]);
+  }, [address, apiKey, hasAddress, showImage, zoom]);
 
-  if (!apiKey)
+  if (!apiKey && !showImage)
     return (
       <div style={{ padding: 12 }}>
         Map unavailable: missing Google Maps API key.
@@ -121,7 +131,18 @@ export default function MapBlock({ address, zoom = 15, apiKey }: MapBlockProps) 
         ref={containerRef}
         className="w-full overflow-hidden rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] shadow opacity-0"
       >
-        <div ref={mapRef} style={{ width: "100%", height: 300 }} />
+        {showImage ? (
+          <Image
+            src={imageUrl as string}
+            alt={imageAlt || "Church location"}
+            width={1200}
+            height={800}
+            className="h-[300px] w-full object-cover"
+            priority={false}
+          />
+        ) : (
+          <div ref={mapRef} style={{ width: "100%", height: 300 }} />
+        )}
       </div>
       {hasAddress && (
         <p className="mt-2 text-center">

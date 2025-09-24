@@ -2,6 +2,40 @@ import type { SVGProps } from "react";
 
 const actions = [
   {
+    title: "Plan a Visit",
+    description: "Find service times, directions, and what to expect.",
+    href: "/visit",
+    icon: function MapIcon(props: SVGProps<SVGSVGElement>) {
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} {...props}>
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 6l-6 3v11l6-3 6 3 6-3V6l-6 3-6-3z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M9 6V3l6 3v16"
+          />
+        </svg>
+      );
+    },
+  },
+  {
+    title: "Livestreams",
+    description: "Join our services from anywhere.",
+    href: "/livestreams",
+    icon: function VideoIcon(props: SVGProps<SVGSVGElement>) {
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} {...props}>
+          <rect x="3" y="5" width="15" height="14" rx="2" ry="2" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M21 7l-4 3v4l4 3V7z" />
+        </svg>
+      );
+    },
+  },
+  {
     title: "Learn About Us",
     description: "Discover our mission and values.",
     href: "/about/mission-statement",
@@ -15,38 +49,13 @@ const actions = [
     },
   },
   {
-    title: "Need Prayer?",
-    description: "Share your prayer requests with us.",
-    href: "/contact/prayer-requests",
-    icon: function PrayerIcon(props: SVGProps<SVGSVGElement>) {
-      return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} {...props}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8V4m0 4l3-3m-3 3L9 5m3 7l-3 3m3-3l3 3M5 21h14" />
-        </svg>
-      );
-    },
-  },
-  {
-    title: "Give Online",
+    title: "Giving",
     description: "Support our ministries with a donation.",
     href: "/giving",
     icon: function HeartIcon(props: SVGProps<SVGSVGElement>) {
       return (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} {...props}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.637l1.318-1.319a4.5 4.5 0 116.364 6.364L12 21.364l-7.682-7.682a4.5 4.5 0 010-6.364z" />
-        </svg>
-      );
-    },
-  },
-  {
-    title: "Watch Live",
-    description: "Join our services from anywhere.",
-    href: "/livestreams",
-    icon: function VideoIcon(props: SVGProps<SVGSVGElement>) {
-      return (
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} {...props}>
-          <rect x="3" y="5" width="15" height="14" rx="2" ry="2" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M21 7l-4 3v4l4 3V7z" />
         </svg>
       );
     },
