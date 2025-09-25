@@ -76,8 +76,8 @@
 
   .assistant-chip {
     @apply inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-surface)];
-    background-color: color-mix(in oklab, var(--brand-alt) 78%, var(--brand-primary) 22%);
-    color: var(--brand-ink);
+    background-color: color-mix(in oklab, var(--brand-surface) 78%, var(--brand-primary) 22%);
+    color: var(--brand-fg);
     border-color: color-mix(in oklab, var(--brand-border) 70%, transparent);
     box-shadow:
       0 6px 14px -10px color-mix(in oklab, var(--brand-primary) 65%, transparent),

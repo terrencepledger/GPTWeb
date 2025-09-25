@@ -445,7 +445,7 @@ export default function Assistant() {
           }}
           className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full border text-2xl leading-none cursor-pointer"
           style={{
-            backgroundColor: 'var(--brand-alt)',
+            backgroundColor: 'var(--brand-surface)',
             color: 'var(--brand-ink)',
             borderColor: 'var(--brand-ink)',
           }}
@@ -558,7 +558,7 @@ export default function Assistant() {
               type="text"
               className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
               style={{
-                backgroundColor: 'var(--brand-alt)',
+                backgroundColor: 'var(--brand-surface)',
                 color: 'var(--brand-ink)',
                 borderColor: 'var(--brand-border)',
                 '--tw-ring-color': 'var(--brand-primary)',
@@ -573,7 +573,7 @@ export default function Assistant() {
               type="text"
               className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
               style={{
-                backgroundColor: 'var(--brand-alt)',
+                backgroundColor: 'var(--brand-surface)',
                 color: 'var(--brand-ink)',
                 borderColor: 'var(--brand-border)',
                 '--tw-ring-color': 'var(--brand-primary)',
@@ -588,7 +588,7 @@ export default function Assistant() {
               type="email"
               className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
               style={{
-                backgroundColor: 'var(--brand-alt)',
+                backgroundColor: 'var(--brand-surface)',
                 color: 'var(--brand-ink)',
                 borderColor: 'var(--brand-border)',
                 '--tw-ring-color': 'var(--brand-primary)',
@@ -602,7 +602,7 @@ export default function Assistant() {
             <textarea
               className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
               style={{
-                backgroundColor: 'var(--brand-alt)',
+                backgroundColor: 'var(--brand-surface)',
                 color: 'var(--brand-ink)',
                 borderColor: 'var(--brand-border)',
                 '--tw-ring-color': 'var(--brand-primary)',
@@ -630,7 +630,7 @@ export default function Assistant() {
               type="text"
               className="flex-1 min-w-0 border rounded px-2 py-1 focus:outline-none focus:ring-2"
               style={{
-                backgroundColor: 'var(--brand-alt)',
+                backgroundColor: 'var(--brand-surface)',
                 color: 'var(--brand-ink)',
                 borderColor: 'var(--brand-border)',
                 '--tw-ring-color': 'var(--brand-primary)',
