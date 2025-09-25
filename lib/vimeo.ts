@@ -1,3 +1,5 @@
+import { shouldBypassVimeoCache } from './serviceTimes'
+
 export type VimeoVideo = {
   uri: string
   name: string
@@ -31,6 +33,15 @@ function idFromUri(uri: string) {
   return parts[parts.length - 1]
 }
 
+const VIMEO_REVALIDATE_SECONDS = 300
+
+function buildFetchOptions(headers: HeadersInit, bypassCache: boolean) {
+  if (bypassCache) {
+    return { headers, cache: 'no-store' as const }
+  }
+  return { headers, next: { revalidate: VIMEO_REVALIDATE_SECONDS } }
+}
+
 export async function getCurrentLivestream(): Promise<VimeoItem | null> {
   const config = await getConfig()
   if (!config) return null
@@ -40,13 +51,22 @@ export async function getCurrentLivestream(): Promise<VimeoItem | null> {
   const url = `https://api.vimeo.com/users/${user}/videos?${params}`
   let res: Response
   let dt: number
+  let bypassCache = false
+  try {
+    bypassCache = await shouldBypassVimeoCache()
+  } catch (error) {
+    console.error('[Vimeo] Failed evaluating livestream cache guard', error)
+  }
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[Vimeo] getCurrentLivestream cache guard', { bypassCache })
+  }
 
   {
     const t0 = Date.now()
     if (process.env.NODE_ENV !== 'production') {
       console.log('[Vimeo] getCurrentLivestream → fetch', { url })
     }
-    res = await fetch(url, { headers, next: { revalidate: 300 } })
+    res = await fetch(url, buildFetchOptions(headers, bypassCache))
     dt = Date.now() - t0
     if (process.env.NODE_ENV !== 'production') {
       console.log('[Vimeo] getCurrentLivestream ← response', { status: res.status, durationMs: dt })
@@ -59,7 +79,7 @@ export async function getCurrentLivestream(): Promise<VimeoItem | null> {
     if (process.env.NODE_ENV !== 'production') {
       console.warn('[Vimeo] /users/{user}/videos returned 404 — retrying /me/videos', { meUrl })
     }
-    const retry = await fetch(meUrl, { headers, next: { revalidate: 300 } })
+    const retry = await fetch(meUrl, buildFetchOptions(headers, bypassCache))
     const dt1 = Date.now() - t1
     if (process.env.NODE_ENV !== 'production') {
       console.log('[Vimeo] getCurrentLivestream ← /me/videos response', { status: retry.status, durationMs: dt1 })
@@ -94,9 +114,15 @@ export async function getRecentLivestreams(): Promise<VimeoItem[]> {
   const config = await getConfig()
   if (!config) return []
   const { user, headers } = config
+  let bypassCache = false
+  try {
+    bypassCache = await shouldBypassVimeoCache()
+  } catch (error) {
+    console.error('[Vimeo] Failed evaluating recent livestream cache guard', error)
+  }
 
   if (process.env.NODE_ENV !== 'production') {
-    console.log('[Vimeo] getRecentLivestreams → start', { user })
+    console.log('[Vimeo] getRecentLivestreams → start', { user, bypassCache })
   }
 
   // 1) Fetch recent live events
@@ -108,7 +134,7 @@ export async function getRecentLivestreams(): Promise<VimeoItem[]> {
     if (process.env.NODE_ENV !== 'production') {
       console.log('[Vimeo] getRecentLivestreams → fetch events', { url: evUrl })
     }
-    evRes = await fetch(evUrl, { headers, next: { revalidate: 300 } })
+    evRes = await fetch(evUrl, buildFetchOptions(headers, bypassCache))
     evDt = Date.now() - t0
     if (process.env.NODE_ENV !== 'production') {
       console.log('[Vimeo] getRecentLivestreams ← events response', { status: evRes.status, durationMs: evDt })
@@ -122,7 +148,7 @@ export async function getRecentLivestreams(): Promise<VimeoItem[]> {
     if (process.env.NODE_ENV !== 'production') {
       console.warn('[Vimeo] /users/{user}/live_events returned 404 — retrying /me/live_events', { meUrl })
     }
-    const retry = await fetch(meUrl, { headers, next: { revalidate: 300 } })
+    const retry = await fetch(meUrl, buildFetchOptions(headers, bypassCache))
     const dt1 = Date.now() - t1
     if (process.env.NODE_ENV !== 'production') {
       console.log('[Vimeo] getRecentLivestreams ← /me/events response', { status: retry.status, durationMs: dt1 })
@@ -138,7 +164,7 @@ export async function getRecentLivestreams(): Promise<VimeoItem[]> {
     if (process.env.NODE_ENV !== 'production') {
       console.warn('[Vimeo] Falling back to videos endpoint for recents')
     }
-    return await getRecentFromVideosEndpoint()
+    return await getRecentFromVideosEndpoint(bypassCache)
   }
 
   const evData = await evRes.json()
@@ -150,7 +176,7 @@ export async function getRecentLivestreams(): Promise<VimeoItem[]> {
     if (process.env.NODE_ENV !== 'production') {
       console.warn('[Vimeo] No live events returned; falling back to videos endpoint for recents')
     }
-    return await getRecentFromVideosEndpoint()
+    return await getRecentFromVideosEndpoint(bypassCache)
   }
 
   // 2) For each event, fetch the latest video generated from it (archive). Keep the ones that exist).
@@ -160,7 +186,7 @@ export async function getRecentLivestreams(): Promise<VimeoItem[]> {
         const eventId = idFromUri(ev.uri)
         const vUrl = `https://api.vimeo.com/live_events/${eventId}/videos?per_page=1&sort=date&direction=desc&fields=uri,name,link,pictures.sizes.link,created_time,release_time,modified_time,live.status,live.scheduled_time,live.ended_time,status,privacy.view,privacy.embed`
         const vt0 = Date.now()
-        const vRes = await fetch(vUrl, { headers, next: { revalidate: 300 } })
+        const vRes = await fetch(vUrl, buildFetchOptions(headers, bypassCache))
         const vDt = Date.now() - vt0
         if (process.env.NODE_ENV !== 'production') {
           console.log('[Vimeo] resolve event → videos', { eventId, status: vRes.status, durationMs: vDt })
@@ -204,22 +230,22 @@ export async function getRecentLivestreams(): Promise<VimeoItem[]> {
     if (process.env.NODE_ENV !== 'production') {
       console.warn('[Vimeo] No archives resolved from live events; falling back to videos endpoint for recents')
     }
-    return await getRecentFromVideosEndpoint()
+    return await getRecentFromVideosEndpoint(bypassCache)
   }
   return result
 }
 
 
-export async function getRecentFromVideosEndpoint(): Promise<VimeoItem[]> {
+export async function getRecentFromVideosEndpoint(bypassCache = false): Promise<VimeoItem[]> {
   const config = await getConfig()
   if (!config) return []
   const { user, headers } = config
   const url = `https://api.vimeo.com/users/${user}/videos?per_page=10&sort=date&direction=desc&fields=uri,name,link,pictures.sizes.link,live.status,live.scheduled_time,live.ended_time,created_time,release_time,modified_time,privacy.view,privacy.embed`
   const t0 = Date.now()
   if (process.env.NODE_ENV !== 'production') {
-    console.log('[Vimeo] Fallback → users/{user}/videos fetch', { url })
+    console.log('[Vimeo] Fallback → users/{user}/videos fetch', { url, bypassCache })
   }
-  const res = await fetch(url, { headers, next: { revalidate: 300 } })
+  const res = await fetch(url, buildFetchOptions(headers, bypassCache))
   const dt = Date.now() - t0
   if (process.env.NODE_ENV !== 'production') {
     console.log('[Vimeo] Fallback ← videos response', { status: res.status, durationMs: dt })
