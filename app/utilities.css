@@ -10,12 +10,12 @@
   .btn-primary {
     /* Use brand tokens */
     @apply btn-brand;
-    background-color: var(--brand-primary);
+    background-color: color-mix(in oklab, var(--brand-primary) 75%, white 25%);
     color: var(--brand-primary-contrast);
-    border: 1px solid var(--brand-primary);
+    border: 1px solid color-mix(in oklab, var(--brand-primary) 82%, white 18%);
   }
   .btn-primary:hover {
-    background-color: color-mix(in oklab, var(--brand-primary) 85%, white 15%);
+    background-color: color-mix(in oklab, var(--brand-primary) 88%, white 12%);
   }
   .btn-primary:active {
     transform: translateY(1px);
@@ -27,8 +27,8 @@
     background-color: transparent;
   }
   .btn-ghost:hover {
-    background-color: color-mix(in oklab, var(--brand-primary) 10%, var(--brand-surface) 90%);
-    color: var(--brand-primary);
+    background-color: color-mix(in oklab, var(--brand-primary) 18%, var(--brand-bg) 82%);
+    color: color-mix(in oklab, var(--brand-primary) 88%, white 12%);
   }
 
   /* Brand outlined button: transparent fill with visible border */
@@ -39,7 +39,8 @@
     border: 1px solid var(--brand-primary);
   }
   .btn-outline:hover {
-    background-color: color-mix(in oklab, var(--brand-primary) 10%, var(--brand-surface) 90%);
+    background-color: color-mix(in oklab, var(--brand-primary) 18%, var(--brand-bg) 82%);
+    border-color: color-mix(in oklab, var(--brand-primary) 88%, white 12%);
   }
   .btn-outline:active {
     transform: translateY(1px);
@@ -51,13 +52,13 @@
     border-radius: 9999px; /* ensure pill corners regardless of any resets */
     color: var(--brand-primary);
     /* More prominent border using accent+primary mix */
-    border: 2px solid color-mix(in oklab, var(--brand-accent) 65%, var(--brand-primary) 35%);
+    border: 2px solid color-mix(in oklab, var(--brand-accent) 48%, var(--brand-primary) 52%);
     /* Faded light background to lift from purple page bg */
-    background-color: color-mix(in oklab, var(--brand-primary) 14%, white 86%);
+    background-color: color-mix(in oklab, var(--brand-primary) 24%, white 76%);
   }
   .btn-outline-cta:hover {
-    background-color: color-mix(in oklab, var(--brand-primary) 20%, white 80%);
-    box-shadow: 0 8px 18px -8px color-mix(in oklab, var(--brand-accent) 35%, transparent);
+    background-color: color-mix(in oklab, var(--brand-primary) 32%, white 68%);
+    box-shadow: 0 8px 18px -8px color-mix(in oklab, var(--brand-primary) 40%, transparent);
   }
   .btn-outline-cta:active {
     transform: translateY(1px);
