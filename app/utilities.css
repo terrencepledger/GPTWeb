@@ -12,13 +12,23 @@
     @apply btn-brand;
     background-color: var(--brand-primary-muted);
     color: var(--brand-primary-contrast);
-    border: 1px solid color-mix(in oklab, var(--brand-primary-muted) 62%, white 38%);
+    border: 1px solid color-mix(in oklab, var(--brand-primary-muted) 55%, white 45%);
   }
   .btn-primary:hover {
-    background-color: color-mix(in oklab, var(--brand-primary-muted) 78%, white 22%);
+    background-color: color-mix(in oklab, var(--brand-primary-muted) 80%, white 20%);
   }
   .btn-primary:active {
     transform: translateY(1px);
+  }
+
+  /* Elevate button hover on secondary surfaces */
+  [class*="brand-surface"] .btn-primary {
+    border-color: var(--brand-surface-contrast);
+  }
+
+  [class*="brand-surface"] .btn-primary:hover {
+    background-color: var(--brand-surface-contrast);
+    color: var(--brand-primary);
   }
 
   .btn-ghost {

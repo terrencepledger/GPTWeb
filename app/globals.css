@@ -17,6 +17,19 @@ body {
   @apply antialiased transition-colors;
 }
 
+/* Ensure secondary surfaces default to white copy for readability */
+[class*="brand-surface"] {
+  color: var(--brand-surface-contrast) !important;
+}
+
+[class*="brand-surface"] * {
+  color: var(--brand-surface-contrast) !important;
+}
+
+[class*="brand-surface"] a {
+  color: var(--brand-surface-contrast) !important;
+}
+
 h1,
 h2,
 h3,
@@ -81,21 +94,17 @@ img {
   --brand-primary-contrast: #FFFFFF;
   --brand-accent: #D6AF36; /* warm gold highlight */
   --brand-ink: #121212; /* neutral contrast for light surfaces */
-  --brand-alt: color-mix(in oklab, var(--brand-primary) 55%, var(--brand-ink) 45%); /* elevated headings/links */
+  --brand-alt: color-mix(in oklab, var(--brand-primary) 40%, var(--brand-accent) 60%);
 
   --brand-bg: #FFFFFF; /* default page surface */
-  --brand-fg: var(--brand-ink);
-  --brand-muted: color-mix(in oklab, var(--brand-ink) 50%, white 50%);
-  --brand-border: color-mix(
-    in oklab,
-    color-mix(in oklab, white 78%, var(--brand-ink) 22%),
-    var(--brand-primary) 38%
-  );
-  --brand-surface: color-mix(in oklab, var(--brand-primary) 75%, white 25%);
-  --brand-primary-muted: color-mix(in oklab, var(--brand-primary) 45%, white 55%);
-  --brand-surface-contrast: color-mix(in oklab, var(--brand-primary-contrast) 92%, var(--brand-accent) 8%);
-  --brand-overlay: color-mix(in oklab, var(--brand-primary) 52%, transparent);
-  --brand-overlay-muted: color-mix(in oklab, var(--brand-primary) 24%, transparent);
+  --brand-fg: var(--brand-accent);
+  --brand-muted: color-mix(in oklab, var(--brand-accent) 45%, white 55%);
+  --brand-border: var(--brand-accent);
+  --brand-surface: var(--brand-primary);
+  --brand-primary-muted: color-mix(in oklab, var(--brand-primary) 35%, white 65%);
+  --brand-surface-contrast: #FFFFFF;
+  --brand-overlay: color-mix(in oklab, var(--brand-primary) 60%, transparent);
+  --brand-overlay-muted: color-mix(in oklab, var(--brand-primary) 35%, transparent);
 
   /* Layout and component variables (defaults) */
   --layout-max-width: 90vw;
@@ -113,9 +122,9 @@ img {
   :root {
     /* Dark mode overrides */
     --brand-primary: #B19CD9; /* lighter purple for dark for contrast */
-    --brand-bg: color-mix(in oklab, var(--brand-primary) 18%, black);
-    --brand-surface: color-mix(in oklab, var(--brand-primary) 26%, black);
-    --brand-primary-muted: var(--brand-primary);
+    --brand-bg: color-mix(in oklab, #080211 85%, var(--brand-primary) 15%);
+    --brand-surface: color-mix(in oklab, #120322 65%, var(--brand-primary) 35%);
+    --brand-primary-muted: color-mix(in oklab, var(--brand-primary) 55%, white 45%);
     --brand-fg: var(--brand-accent);
     /* Make muted text distinct from main fg in dark mode */
     --brand-muted: color-mix(in oklab, var(--brand-accent) 60%, var(--brand-ink) 40%);
@@ -150,20 +159,16 @@ html {
   --brand-primary-contrast: #FFFFFF;
   --brand-accent: #D6AF36;
   --brand-ink: #121212;
-  --brand-alt: color-mix(in oklab, var(--brand-primary) 55%, var(--brand-ink) 45%);
+  --brand-alt: color-mix(in oklab, var(--brand-primary) 40%, var(--brand-accent) 60%);
   --brand-bg: #FFFFFF;
-  --brand-fg: var(--brand-ink);
-  --brand-muted: color-mix(in oklab, var(--brand-ink) 50%, white 50%);
-  --brand-border: color-mix(
-    in oklab,
-    color-mix(in oklab, white 78%, var(--brand-ink) 22%),
-    var(--brand-primary) 38%
-  );
-  --brand-surface: color-mix(in oklab, var(--brand-primary) 75%, white 25%);
-  --brand-primary-muted: color-mix(in oklab, var(--brand-primary) 45%, white 55%);
-  --brand-surface-contrast: color-mix(in oklab, var(--brand-primary-contrast) 92%, var(--brand-accent) 8%);
-  --brand-overlay: color-mix(in oklab, var(--brand-primary) 52%, transparent);
-  --brand-overlay-muted: color-mix(in oklab, var(--brand-primary) 24%, transparent);
+  --brand-fg: var(--brand-accent);
+  --brand-muted: color-mix(in oklab, var(--brand-accent) 45%, white 55%);
+  --brand-border: var(--brand-accent);
+  --brand-surface: var(--brand-primary);
+  --brand-primary-muted: color-mix(in oklab, var(--brand-primary) 35%, white 65%);
+  --brand-surface-contrast: #FFFFFF;
+  --brand-overlay: color-mix(in oklab, var(--brand-primary) 60%, transparent);
+  --brand-overlay-muted: color-mix(in oklab, var(--brand-primary) 35%, transparent);
 
   /* Font variable fallbacks (overridden by next/font classes on <html>) */
   --font-body: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
