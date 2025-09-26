@@ -13,7 +13,7 @@ export default async function Page() {
           Get in touch with us using the contact form below.
         </p>
       </div>
-      <div className="mx-auto max-w-3xl rounded-3xl border-2 border-[var(--brand-border-strong)] bg-[var(--brand-bg)] p-6 shadow-xl">
+      <div className="mx-auto max-w-3xl rounded-3xl bg-[var(--brand-bg)] p-6 shadow-xl">
         <ContactForm
           pageId={formSettings?.pageId}
           formId={formSettings?.formId}

@@ -30,7 +30,7 @@ export function StaffCard({
   }
   return (
     <div
-      className="card brand-surface relative flex h-full flex-col items-center overflow-hidden rounded-lg text-center"
+      className="card relative flex h-full flex-col items-center overflow-hidden rounded-lg text-center"
       style={style}
     >
       {staff.image && (
@@ -43,14 +43,14 @@ export function StaffCard({
         />
       )}
       <div className="p-4">
-        <h3 className="text-lg font-semibold text-[var(--brand-heading-secondary)]">{staff.name}</h3>
-        <p className="mt-1 text-sm text-[var(--brand-body-secondary)]">{staff.role}</p>
+        <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">{staff.name}</h3>
+        <p className="mt-1 text-sm text-[var(--brand-muted)]">{staff.role}</p>
         {staff.email && (
           <a
             href={`mailto:${staff.email}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-2 block text-sm font-medium text-[var(--brand-body-secondary)] underline decoration-[var(--brand-body-secondary)] underline-offset-4 hover:opacity-90"
+            className="mt-2 block text-sm font-medium text-[var(--brand-accent)] hover:underline hover:text-[var(--brand-primary-contrast)]"
           >
             {staff.email}
           </a>

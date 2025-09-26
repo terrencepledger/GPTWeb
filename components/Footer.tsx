@@ -110,7 +110,7 @@ export default async function Footer() {
               />
               <button
                 type="submit"
-                className="rounded cursor-pointer border border-[var(--brand-primary)] bg-[var(--brand-primary)] px-3 py-1 text-sm font-medium text-[var(--brand-primary-contrast)] transition-colors hover:bg-[color:color-mix(in_oklab,var(--brand-primary)_85%,white_15%)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-bg)]"
+                className="btn-primary px-6 py-2 text-sm font-semibold"
               >
                 Subscribe
               </button>
