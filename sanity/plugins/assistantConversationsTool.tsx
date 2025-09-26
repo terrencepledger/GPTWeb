@@ -11,8 +11,9 @@ import {
   Spinner,
   Stack,
   Text,
+  useToast,
 } from '@sanity/ui'
-import {RefreshIcon} from '@sanity/icons'
+import {RefreshIcon, TrashIcon} from '@sanity/icons'
 
 type ConversationMessage = {
   role?: string
@@ -231,6 +232,8 @@ function AssistantConversationsToolComponent() {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
   const [sortMode, setSortMode] = useState<SortMode>('recent')
+  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const toast = useToast()
 
   const dateFormatter = useMemo(
     () => new Intl.DateTimeFormat(undefined, {dateStyle: 'medium', timeStyle: 'short'}),
@@ -356,6 +359,44 @@ function AssistantConversationsToolComponent() {
     setSortMode(mode)
   }, [])
 
+  const handleDeleteConversation = useCallback(
+    async (conversation: ConversationDocument) => {
+      const id = conversation._id
+      if (!id) {
+        return
+      }
+
+      const label = conversation.conversationId || id
+      const confirmed =
+        typeof window === 'undefined'
+          ? true
+          : window.confirm(
+              `Delete the conversation "${label}" immediately? This action cannot be undone.`,
+            )
+
+      if (!confirmed) {
+        return
+      }
+
+      setDeletingId(id)
+      try {
+        await client.delete(id)
+        setConversations((prev) => prev.filter((item) => item._id !== id))
+        toast.push({status: 'success', title: 'Conversation deleted'})
+      } catch (err) {
+        const description = err instanceof Error ? err.message : 'An unknown error occurred.'
+        toast.push({
+          status: 'error',
+          title: 'Failed to delete conversation',
+          description,
+        })
+      } finally {
+        setDeletingId((current) => (current === id ? null : current))
+      }
+    },
+    [client, toast],
+  )
+
   const infoMessage = retentionHours > 0
     ? `Transcripts are retained for ${retentionHours} hour${retentionHours === 1 ? '' : 's'} before automatic deletion.`
     : 'Conversation logging is currently disabled. Set a retention window in Chatbot Settings to enable it.'
@@ -380,6 +421,7 @@ function AssistantConversationsToolComponent() {
                   text={option.label}
                   mode={sortMode === option.id ? 'default' : 'ghost'}
                   tone={sortMode === option.id ? 'primary' : 'default'}
+                  selected={sortMode === option.id}
                   onClick={() => handleSortChange(option.id)}
                   disabled={loading}
                   aria-pressed={sortMode === option.id}
@@ -484,6 +526,16 @@ function AssistantConversationsToolComponent() {
                             Suggested follow-ups: {softEscalateCount}
                           </Text>
                         )}
+                        <Button
+                          icon={TrashIcon}
+                          mode="ghost"
+                          tone="critical"
+                          text={deletingId === conversation._id ? 'Deleting…' : 'Delete'}
+                          loading={deletingId === conversation._id}
+                          disabled={deletingId === conversation._id}
+                          onClick={() => handleDeleteConversation(conversation)}
+                          aria-label={`Delete conversation ${conversation.conversationId || conversation._id}`}
+                        />
                       </Stack>
                     </Flex>
                     {(contextLabels.length > 0 || keywords.length > 0) && (
