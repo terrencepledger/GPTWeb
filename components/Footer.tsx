@@ -1,4 +1,5 @@
 import Link from "next/link";
+import NewsletterSignupForm from "./NewsletterSignupForm";
 import { siteSettings } from "@/lib/queries";
 
 export default async function Footer() {
@@ -102,19 +103,7 @@ export default async function Footer() {
 
           <div>
             <h4 className="mb-2 font-semibold text-[var(--brand-surface-contrast)]">Newsletter</h4>
-            <form className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
-              <input
-                type="email"
-                placeholder="Email address"
-                className="flex-1 rounded border border-[var(--brand-border)] bg-[var(--brand-surface)] px-2 py-1 text-[var(--brand-fg)] placeholder-[var(--brand-muted)] focus:border-[var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary)]"
-              />
-              <button
-                type="submit"
-                className="rounded cursor-pointer border border-[var(--brand-primary)] bg-[var(--brand-alt)] px-3 py-1 text-sm font-medium text-[var(--brand-primary)] hover:bg-[var(--brand-primary)] hover:text-[var(--brand-primary-contrast)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--brand-accent)] dark:bg-[var(--brand-primary)] dark:text-[var(--brand-ink)] dark:hover:bg-[var(--brand-alt)] dark:hover:text-[var(--brand-primary)]"
-              >
-                Subscribe
-              </button>
-            </form>
+            <NewsletterSignupForm />
           </div>
         </div>
         <div className="mt-4 flex flex-col items-center justify-between gap-2 border-t border-[var(--brand-border)] pt-3 text-sm text-[var(--brand-muted)] md:flex-row md:justify-center md:gap-8">
