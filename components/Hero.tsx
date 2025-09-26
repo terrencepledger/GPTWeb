@@ -81,11 +81,12 @@ export default function Hero({ slides, intervalMs = 10000 }: HeroProps) {
               className="object-cover md:object-contain object-center z-0"
             />
           )}
-          <div className="absolute inset-0 bg-[var(--brand-overlay)] z-10" />
-          <div className="brand-surface relative z-20 flex h-full w-full flex-col items-center justify-center px-4 text-center">
-            <div className="rounded-xl border border-[var(--brand-border)] bg-[color:color-mix(in_oklab,var(--brand-surface)_32%,var(--brand-bg)_68%)] px-6 py-4 shadow-xl md:shadow-2xl">
-              <h1 className="text-4xl font-bold tracking-tight">{slide.headline}</h1>
-              {slide.subline && <p className="mt-2 text-lg">{slide.subline}</p>}
+          <div className="relative z-20 flex h-full w-full flex-col items-center justify-center px-4 text-center">
+            <div className="max-w-3xl rounded-3xl border-2 border-[var(--brand-border-strong)] bg-[var(--brand-bg)] px-8 py-6 shadow-2xl">
+              <h1 className="text-4xl font-bold tracking-tight text-[var(--brand-heading-primary)]">{slide.headline}</h1>
+              {slide.subline && (
+                <p className="mt-3 text-lg text-[var(--brand-body-primary)]">{slide.subline}</p>
+              )}
             </div>
             {slide.cta && slide.cta.href && slide.cta.label && (
               <Link

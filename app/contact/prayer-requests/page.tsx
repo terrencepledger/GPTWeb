@@ -7,15 +7,21 @@ export default async function Page() {
   const formSettings = await prayerRequestFormSettings();
 
   return (
-    <div className="max-w-md mx-auto p-4">
-      <h1 className="text-3xl font-semibold text-center animate-slide-in-from-top">
-        Prayer Requests
-      </h1>
-
-      <PrayerRequestForm
-        pageId={formSettings?.pageId}
-        formId={formSettings?.formId}
-      />
+    <div className="space-y-8">
+      <div className="mx-auto max-w-2xl space-y-3 text-center">
+        <h1 className="text-3xl font-semibold text-[var(--brand-heading-primary)] animate-slide-in-from-top">
+          Prayer Requests
+        </h1>
+        <p className="text-base text-[var(--brand-body-primary)]">
+          Share your prayer needs and our team will partner with you in prayer.
+        </p>
+      </div>
+      <div className="mx-auto max-w-3xl rounded-3xl border-2 border-[var(--brand-border-strong)] bg-[var(--brand-bg)] p-6 shadow-xl">
+        <PrayerRequestForm
+          pageId={formSettings?.pageId}
+          formId={formSettings?.formId}
+        />
+      </div>
     </div>
   );
 }

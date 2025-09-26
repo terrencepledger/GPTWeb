@@ -16,26 +16,26 @@ interface FaqAccordionProps {
 const portableTextComponents: PortableTextComponents = {
   block: {
     normal: ({ children }) => (
-      <p className="text-sm leading-relaxed text-[var(--brand-alt)]/90">{children}</p>
+      <p className="text-sm leading-relaxed text-[var(--brand-body-secondary)]">{children}</p>
     ),
     h4: ({ children }) => (
-      <h4 className="text-base font-semibold text-[var(--brand-alt)]">{children}</h4>
+      <h4 className="text-base font-semibold text-[var(--brand-heading-secondary)]">{children}</h4>
     ),
   },
   list: {
     bullet: ({ children }) => (
-      <ul className="ml-4 list-disc space-y-1 text-sm text-[var(--brand-alt)]/90">{children}</ul>
+      <ul className="ml-4 list-disc space-y-1 text-sm text-[var(--brand-body-secondary)]">{children}</ul>
     ),
     number: ({ children }) => (
-      <ol className="ml-4 list-decimal space-y-1 text-sm text-[var(--brand-alt)]/90">{children}</ol>
+      <ol className="ml-4 list-decimal space-y-1 text-sm text-[var(--brand-body-secondary)]">{children}</ol>
     ),
   },
   marks: {
     strong: ({ children }) => (
-      <strong className="font-semibold text-[var(--brand-alt)]">{children}</strong>
+      <strong className="font-semibold text-[var(--brand-heading-secondary)]">{children}</strong>
     ),
     em: ({ children }) => (
-      <em className="italic text-[var(--brand-alt)]/95">{children}</em>
+      <em className="italic text-[var(--brand-body-secondary)]">{children}</em>
     ),
     link: ({
       children,
@@ -47,7 +47,7 @@ const portableTextComponents: PortableTextComponents = {
       return (
         <a
           href={href}
-          className="underline decoration-[var(--brand-alt)] underline-offset-2 hover:opacity-80 focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-alt)]"
+          className="underline decoration-[var(--brand-heading-secondary)] underline-offset-2 hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--brand-heading-secondary)]"
           target={isExternal ? "_blank" : undefined}
           rel={isExternal ? "noreferrer" : undefined}
         >
@@ -81,7 +81,7 @@ export default function FaqAccordion({ faqs }: FaqAccordionProps) {
 
   if (faqs.length === 0) {
     return (
-      <div className="rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 text-center text-[var(--brand-alt)]">
+      <div className="brand-surface rounded-2xl border-2 border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 text-center text-[var(--brand-body-secondary)]">
         We update our frequently asked questions often. Please check back soon.
       </div>
     );
@@ -94,11 +94,11 @@ export default function FaqAccordion({ faqs }: FaqAccordionProps) {
           <div className="flex items-baseline justify-between gap-3">
             <h2
               id={`faq-category-${category}`}
-              className="text-xl font-semibold text-[var(--brand-alt)]"
+              className="text-xl font-semibold text-[var(--brand-heading-primary)]"
             >
               {category}
             </h2>
-            <span className="text-xs uppercase tracking-widest text-[var(--brand-muted)]">
+            <span className="text-xs uppercase tracking-widest text-[var(--brand-body-primary)]">
               {items.length} {items.length === 1 ? "topic" : "topics"}
             </span>
           </div>
@@ -113,27 +113,27 @@ export default function FaqAccordion({ faqs }: FaqAccordionProps) {
               return (
                 <article
                   key={faq._id}
-                  className="rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-4 shadow-sm transition-transform duration-300 hover:translate-y-[-2px] hover:shadow-lg"
+                  className="brand-surface rounded-2xl border-2 border-[var(--brand-border)] bg-[var(--brand-surface)] p-4 shadow-sm transition-transform duration-300 hover:translate-y-[-2px] hover:shadow-lg"
                 >
                   <div className="flex flex-col gap-3">
                     <button
                       type="button"
-                      className="flex w-full items-center justify-between gap-4 text-left"
+                      className="flex w-full items-center justify-between gap-4 text-left text-[var(--brand-heading-secondary)]"
                       onClick={() => toggle(faq._id)}
                       aria-expanded={isOpen}
                       aria-controls={contentId}
                     >
-                      <span className="text-base font-semibold text-[var(--brand-alt)]">
+                      <span className="text-base font-semibold text-[var(--brand-heading-secondary)]">
                         {faq.question}
                       </span>
                       <span
                         aria-hidden="true"
-                        className={`transition-transform duration-300 ${
+                        className={`text-[var(--brand-heading-secondary)] transition-transform duration-300 ${
                           isOpen ? "rotate-180" : "rotate-0"
                         }`}
                       >
                         <svg
-                          className="h-5 w-5 text-[var(--brand-alt)]"
+                          className="h-5 w-5"
                           viewBox="0 0 20 20"
                           fill="currentColor"
                         >
@@ -146,7 +146,7 @@ export default function FaqAccordion({ faqs }: FaqAccordionProps) {
                       </span>
                     </button>
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                      <span className="rounded-full bg-[color:color-mix(in_oklab,var(--brand-primary)_30%,transparent)] px-3 py-1 text-xs font-medium uppercase tracking-wide text-[var(--brand-alt)]/90">
+                      <span className="rounded-full bg-[color:color-mix(in_oklab,var(--brand-primary)_30%,transparent)] px-3 py-1 text-xs font-medium uppercase tracking-wide text-[var(--brand-body-secondary)]">
                         {category}
                       </span>
                       <FaqAssistantChip prompt={prompt} />

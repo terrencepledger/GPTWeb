@@ -95,7 +95,7 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
               <h3 className="text-lg font-semibold text-[var(--brand-heading-primary)]">
                 {ev.title}
               </h3>
-              <p className="text-sm text-[var(--brand-muted)]">
+              <p className="text-sm text-[var(--brand-body-primary)]">
                 {ev.date}
                 {ev.location ? ` • ${ev.location}` : ""}
               </p>
@@ -122,7 +122,7 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
               <h3 className="text-lg font-semibold text-[var(--brand-heading-primary)]">
                 {ev.title}
               </h3>
-              <p className="text-sm text-[var(--brand-muted)]">
+              <p className="text-sm text-[var(--brand-body-primary)]">
                 {ev.date}
                 {ev.location ? ` • ${ev.location}` : ""}
               </p>

@@ -7,8 +7,8 @@ export default async function Page() {
   const staff = await staffAll();
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Staff</h1>
-      <p className="text-lg text-[var(--brand-muted)]">
+      <h1 className="text-2xl font-semibold text-[var(--brand-heading-primary)]">Staff</h1>
+      <p className="text-lg text-[var(--brand-body-primary)]">
         Our ministry team is dedicated to serving the congregation with love and
         humility. Meet the people who help lead our church community.
       </p>

@@ -4,7 +4,7 @@ export function EventList({ events, descriptionClassName, dateClassName }: { eve
   if (events.length === 0) {
     return (
       <div className="grid gap-6 grid-cols-[repeat(auto-fit,minmax(16rem,1fr))]">
-        <p className="col-span-full text-sm text-[var(--brand-muted)]">No events found.</p>
+        <p className="col-span-full text-sm text-[var(--brand-body-primary)]">No events found.</p>
       </div>
     );
   }
