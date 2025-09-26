@@ -28,7 +28,7 @@ export default function EventTabs({ events }: { events: CalendarEvent[] }) {
           className={`px-3 py-1 rounded cursor-pointer ${
             tab === "timeline"
               ? "bg-[var(--brand-accent)] text-[var(--brand-ink)]"
-              : "border border-[var(--brand-border)] bg-[var(--brand-surface)] text-[var(--brand-fg)]"
+              : "border border-[var(--brand-border)] bg-[var(--brand-surface)] text-[var(--brand-heading-secondary)]"
           }`}
           onClick={() => setTab("timeline")}
         >
@@ -38,7 +38,7 @@ export default function EventTabs({ events }: { events: CalendarEvent[] }) {
           className={`px-3 py-1 rounded cursor-pointer ${
             tab === "calendar"
               ? "bg-[var(--brand-accent)] text-[var(--brand-ink)]"
-              : "border border-[var(--brand-border)] bg-[var(--brand-surface)] text-[var(--brand-fg)]"
+              : "border border-[var(--brand-border)] bg-[var(--brand-surface)] text-[var(--brand-heading-secondary)]"
           }`}
           onClick={() => setTab("calendar")}
         >

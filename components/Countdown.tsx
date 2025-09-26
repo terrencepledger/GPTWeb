@@ -24,7 +24,7 @@ export default function Countdown({ target }: Props) {
   const seconds = Math.floor((remaining / 1000) % 60);
 
   return (
-    <div className="text-center text-lg font-semibold text-[var(--brand-fg)]">
+    <div className="text-center text-lg font-semibold text-[var(--brand-heading-primary)]">
       {days > 0 && `${days}d `}
       {String(hours).padStart(2, '0')}:{String(minutes).padStart(2, '0')}:{String(seconds).padStart(2, '0')} until next stream
     </div>

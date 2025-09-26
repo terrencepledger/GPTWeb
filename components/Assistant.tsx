@@ -432,8 +432,8 @@ export default function Assistant() {
         className={`absolute bottom-0 right-0 w-80 rounded-lg border pt-8 pr-8 pb-4 pl-4 shadow-lg transition-all duration-700 ease-in-out transform ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
         style={{
           backgroundColor: 'var(--brand-surface)',
-          color: 'var(--brand-ink)',
-          borderColor: 'var(--brand-ink)',
+          color: 'var(--brand-body-secondary)',
+          borderColor: 'var(--brand-border)',
         }}
       >
         <button
@@ -445,9 +445,9 @@ export default function Assistant() {
           }}
           className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full border text-2xl leading-none cursor-pointer"
           style={{
-            backgroundColor: 'var(--brand-surface)',
-            color: 'var(--brand-ink)',
-            borderColor: 'var(--brand-ink)',
+            backgroundColor: 'var(--brand-heading-secondary)',
+            color: 'var(--brand-primary)',
+            borderColor: 'var(--brand-border)',
           }}
         >
           ×
@@ -473,7 +473,10 @@ export default function Assistant() {
                         m.role === 'assistant'
                           ? 'var(--brand-primary)'
                           : 'var(--brand-accent)',
-                      color: 'var(--brand-ink)',
+                      color:
+                        m.role === 'assistant'
+                          ? 'var(--brand-heading-secondary)'
+                          : 'var(--brand-ink)',
                       borderColor: 'var(--brand-border)',
                       overflowWrap: 'anywhere',
                       wordBreak: 'break-word',
@@ -558,8 +561,8 @@ export default function Assistant() {
               type="text"
               className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
               style={{
-                backgroundColor: 'var(--brand-surface)',
-                color: 'var(--brand-ink)',
+                backgroundColor: 'var(--brand-heading-secondary)',
+                color: 'var(--brand-body-primary)',
                 borderColor: 'var(--brand-border)',
                 '--tw-ring-color': 'var(--brand-primary)',
               } as CSSProperties}
@@ -588,8 +591,8 @@ export default function Assistant() {
               type="email"
               className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
               style={{
-                backgroundColor: 'var(--brand-surface)',
-                color: 'var(--brand-ink)',
+                backgroundColor: 'var(--brand-heading-secondary)',
+                color: 'var(--brand-body-primary)',
                 borderColor: 'var(--brand-border)',
                 '--tw-ring-color': 'var(--brand-primary)',
               } as CSSProperties}
@@ -602,8 +605,8 @@ export default function Assistant() {
             <textarea
               className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
               style={{
-                backgroundColor: 'var(--brand-surface)',
-                color: 'var(--brand-ink)',
+                backgroundColor: 'var(--brand-heading-secondary)',
+                color: 'var(--brand-body-primary)',
                 borderColor: 'var(--brand-border)',
                 '--tw-ring-color': 'var(--brand-primary)',
               } as CSSProperties}
@@ -616,9 +619,12 @@ export default function Assistant() {
               type="submit"
               className="rounded px-3 py-1 focus:outline-none focus:ring-2 cursor-pointer"
               style={{
-                backgroundColor: 'var(--brand-primary)',
-                color: 'var(--brand-ink)',
-                '--tw-ring-color': 'var(--brand-primary)',
+                backgroundColor: 'var(--brand-heading-secondary)',
+                color: 'var(--brand-primary)',
+                borderColor: 'var(--brand-border)',
+                borderWidth: 1,
+                borderStyle: 'solid',
+                '--tw-ring-color': 'var(--brand-heading-secondary)',
               } as CSSProperties}
             >
               Send
@@ -630,8 +636,8 @@ export default function Assistant() {
               type="text"
               className="flex-1 min-w-0 border rounded px-2 py-1 focus:outline-none focus:ring-2"
               style={{
-                backgroundColor: 'var(--brand-surface)',
-                color: 'var(--brand-ink)',
+                backgroundColor: 'var(--brand-heading-secondary)',
+                color: 'var(--brand-body-primary)',
                 borderColor: 'var(--brand-border)',
                 '--tw-ring-color': 'var(--brand-primary)',
               } as CSSProperties}
@@ -643,9 +649,12 @@ export default function Assistant() {
               type="submit"
               className="rounded px-3 py-1 focus:outline-none focus:ring-2 cursor-pointer"
               style={{
-                backgroundColor: 'var(--brand-primary)',
-                color: 'var(--brand-ink)',
-                '--tw-ring-color': 'var(--brand-primary)',
+                backgroundColor: 'var(--brand-heading-secondary)',
+                color: 'var(--brand-primary)',
+                borderColor: 'var(--brand-border)',
+                borderWidth: 1,
+                borderStyle: 'solid',
+                '--tw-ring-color': 'var(--brand-heading-secondary)',
               } as CSSProperties}
             >
               Send

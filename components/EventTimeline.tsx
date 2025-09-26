@@ -92,7 +92,7 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
                   className="mb-4 w-full rounded object-cover"
                 />
               )}
-              <h3 className="text-lg font-semibold text-[var(--brand-fg)]">
+              <h3 className="text-lg font-semibold text-[var(--brand-heading-primary)]">
                 {ev.title}
               </h3>
               <p className="text-sm text-[var(--brand-muted)]">
@@ -100,7 +100,7 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
                 {ev.location ? ` • ${ev.location}` : ""}
               </p>
               {ev.description && (
-                <p className="text-base text-[var(--brand-fg)]">
+                <p className="text-base text-[var(--brand-body-primary)]">
                   {ev.description}
                 </p>
               )}
@@ -119,7 +119,7 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
                   className="mb-4 w-full rounded object-cover"
                 />
               )}
-              <h3 className="text-lg font-semibold text-[var(--brand-fg)]">
+              <h3 className="text-lg font-semibold text-[var(--brand-heading-primary)]">
                 {ev.title}
               </h3>
               <p className="text-sm text-[var(--brand-muted)]">
@@ -127,7 +127,7 @@ export default function EventTimeline({ events }: { events: TimelineEvent[] }) {
                 {ev.location ? ` • ${ev.location}` : ""}
               </p>
               {ev.description && (
-                <p className="text-base text-[var(--brand-fg)]">
+                <p className="text-base text-[var(--brand-body-primary)]">
                   {ev.description}
                 </p>
               )}

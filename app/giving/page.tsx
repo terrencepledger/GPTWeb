@@ -100,8 +100,8 @@ function OptionCard({ option, delay }: { option: Option; delay: string }) {
       style={{ animationDelay: delay }}
     >
       <div className="flex items-center gap-3">
-        <Icon className="h-8 w-8 text-[var(--brand-accent)] transition-transform group-hover:rotate-6" />
-        <h2 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">
+        <Icon className="h-8 w-8 text-[var(--brand-heading-secondary)] transition-transform group-hover:rotate-6" />
+        <h2 className="text-lg font-semibold text-[var(--brand-heading-secondary)]">
           {option.title}
         </h2>
       </div>
@@ -110,12 +110,12 @@ function OptionCard({ option, delay }: { option: Option; delay: string }) {
           href={option.href}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-[var(--brand-accent)] underline decoration-[var(--brand-accent)] underline-offset-2 hover:text-[var(--brand-primary-contrast)]"
+          className="text-[var(--brand-body-secondary)] underline decoration-[var(--brand-body-secondary)] underline-offset-2 hover:text-[var(--brand-heading-secondary)]"
         >
           {option.content}
         </a>
       ) : (
-        <p className="text-[var(--brand-accent)]">{option.content}</p>
+        <p className="text-[var(--brand-body-secondary)]">{option.content}</p>
       )}
     </div>
   );
@@ -130,8 +130,8 @@ export default async function Page() {
   return (
     <div className="w-full space-y-8">
       <div className="space-y-2">
-        <h1 className="text-2xl font-semibold text-[var(--brand-primary-contrast)]">Online Contributions</h1>
-        <p className="text-sm text-[var(--brand-accent)]">Donations are Tax Deductible</p>
+        <h1 className="text-2xl font-semibold text-[var(--brand-heading-primary)]">Online Contributions</h1>
+        <p className="text-sm text-[var(--brand-body-primary)]">Donations are Tax Deductible</p>
       </div>
       <div className="grid gap-6 sm:grid-cols-2">
         {options.map((opt, idx) => (

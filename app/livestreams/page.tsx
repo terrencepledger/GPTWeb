@@ -129,7 +129,7 @@ export default async function Page() {
   return (
     <div>
       {live && (
-        <h2 className="mb-4 text-center text-3xl font-bold text-[var(--brand-fg)]">Live Now</h2>
+        <h2 className="mb-4 text-center text-3xl font-bold text-[var(--brand-heading-primary)]">Live Now</h2>
       )}
       {featured && <LivestreamPlayer videos={displayVideos} initial={featured} />}
     </div>

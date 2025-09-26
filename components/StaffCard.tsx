@@ -43,7 +43,7 @@ export function StaffCard({
         />
       )}
       <div className="p-4">
-        <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">{staff.name}</h3>
+        <h3 className="text-lg font-semibold text-[var(--brand-heading-secondary)]">{staff.name}</h3>
         <p className="mt-1 text-sm text-[var(--brand-muted)]">{staff.role}</p>
         {staff.email && (
           <a

@@ -71,10 +71,10 @@ function ActionCard({ action, delay }: { action: typeof actions[number]; delay: 
       style={{ animationDelay: delay }}
     >
       <div className="flex items-center gap-3">
-        <Icon className="h-8 w-8 text-[var(--brand-accent)] transition-transform group-hover:rotate-6" />
-        <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">{action.title}</h3>
+        <Icon className="h-8 w-8 text-[var(--brand-heading-secondary)] transition-transform group-hover:rotate-6" />
+        <h3 className="text-lg font-semibold text-[var(--brand-heading-secondary)]">{action.title}</h3>
       </div>
-      <p className="text-[var(--brand-accent)]">{action.description}</p>
+      <p className="text-[var(--brand-body-secondary)]">{action.description}</p>
     </a>
   );
 }

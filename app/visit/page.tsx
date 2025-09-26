@@ -86,14 +86,14 @@ export default async function Page() {
   return (
     <div className="space-y-16">
       <section className="rounded-3xl border border-[var(--brand-border)] bg-[color:color-mix(in_oklab,var(--brand-primary)_12%,transparent)] p-8 shadow-lg sm:p-12">
-        <div className="space-y-6 text-[var(--brand-surface-contrast)]">
+        <div className="space-y-6 text-[var(--brand-body-primary)]">
           <p className="text-sm uppercase tracking-[0.4em] text-[var(--brand-accent)]">
             Plan a Visit
           </p>
-          <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">
+          <h1 className="text-3xl font-semibold leading-tight text-[var(--brand-heading-primary)] sm:text-4xl">
             We saved you a seat at {settings?.title ?? "our church"}.
           </h1>
-          <p className="max-w-3xl text-base text-[color:color-mix(in_oklab,var(--brand-surface-contrast)_75%,white_25%)] sm:text-lg">
+          <p className="max-w-3xl text-base text-[var(--brand-body-primary)] sm:text-lg">
             Discover what to expect before you arrive and feel right at home from the moment you pull into the parking lot.
           </p>
           <div className="flex flex-wrap gap-4 text-sm font-medium text-[var(--brand-accent)]">
@@ -113,7 +113,7 @@ export default async function Page() {
 
       <section className="space-y-6">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-2xl font-semibold text-[var(--brand-surface-contrast)]">
+          <h2 className="text-2xl font-semibold text-[var(--brand-heading-primary)]">
             Start Here
           </h2>
           <span className="hidden text-sm text-[var(--brand-accent)] sm:inline">
@@ -131,10 +131,10 @@ export default async function Page() {
                 {String(idx + 1).padStart(2, "0")}
               </span>
               <div>
-                <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">
+                <h3 className="text-lg font-semibold text-[var(--brand-heading-secondary)]">
                   {action.title}
                 </h3>
-                <p className="mt-2 text-sm text-[var(--brand-accent)]">
+                <p className="mt-2 text-sm text-[var(--brand-body-secondary)]">
                   {action.description}
                 </p>
               </div>
@@ -160,28 +160,28 @@ export default async function Page() {
       </section>
 
       <section className="space-y-6">
-        <h2 className="text-2xl font-semibold text-[var(--brand-surface-contrast)]">
+        <h2 className="text-2xl font-semibold text-[var(--brand-heading-primary)]">
           Important Details
         </h2>
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">
+            <h3 className="text-lg font-semibold text-[var(--brand-heading-secondary)]">
               Service Times
             </h3>
-            <p className="mt-2 text-sm text-[var(--brand-accent)]">
+            <p className="mt-2 text-sm text-[var(--brand-body-secondary)]">
               {serviceTimes || "We update our worship schedule regularly. Check back soon."}
             </p>
           </div>
           <div className="rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">
+            <h3 className="text-lg font-semibold text-[var(--brand-heading-secondary)]">
               Where to Find Us
             </h3>
             {address ? (
-              <p className="mt-2 text-sm text-[var(--brand-accent)]">
+              <p className="mt-2 text-sm text-[var(--brand-body-secondary)]">
                 {address}
               </p>
             ) : (
-              <p className="mt-2 text-sm text-[var(--brand-accent)]">
+              <p className="mt-2 text-sm text-[var(--brand-body-secondary)]">
                 Our address will be available soon.
               </p>
             )}
@@ -205,10 +205,10 @@ export default async function Page() {
             )}
           </div>
           <div className="rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">
+            <h3 className="text-lg font-semibold text-[var(--brand-heading-secondary)]">
               Contact Us
             </h3>
-            <ul className="mt-2 space-y-2 text-sm text-[var(--brand-accent)]">
+            <ul className="mt-2 space-y-2 text-sm text-[var(--brand-body-secondary)]">
               {phone && (
                 <li>
                   <a
@@ -250,17 +250,17 @@ export default async function Page() {
               />
             </div>
           )}
-          <div className="space-y-4 text-[var(--brand-surface-contrast)]">
+          <div className="space-y-4 text-[var(--brand-body-secondary)]">
             <p className="text-sm uppercase tracking-[0.35em] text-[var(--brand-accent)]">
               Meet Our Pastor
             </p>
-            <h2 className="text-2xl font-semibold">
+            <h2 className="text-2xl font-semibold text-[var(--brand-heading-secondary)]">
               {leadPastor.name}
             </h2>
-            <p className="text-sm font-medium text-[var(--brand-accent)]">
+            <p className="text-sm font-medium text-[var(--brand-body-secondary)]">
               {leadPastor.role}
             </p>
-            <p className="text-base text-[color:color-mix(in_oklab,var(--brand-surface-contrast)_80%,white_20%)]">
+            <p className="text-base text-[var(--brand-body-secondary)]">
               {welcomeMessage}
             </p>
           </div>
@@ -279,7 +279,7 @@ export default async function Page() {
       <section className="space-y-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold text-[var(--brand-surface-contrast)]">
+            <h2 className="text-2xl font-semibold text-[var(--brand-heading-primary)]">
               Frequently Asked Questions
             </h2>
             <p className="text-sm text-[var(--brand-accent)]">
@@ -308,10 +308,10 @@ export default async function Page() {
               key={faq._id}
               className="rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
             >
-              <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">
+              <h3 className="text-lg font-semibold text-[var(--brand-heading-secondary)]">
                 {faq.question}
               </h3>
-              <p className="mt-3 text-sm text-[var(--brand-accent)]">
+              <p className="mt-3 text-sm text-[var(--brand-body-secondary)]">
                 {getFaqSnippet(faq.answer) || "Read the full answer on our FAQ page."}
               </p>
               <Link
@@ -332,7 +332,7 @@ export default async function Page() {
             </article>
           ))}
           {faqPreview.length === 0 && (
-            <div className="rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 text-sm text-[var(--brand-accent)]">
+            <div className="rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 text-sm text-[var(--brand-body-secondary)]">
               We are gathering answers to the questions guests ask most often. Check back soon for more details.
             </div>
           )}
@@ -342,18 +342,18 @@ export default async function Page() {
       {youthMinistry && (
         <section className="rounded-3xl border border-[var(--brand-border)] bg-[color:color-mix(in_oklab,var(--brand-primary)_10%,transparent)] p-8 shadow-lg sm:p-12">
           <div className="grid gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:items-center">
-            <div className="space-y-5 text-[var(--brand-surface-contrast)]">
+            <div className="space-y-5 text-[var(--brand-body-primary)]">
               <p className="text-sm uppercase tracking-[0.35em] text-[var(--brand-accent)]">
                 Ministry Highlight
               </p>
-              <h2 className="text-3xl font-semibold sm:text-4xl">
+              <h2 className="text-3xl font-semibold text-[var(--brand-heading-primary)] sm:text-4xl">
                 {youthMinistry.name}
               </h2>
-              <p className="text-base text-[color:color-mix(in_oklab,var(--brand-surface-contrast)_80%,white_20%)]">
+              <p className="text-base text-[var(--brand-body-primary)]">
                 {youthInvite ||
                   "Our youth team loves creating a vibrant, faith-filled space for students to grow together. We can't wait to meet you!"}
               </p>
-              <p className="text-sm text-[var(--brand-accent)]">
+              <p className="text-sm text-[var(--brand-body-primary)]">
                 {youthMinistry.description}
               </p>
               <Link

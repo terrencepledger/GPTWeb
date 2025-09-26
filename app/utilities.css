@@ -23,11 +23,14 @@
 
   /* Elevate button hover on secondary surfaces */
   [class*="brand-surface"] .btn-primary {
-    border-color: var(--brand-surface-contrast);
+    background-color: var(--brand-heading-secondary);
+    color: var(--brand-primary);
+    border-color: var(--brand-heading-secondary);
+    box-shadow: 0 8px 18px -10px color-mix(in oklab, var(--brand-heading-secondary) 35%, transparent);
   }
 
   [class*="brand-surface"] .btn-primary:hover {
-    background-color: var(--brand-surface-contrast);
+    background-color: color-mix(in oklab, var(--brand-heading-secondary) 85%, var(--brand-body-secondary) 15%);
     color: var(--brand-primary);
   }
 
@@ -75,9 +78,10 @@
   }
 
   .card {
-    @apply relative overflow-hidden rounded-lg shadow-md;
+    @apply relative overflow-hidden rounded-lg shadow-md border-2;
     background-color: var(--brand-surface);
-    color: var(--brand-fg);
+    color: var(--brand-body-secondary);
+    border-color: var(--brand-border);
   }
 
   .card .hero-overlay {
@@ -88,8 +92,8 @@
   .assistant-chip {
     @apply inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-surface)];
     background-color: color-mix(in oklab, var(--brand-surface) 78%, var(--brand-primary) 22%);
-    color: var(--brand-fg);
-    border-color: color-mix(in oklab, var(--brand-border) 70%, transparent);
+    color: var(--brand-body-secondary);
+    border-color: var(--brand-border);
     box-shadow:
       0 6px 14px -10px color-mix(in oklab, var(--brand-primary) 65%, transparent),
       0 0 0 1px color-mix(in oklab, var(--brand-border) 30%, transparent);
