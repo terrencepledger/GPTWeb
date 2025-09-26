@@ -82,10 +82,10 @@ export default function Hero({ slides, intervalMs = 10000 }: HeroProps) {
             />
           )}
           <div className="absolute inset-0 bg-[var(--brand-overlay)] z-10" />
-          <div className="relative z-20 flex h-full w-full flex-col items-center justify-center px-4 text-center text-[var(--brand-body-secondary)]">
-            <div className="rounded-md bg-[color:color-mix(in_oklab,var(--brand-bg)_60%,transparent)] px-4 py-2 shadow-xl md:shadow-2xl">
-              <h1 className="text-4xl font-bold tracking-tight text-[var(--brand-heading-secondary)]">{slide.headline}</h1>
-              {slide.subline && <p className="mt-2 text-lg text-[var(--brand-body-secondary)]">{slide.subline}</p>}
+          <div className="brand-surface relative z-20 flex h-full w-full flex-col items-center justify-center px-4 text-center">
+            <div className="rounded-xl border border-[var(--brand-border)] bg-[color:color-mix(in_oklab,var(--brand-surface)_32%,var(--brand-bg)_68%)] px-6 py-4 shadow-xl md:shadow-2xl">
+              <h1 className="text-4xl font-bold tracking-tight">{slide.headline}</h1>
+              {slide.subline && <p className="mt-2 text-lg">{slide.subline}</p>}
             </div>
             {slide.cta && slide.cta.href && slide.cta.label && (
               <Link
@@ -94,13 +94,7 @@ export default function Hero({ slides, intervalMs = 10000 }: HeroProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 role="button"
-                className={`mt-8 inline-flex items-center justify-center gap-2 rounded-full px-7 py-3 font-semibold tracking-wide no-underline
-                bg-[var(--brand-accent)] text-[var(--brand-ink)] ring-2 ring-[color:color-mix(in_oklab,var(--brand-ink)_30%,transparent)] shadow-[0_8px_18px_-6px_color-mix(in_oklab,var(--brand-ink)_40%,transparent)]
-                /* Preserve current branch's hover effect: scale and stronger shadow */
-                hover:scale-105 hover:shadow-lg
-                /* Keep main's focus and active states */
-                focus:outline-none focus:ring-4 focus:ring-[var(--brand-alt)] focus:ring-offset-2 focus:ring-offset-[var(--brand-ink)]
-                transition-transform active:scale-95 ${shouldNudge ? 'animate-shake' : ''}`}
+                className={`btn-primary mt-8 text-lg font-semibold uppercase tracking-wide no-underline ${shouldNudge ? 'animate-shake' : ''}`}
               >
                 {slide.cta.label}
               </Link>
@@ -115,7 +109,7 @@ export default function Hero({ slides, intervalMs = 10000 }: HeroProps) {
             type="button"
             aria-label="Previous slide"
             onClick={prev}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-[color:color-mix(in_oklab,var(--brand-heading-secondary)_35%,transparent)] text-3xl leading-none text-[var(--brand-primary)] hover:bg-[color:color-mix(in_oklab,var(--brand-heading-secondary)_55%,transparent)] ring-1 ring-[color:color-mix(in_oklab,var(--brand-heading-secondary)_45%,transparent)] shadow-sm cursor-pointer"
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-30 flex h-12 w-12 items-center justify-center rounded-full border border-[var(--brand-border)] bg-[color:color-mix(in_oklab,var(--brand-surface-contrast)_35%,transparent)] text-3xl leading-none text-[var(--brand-primary)] shadow-sm transition-colors hover:bg-[color:color-mix(in_oklab,var(--brand-surface-contrast)_65%,transparent)]"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
@@ -125,7 +119,7 @@ export default function Hero({ slides, intervalMs = 10000 }: HeroProps) {
             type="button"
             aria-label="Next slide"
             onClick={next}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 flex h-12 w-12 items-center justify-center rounded-full bg-[color:color-mix(in_oklab,var(--brand-heading-secondary)_35%,transparent)] text-3xl leading-none text-[var(--brand-primary)] hover:bg-[color:color-mix(in_oklab,var(--brand-heading-secondary)_55%,transparent)] ring-1 ring-[color:color-mix(in_oklab,var(--brand-heading-secondary)_45%,transparent)] shadow-sm cursor-pointer"
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-30 flex h-12 w-12 items-center justify-center rounded-full border border-[var(--brand-border)] bg-[color:color-mix(in_oklab,var(--brand-surface-contrast)_35%,transparent)] text-3xl leading-none text-[var(--brand-primary)] shadow-sm transition-colors hover:bg-[color:color-mix(in_oklab,var(--brand-surface-contrast)_65%,transparent)]"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="9 18 15 12 9 6" />
@@ -136,10 +130,10 @@ export default function Hero({ slides, intervalMs = 10000 }: HeroProps) {
               <button
                 key={i}
                 onClick={() => goTo(i)}
-                className={`h-2 w-2 rounded-full ${
+                className={`h-2 w-2 rounded-full transition-colors ${
                   i === index
-                    ? 'bg-[var(--brand-heading-secondary)]'
-                    : 'bg-[color:color-mix(in_oklab,var(--brand-heading-secondary)_40%,transparent)]'
+                    ? 'bg-[var(--brand-accent)]'
+                    : 'bg-[color:color-mix(in_oklab,var(--brand-accent)_40%,transparent)]'
                 }` }
                 aria-label={`Go to slide ${i + 1}`}
               />

@@ -15,6 +15,78 @@ import AutoRefresh from "@/components/AutoRefresh";
 import Script from "next/script";
 import { cookies, headers } from "next/headers";
 
+const themeInitializer = `(() => {
+  const storageKey = 'gpt-theme';
+  const className = 'dark';
+  const root = document.documentElement;
+  const media = window.matchMedia('(prefers-color-scheme: dark)');
+
+  const setAttributes = (theme) => {
+    const isDark = theme === 'dark';
+    root.dataset.theme = theme;
+    root.classList.toggle(className, isDark);
+    root.style.colorScheme = isDark ? 'dark' : 'light';
+  };
+
+  const safeGet = () => {
+    try {
+      const stored = localStorage.getItem(storageKey);
+      return stored === 'light' || stored === 'dark' ? stored : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const safeSet = (value) => {
+    try {
+      if (value) {
+        localStorage.setItem(storageKey, value);
+      } else {
+        localStorage.removeItem(storageKey);
+      }
+    } catch {}
+  };
+
+  const applyTheme = (theme) => {
+    setAttributes(theme);
+  };
+
+  const resolveSystem = () => (media.matches ? 'dark' : 'light');
+
+  const storedPreference = safeGet();
+  applyTheme(storedPreference ?? resolveSystem());
+
+  const handleChange = (event) => {
+    if (safeGet()) return;
+    applyTheme(event.matches ? 'dark' : 'light');
+  };
+
+  if (typeof media.addEventListener === 'function') {
+    media.addEventListener('change', handleChange);
+  } else if (typeof media.addListener === 'function') {
+    media.addListener(handleChange);
+  }
+
+  window.__gptTheme = {
+    set(theme) {
+      if (theme === 'light' || theme === 'dark') {
+        safeSet(theme);
+        applyTheme(theme);
+      } else {
+        safeSet(null);
+        applyTheme(resolveSystem());
+      }
+    },
+    get() {
+      return root.dataset.theme || resolveSystem();
+    },
+    clear() {
+      safeSet(null);
+      applyTheme(resolveSystem());
+    },
+  };
+})();`;
+
 const headerFont = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-header",
@@ -75,7 +147,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       isEmbedded = true;
     }
   } catch {}
-  const themeAttr = isEmbedded ? (cookies().get("preview-theme")?.value || "light") : undefined;
+  const hintedTheme = cookies().get("preview-theme")?.value;
+  const preferredScheme = hdrs.get("sec-ch-prefers-color-scheme");
+  const fallbackTheme = preferredScheme === "dark" || preferredScheme === "light" ? preferredScheme : "light";
+  const embeddedTheme = isEmbedded ? hintedTheme : undefined;
+  const themeAttr: "light" | "dark" =
+    embeddedTheme === "dark" || embeddedTheme === "light" ? embeddedTheme : fallbackTheme;
+  const htmlClassName = [
+    headerFont.variable,
+    bodyFont.variable,
+    buttonFont.variable,
+    themeAttr === "dark" ? "dark" : undefined,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   const parseTime = (value?: string | null) => {
     if (!value) return null;
@@ -105,15 +190,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <html
-      lang="en"
-      data-theme={themeAttr}
-      className={`${headerFont.variable} ${bodyFont.variable} ${buttonFont.variable}`}
-    >
+    <html lang="en" data-theme={themeAttr} className={htmlClassName}>
       <body
         className="flex min-h-screen flex-col"
         style={{ "--layout-max-width": maxWidth } as CSSProperties}
       >
+        <Script
+          id="theme-initializer"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: themeInitializer }}
+        />
         {!isEmbedded && <AutoRefresh />}
         {!isEmbedded && (
           <>
