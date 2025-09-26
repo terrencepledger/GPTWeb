@@ -21,7 +21,11 @@ interface MobileMenuProps {
 }
 
 function linkClasses(active: boolean) {
-  return `block ${active ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]`;
+  return `block ${
+    active
+      ? "text-[var(--brand-heading-secondary)]"
+      : "text-[var(--brand-body-secondary)]"
+  } hover:text-[var(--brand-heading-secondary)] focus:text-[var(--brand-heading-secondary)]`;
 }
 
 
@@ -89,7 +93,13 @@ function MobileMenuInner({ primaryNav, trailingNav }: MobileMenuProps, ref: Reac
                 <Disclosure defaultOpen={pathname.startsWith("/about")}>
                   {({ open: aboutOpen }) => (
                     <div>
-                      <Disclosure.Button className={`${pathname.startsWith("/about") ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} w-full inline-flex items-center justify-between hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]`}>
+                      <Disclosure.Button
+                        className={`${
+                          pathname.startsWith("/about")
+                            ? "text-[var(--brand-heading-secondary)]"
+                            : "text-[var(--brand-body-secondary)]"
+                        } w-full inline-flex items-center justify-between hover:text-[var(--brand-heading-secondary)] focus:text-[var(--brand-heading-secondary)]`}
+                      >
                         <span>About</span>
                         <svg
                           className={`h-4 w-4 transition-transform duration-150 ${aboutOpen ? "rotate-180" : "rotate-0"}`}
@@ -151,7 +161,13 @@ function MobileMenuInner({ primaryNav, trailingNav }: MobileMenuProps, ref: Reac
                 <Disclosure defaultOpen={pathname.startsWith("/contact")}>
                   {({ open: contactOpen }) => (
                     <div>
-                      <Disclosure.Button className={`${pathname.startsWith("/contact") ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} w-full inline-flex items-center justify-between hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]`}>
+                      <Disclosure.Button
+                        className={`${
+                          pathname.startsWith("/contact")
+                            ? "text-[var(--brand-heading-secondary)]"
+                            : "text-[var(--brand-body-secondary)]"
+                        } w-full inline-flex items-center justify-between hover:text-[var(--brand-heading-secondary)] focus:text-[var(--brand-heading-secondary)]`}
+                      >
                         <span>Contact</span>
                         <svg
                           className={`h-4 w-4 transition-transform duration-150 ${contactOpen ? "rotate-180" : "rotate-0"}`}

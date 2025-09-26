@@ -40,7 +40,7 @@ export default function EventGallery({ events }: { events: GalleryEvent[] }) {
               />
             )}
             <div className="p-4">
-              <h3 className="text-base font-semibold text-[var(--brand-fg)]">{ev.title}</h3>
+              <h3 className="text-base font-semibold text-[var(--brand-heading-secondary)]">{ev.title}</h3>
               <p className="mt-1 text-xs text-[var(--brand-muted)]">
                 {ev.date}
                 {ev.location ? ` • ${ev.location}` : ""}

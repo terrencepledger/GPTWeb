@@ -3,43 +3,66 @@
 @layer components {
   /* Base brand button: default rounded edges and interactions */
   .btn-brand {
-    @apply rounded-full px-6 py-3 inline-flex items-center justify-center gap-2 font-medium transition-all shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)] focus:ring-offset-2 focus:ring-offset-[var(--brand-bg)] overflow-hidden;
+    @apply rounded-full px-6 py-3 inline-flex items-center justify-center gap-2 font-medium transition-all shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)] focus:ring-offset-2 focus:ring-offset-[var(--brand-bg)] overflow-hidden cursor-pointer;
     font-family: var(--font-button), sans-serif;
   }
 
   .btn-primary {
     /* Use brand tokens */
     @apply btn-brand;
-    background-color: var(--brand-primary);
+    background-color: color-mix(in oklab, var(--brand-primary) 65%, white 35%);
     color: var(--brand-primary-contrast);
-    border: 1px solid var(--brand-primary);
+    border: 2px solid var(--brand-border-strong);
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--brand-accent) 30%, transparent),
+      0 14px 22px -12px color-mix(in oklab, var(--brand-primary) 55%, transparent);
   }
   .btn-primary:hover {
-    background-color: color-mix(in oklab, var(--brand-primary) 85%, white 15%);
+    background-color: color-mix(in oklab, var(--brand-primary) 55%, white 45%);
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--brand-accent) 55%, transparent),
+      0 18px 28px -12px color-mix(in oklab, var(--brand-primary) 65%, transparent);
   }
   .btn-primary:active {
     transform: translateY(1px);
   }
 
+  /* Elevate button hover on secondary surfaces */
+  [class*="brand-surface"] .btn-primary {
+    background-color: color-mix(in oklab, var(--brand-primary) 45%, white 55%);
+    color: var(--brand-primary-contrast);
+    border-color: color-mix(in oklab, var(--brand-accent) 70%, white 30%);
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--brand-accent) 55%, transparent),
+      0 18px 32px -18px color-mix(in oklab, var(--brand-accent) 55%, transparent);
+  }
+
+  [class*="brand-surface"] .btn-primary:hover {
+    background-color: color-mix(in oklab, var(--brand-primary) 35%, white 65%);
+    color: var(--brand-primary-contrast);
+    border-color: var(--brand-accent);
+  }
+
   .btn-ghost {
     @apply btn-brand border border-transparent;
-    color: var(--brand-primary);
+    color: var(--brand-primary-muted);
     background-color: transparent;
   }
   .btn-ghost:hover {
-    background-color: color-mix(in oklab, var(--brand-primary) 10%, var(--brand-surface) 90%);
-    color: var(--brand-primary);
+    background-color: color-mix(in oklab, var(--brand-primary-muted) 22%, var(--brand-bg) 78%);
+    color: color-mix(in oklab, var(--brand-primary-muted) 78%, white 22%);
   }
 
   /* Brand outlined button: transparent fill with visible border */
   .btn-outline {
     @apply btn-brand;
     background-color: transparent;
-    color: var(--brand-primary);
-    border: 1px solid var(--brand-primary);
+    color: var(--brand-primary-muted);
+    border: 1px solid color-mix(in oklab, var(--brand-primary-muted) 72%, white 28%);
   }
   .btn-outline:hover {
-    background-color: color-mix(in oklab, var(--brand-primary) 10%, var(--brand-surface) 90%);
+    background-color: color-mix(in oklab, var(--brand-primary-muted) 22%, var(--brand-bg) 78%);
+    border-color: color-mix(in oklab, var(--brand-primary-muted) 82%, white 18%);
   }
   .btn-outline:active {
     transform: translateY(1px);
@@ -49,24 +72,25 @@
   .btn-outline-cta {
     @apply btn-brand font-semibold; /* inherits rounded-full, padding, layout, transitions */
     border-radius: 9999px; /* ensure pill corners regardless of any resets */
-    color: var(--brand-primary);
+    color: var(--brand-primary-muted);
     /* More prominent border using accent+primary mix */
-    border: 2px solid color-mix(in oklab, var(--brand-accent) 65%, var(--brand-primary) 35%);
+    border: 2px solid color-mix(in oklab, var(--brand-accent) 42%, var(--brand-primary-muted) 58%);
     /* Faded light background to lift from purple page bg */
-    background-color: color-mix(in oklab, var(--brand-primary) 14%, white 86%);
+    background-color: color-mix(in oklab, var(--brand-primary-muted) 35%, white 65%);
   }
   .btn-outline-cta:hover {
-    background-color: color-mix(in oklab, var(--brand-primary) 20%, white 80%);
-    box-shadow: 0 8px 18px -8px color-mix(in oklab, var(--brand-accent) 35%, transparent);
+    background-color: color-mix(in oklab, var(--brand-primary-muted) 45%, white 55%);
+    box-shadow: 0 8px 18px -8px color-mix(in oklab, var(--brand-primary-muted) 40%, transparent);
   }
   .btn-outline-cta:active {
     transform: translateY(1px);
   }
 
   .card {
-    @apply relative overflow-hidden rounded-lg shadow-md;
+    @apply relative overflow-hidden rounded-lg shadow-md border-2;
     background-color: var(--brand-surface);
-    color: var(--brand-fg);
+    color: var(--brand-body-secondary);
+    border-color: var(--brand-border);
   }
 
   .card .hero-overlay {
@@ -76,9 +100,9 @@
 
   .assistant-chip {
     @apply inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-surface)];
-    background-color: color-mix(in oklab, var(--brand-alt) 78%, var(--brand-primary) 22%);
-    color: var(--brand-ink);
-    border-color: color-mix(in oklab, var(--brand-border) 70%, transparent);
+    background-color: color-mix(in oklab, var(--brand-surface) 78%, var(--brand-primary) 22%);
+    color: var(--brand-body-secondary);
+    border-color: var(--brand-border);
     box-shadow:
       0 6px 14px -10px color-mix(in oklab, var(--brand-primary) 65%, transparent),
       0 0 0 1px color-mix(in oklab, var(--brand-border) 30%, transparent);

@@ -452,91 +452,99 @@ export default function Assistant() {
         >
           ×
         </button>
-        <div
-          role="log"
-          aria-label="Chat messages"
-          className="mb-2 max-h-60 overflow-y-auto pr-2"
-          style={{ scrollbarGutter: 'stable' } as CSSProperties}
-          ref={logRef}
-        >
-          {messages.map((m, i) => (
-            <div
-              key={i}
-              className={`mb-2 flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`max-w-[85%] flex flex-col ${m.role === 'assistant' ? 'items-start' : 'items-end'}`}>
-                <div className="relative">
-                  <div
-                    className="relative z-10 rounded-2xl border px-3 py-2 whitespace-pre-wrap break-words"
-                    style={{
-                      backgroundColor:
-                        m.role === 'assistant'
-                          ? 'var(--brand-primary)'
-                          : 'var(--brand-accent)',
-                      color: 'var(--brand-ink)',
-                      borderColor: 'var(--brand-border)',
-                      overflowWrap: 'anywhere',
-                      wordBreak: 'break-word',
-                    }}
-                  >
-                    {renderContent(m.content, m.role)}
-                    {m.role === 'assistant' && m.softEscalate && !collectInfo && (
-                      <div className="mt-1 text-sm">
-                        <button
-                          type="button"
-                          className="underline text-[var(--brand-alt)] decoration-[var(--brand-alt)] hover:opacity-80 focus:outline-none focus:ring-1 focus:ring-[var(--brand-alt)] cursor-pointer bg-transparent p-0 font-normal"
-                          onClick={() => {
-                            const pct = Math.max(
-                              0,
-                              Math.min(100, Math.round(((m.confidence ?? 0) as number) * 100))
-                            );
-                            setEscalationReason(
-                              `Assistant confidence ${pct}%. Visitor opted to reach out for a more certain answer.`
-                            );
-                            setCollectInfo(true);
-                            setCollectInfoMode('soft');
-                          }}
-                          aria-label="Open escalation form"
-                        >
-                          Reach Out to a Staff Member
-                        </button>
-                      </div>
-                    )}
+        <div className="mb-3 rounded-2xl border border-[var(--brand-border)] bg-[var(--brand-bg)] p-3 shadow-inner">
+          <div
+            role="log"
+            aria-label="Chat messages"
+            className="max-h-60 space-y-2 overflow-y-auto pr-2"
+            style={{ scrollbarGutter: 'stable' } as CSSProperties}
+            ref={logRef}
+          >
+            {messages.map((m, i) => (
+              <div
+                key={i}
+                className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div className={`max-w-[85%] flex flex-col ${m.role === 'assistant' ? 'items-start' : 'items-end'}`}>
+                  <div className="relative">
+                    <div
+                      className="relative z-10 rounded-2xl border px-3 py-2 whitespace-pre-wrap break-words"
+                      style={{
+                        backgroundColor:
+                          m.role === 'assistant'
+                            ? 'var(--brand-primary)'
+                            : 'var(--brand-accent)',
+                        color: 'var(--brand-ink)',
+                        borderColor: 'var(--brand-border)',
+                        overflowWrap: 'anywhere',
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      {renderContent(m.content, m.role)}
+                      {m.role === 'assistant' && m.softEscalate && !collectInfo && (
+                        <div className="mt-1 text-sm">
+                          <button
+                            type="button"
+                            className="underline text-[var(--brand-alt)] decoration-[var(--brand-alt)] hover:opacity-80 focus:outline-none focus:ring-1 focus:ring-[var(--brand-alt)] cursor-pointer bg-transparent p-0 font-normal"
+                            onClick={() => {
+                              const pct = Math.max(
+                                0,
+                                Math.min(100, Math.round(((m.confidence ?? 0) as number) * 100))
+                              );
+                              setEscalationReason(
+                                `Assistant confidence ${pct}%. Visitor opted to reach out for a more certain answer.`
+                              );
+                              setCollectInfo(true);
+                              setCollectInfoMode('soft');
+                            }}
+                            aria-label="Open escalation form"
+                          >
+                            Reach Out to a Staff Member
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <div
+                      className={`absolute h-3 w-3 rotate-45 border-b ${m.role === 'assistant' ? 'border-l left-3' : 'border-r right-3'}`}
+                      style={{
+                        bottom: -3,
+                        backgroundColor:
+                          m.role === 'assistant'
+                            ? 'var(--brand-primary)'
+                            : 'var(--brand-accent)',
+                        borderColor: 'var(--brand-border)',
+                      }}
+                    />
                   </div>
                   <div
-                    className={`absolute h-3 w-3 rotate-45 border-b ${m.role === 'assistant' ? 'border-l left-3' : 'border-r right-3'}`}
+                    className={`mt-3 inline-block rounded border px-3 py-1 text-base font-semibold ${
+                      m.role === 'assistant'
+                        ? 'self-start'
+                        : 'self-end'
+                    }`}
                     style={{
-                      bottom: -3,
-                      backgroundColor:
-                        m.role === 'assistant'
-                          ? 'var(--brand-primary)'
-                          : 'var(--brand-accent)',
                       borderColor: 'var(--brand-border)',
+                      color: 'var(--brand-accent)',
                     }}
-                  />
-                </div>
-                <div
-                  className={`mt-3 inline-block rounded border px-3 py-1 text-base font-semibold ${
-                    m.role === 'assistant'
-                      ? 'self-start'
-                      : 'self-end'
-                  }`}
-                  style={{
-                    borderColor: 'var(--brand-border)',
-                    color: 'var(--brand-accent)',
-                  }}
-                >
-                  {m.role === 'assistant' ? 'Assistant' : 'You'}
+                  >
+                    {m.role === 'assistant' ? 'Assistant' : 'You'}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-          {thinking && !collectInfo && (
-            <div className="mb-1" style={{ color: 'var(--brand-muted)' }}>Assistant is thinking…</div>
-          )}
+            ))}
+            {thinking && !collectInfo && (
+              <div className="text-sm" style={{ color: 'var(--brand-muted)' }}>
+                Assistant is thinking…
+              </div>
+            )}
+          </div>
         </div>
         {collectInfo ? (
-          <form onSubmit={sendInfo} className="flex flex-col gap-2 border rounded p-2" aria-label="Contact form" style={{ borderColor: 'var(--brand-border)' }}>
+          <form
+            onSubmit={sendInfo}
+            className="flex flex-col gap-2 rounded-xl border border-[var(--brand-border)] bg-[var(--brand-bg)] p-3 shadow-sm"
+            aria-label="Contact form"
+          >
             {collectInfoMode === 'soft' && (
               <button
                 type="button"
@@ -625,7 +633,11 @@ export default function Assistant() {
             </button>
           </form>
         ) : (
-          <form onSubmit={sendMessage} className="flex gap-2" aria-label="Chat input">
+          <form
+            onSubmit={sendMessage}
+            className="flex gap-2 rounded-xl border border-[var(--brand-border)] bg-[var(--brand-bg)] p-2 shadow-sm"
+            aria-label="Chat input"
+          >
             <input
               type="text"
               className="flex-1 min-w-0 border rounded px-2 py-1 focus:outline-none focus:ring-2"

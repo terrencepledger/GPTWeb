@@ -17,8 +17,8 @@ export default function LivestreamPlayer({
 
   return (
     <div>
-      <div className="mb-4 flex items-center gap-2 text-[var(--brand-fg)]">
-        <h1 className="text-2xl font-bold">{current.name}</h1>
+      <div className="mb-4 flex items-center gap-2 text-[var(--brand-body-primary)]">
+        <h1 className="text-2xl font-bold text-[var(--brand-heading-primary)]">{current.name}</h1>
         {current.live?.status === 'streaming' && (
           <span className="rounded bg-[var(--brand-accent)] px-2 py-0.5 text-xs font-semibold uppercase text-[var(--brand-ink)]">
             Live
@@ -35,7 +35,7 @@ export default function LivestreamPlayer({
       </div>
       {videos.length > 0 && (
         <div>
-          <h2 className="text-xl font-semibold text-[var(--brand-fg)]">Recent</h2>
+          <h2 className="text-xl font-semibold text-[var(--brand-heading-primary)]">Recent</h2>
           <div className="relative mt-4">
             <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory">
               {videos.map((video) => {

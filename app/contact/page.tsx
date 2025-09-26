@@ -6,17 +6,19 @@ export default async function Page() {
   const formSettings = await contactFormSettings();
 
   return (
-    <div>
-      <div className="text-center">
-        <h1 className="text-2xl font-semibold">Contact</h1>
-        <p className="mt-2 text-sm text-[var(--brand-muted)]">
+    <div className="space-y-8">
+      <div className="text-center space-y-3">
+        <h1 className="text-3xl font-semibold text-[var(--brand-heading-primary)]">Contact</h1>
+        <p className="mx-auto max-w-2xl text-base text-[var(--brand-body-primary)]">
           Get in touch with us using the contact form below.
         </p>
       </div>
-      <ContactForm
-        pageId={formSettings?.pageId}
-        formId={formSettings?.formId}
-      />
+      <div className="mx-auto max-w-3xl rounded-3xl bg-[var(--brand-bg)] p-6 shadow-xl">
+        <ContactForm
+          pageId={formSettings?.pageId}
+          formId={formSettings?.formId}
+        />
+      </div>
     </div>
   );
 }

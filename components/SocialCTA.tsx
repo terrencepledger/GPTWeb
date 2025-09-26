@@ -111,12 +111,12 @@ function SocialCard({ href, label, description, Icon }: SocialItem) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="group flex h-full flex-col items-center justify-center gap-2 rounded-full border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 text-center transition-colors hover:bg-[color:color-mix(in_oklab,var(--brand-surface)_85%,white_15%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] no-underline hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
+      className="group brand-surface flex h-full flex-col items-center justify-center gap-3 rounded-3xl border-2 border-[var(--brand-border-strong)] bg-[var(--brand-surface)] p-6 text-center transition-all hover:-translate-y-1 hover:shadow-2xl hover:bg-[color:color-mix(in_oklab,var(--brand-surface)_90%,white_10%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-surface)] no-underline hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
       aria-label={description ? `${label}. ${description}` : label}
     >
-      <Icon className="h-8 w-8 text-[var(--brand-accent)] transition-all group-hover:scale-105 group-hover:text-[var(--brand-primary-contrast)]" />
-      <h3 className="text-base font-semibold text-[var(--brand-accent)] group-hover:text-[var(--brand-primary-contrast)]">{label}</h3>
-      {description ? <p className="text-sm text-[var(--brand-alt)]">{description}</p> : null}
+      <Icon className="h-8 w-8 text-[var(--brand-heading-secondary)] drop-shadow-sm transition-all group-hover:scale-105" />
+      <h3 className="text-base font-semibold text-[var(--brand-heading-secondary)]">{label}</h3>
+      {description ? <p className="text-sm text-[var(--brand-body-secondary)]">{description}</p> : null}
     </a>
   );
 }
@@ -187,9 +187,9 @@ export default async function SocialCTA() {
           </div>
         )}
         {embedUrl ? (
-          <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-bg)] md:col-start-2 md:row-span-2">
+          <div className="relative aspect-video w-full overflow-hidden rounded-3xl border-2 border-[var(--brand-border-strong)] bg-[var(--brand-bg)] shadow-xl md:col-start-2 md:row-span-2">
             {latest && (
-              <div className="absolute left-2 top-2 rounded bg-[var(--brand-primary)]/80 px-2 py-1 text-sm font-semibold text-[var(--brand-primary-contrast)]">
+              <div className="absolute left-3 top-3 rounded-full bg-[var(--brand-primary)]/85 px-3 py-1 text-sm font-semibold text-[var(--brand-primary-contrast)] shadow">
                 {latest.published.toLocaleDateString("en-US", {
                   month: "long",
                   day: "numeric",
@@ -213,7 +213,7 @@ export default async function SocialCTA() {
               href={`https://www.youtube.com/channel/${channelId}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="relative aspect-video w-full overflow-hidden rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)] flex items-center justify-center group transition-colors hover:bg-[color:color-mix(in_oklab,var(--brand-surface)_85%,white_15%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] no-underline hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)] md:col-start-2 md:row-span-2"
+              className="brand-surface relative aspect-video w-full overflow-hidden rounded-3xl border-2 border-[var(--brand-border-strong)] bg-[var(--brand-surface)] flex items-center justify-center group transition-all hover:-translate-y-1 hover:shadow-2xl hover:bg-[color:color-mix(in_oklab,var(--brand-surface)_90%,white_10%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-surface)] no-underline hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)] md:col-start-2 md:row-span-2"
               aria-label="Visit our YouTube channel"
             >
               {settings?.logo && (
@@ -226,11 +226,11 @@ export default async function SocialCTA() {
                 />
               )}
               <div className="relative z-10 flex flex-col items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-12 w-12 text-[var(--brand-accent)] drop-shadow-sm transition-transform group-hover:scale-105 group-hover:text-[var(--brand-primary-contrast)]" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-12 w-12 text-[var(--brand-heading-secondary)] drop-shadow-sm transition-transform group-hover:scale-105" fill="currentColor">
                   <path d="M23.5 6.2a4 4 0 0 0-2.8-2.8C18.9 3 12 3 12 3s-6.9 0-8.7.4A4 4 0 0 0 .5 6.2 41.3 41.3 0 0 0 0 12a41.3 41.3 0 0 0 .5 5.8 4 4 0 0 0 2.8 2.8C5.1 21 12 21 12 21s6.9 0 8.7-.4a4 4 0 0 0 2.8-2.8A41.3 41.3 0 0 0 24 12a41.3 41.3 0 0 0-.5-5.8zM9.6 15.5V8.5L15.8 12l-6.2 3.5z"/>
                 </svg>
                 <div className="text-center">
-                  <h3 className="text-base font-semibold text-[var(--brand-accent)] group-hover:text-[var(--brand-primary-contrast)]">Watch on YouTube</h3>
+                  <h3 className="text-base font-semibold text-[var(--brand-heading-secondary)]">Watch on YouTube</h3>
                 </div>
               </div>
             </a>

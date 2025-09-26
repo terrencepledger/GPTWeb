@@ -67,14 +67,14 @@ function ActionCard({ action, delay }: { action: typeof actions[number]; delay: 
   return (
     <a
       href={action.href}
-      className="group flex flex-col items-start gap-4 rounded-lg border border-[var(--brand-border)] bg-[var(--brand-surface)] p-6 opacity-0 animate-fade-in-up transform transition duration-300 hover:-translate-y-1 hover:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] no-underline transition-colors hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
+      className="group brand-surface flex flex-col items-start gap-4 rounded-2xl border-2 border-[var(--brand-border-strong)] bg-[var(--brand-surface)] p-6 opacity-0 animate-fade-in-up transform transition duration-300 hover:-translate-y-1 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--brand-surface)] no-underline transition-colors hover:border-[var(--brand-accent)] focus-visible:border-[var(--brand-accent)]"
       style={{ animationDelay: delay }}
     >
       <div className="flex items-center gap-3">
-        <Icon className="h-8 w-8 text-[var(--brand-accent)] transition-transform group-hover:rotate-6" />
-        <h3 className="text-lg font-semibold text-[var(--brand-surface-contrast)]">{action.title}</h3>
+        <Icon className="h-8 w-8 text-[var(--brand-heading-secondary)] drop-shadow-sm transition-transform group-hover:rotate-6" />
+        <h3 className="text-lg font-semibold text-[var(--brand-heading-secondary)]">{action.title}</h3>
       </div>
-      <p className="text-[var(--brand-accent)]">{action.description}</p>
+      <p className="text-[var(--brand-body-secondary)]">{action.description}</p>
     </a>
   );
 }
