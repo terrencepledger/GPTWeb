@@ -429,11 +429,11 @@ export default function Assistant() {
       className={`fixed right-6 bottom-6 z-50 transition-all duration-[1000ms] ease-in-out ${entered ? '' : 'pointer-events-none'}`}
     >
       <div
-        className={`absolute bottom-0 right-0 w-80 rounded-lg border pt-8 pr-8 pb-4 pl-4 shadow-lg transition-all duration-700 ease-in-out transform ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
+        className={`brand-surface absolute bottom-0 right-0 w-80 rounded-lg border pt-8 pr-8 pb-4 pl-4 shadow-lg transition-all duration-700 ease-in-out transform ${open ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0 pointer-events-none'}`}
         style={{
           backgroundColor: 'var(--brand-surface)',
-          color: 'var(--brand-ink)',
-          borderColor: 'var(--brand-ink)',
+          color: 'var(--brand-body-secondary)',
+          borderColor: 'var(--brand-border)',
         }}
       >
         <button
@@ -447,7 +447,7 @@ export default function Assistant() {
           style={{
             backgroundColor: 'var(--brand-alt)',
             color: 'var(--brand-ink)',
-            borderColor: 'var(--brand-ink)',
+            borderColor: 'var(--brand-border)',
           }}
         >
           ×
@@ -472,9 +472,12 @@ export default function Assistant() {
                       style={{
                         backgroundColor:
                           m.role === 'assistant'
-                            ? 'var(--brand-primary)'
+                            ? 'var(--brand-surface)'
                             : 'var(--brand-accent)',
-                        color: 'var(--brand-ink)',
+                        color:
+                          m.role === 'assistant'
+                            ? 'var(--brand-heading-secondary)'
+                            : 'var(--brand-ink)',
                         borderColor: 'var(--brand-border)',
                         overflowWrap: 'anywhere',
                         wordBreak: 'break-word',
@@ -510,7 +513,7 @@ export default function Assistant() {
                         bottom: -3,
                         backgroundColor:
                           m.role === 'assistant'
-                            ? 'var(--brand-primary)'
+                            ? 'var(--brand-surface)'
                             : 'var(--brand-accent)',
                         borderColor: 'var(--brand-border)',
                       }}
@@ -564,13 +567,7 @@ export default function Assistant() {
             </p>
             <input
               type="text"
-              className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
-              style={{
-                backgroundColor: 'var(--brand-alt)',
-                color: 'var(--brand-ink)',
-                borderColor: 'var(--brand-border)',
-                '--tw-ring-color': 'var(--brand-primary)',
-              } as CSSProperties}
+              className="border border-[var(--brand-border)] rounded px-3 py-2 bg-[var(--brand-surface-contrast)] text-[var(--brand-body-primary)] focus:border-[var(--brand-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)]"
               placeholder="Name"
               value={info.name}
               onChange={(e) => setInfo({ ...info, name: e.target.value })}
@@ -579,13 +576,7 @@ export default function Assistant() {
             />
             <input
               type="text"
-              className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
-              style={{
-                backgroundColor: 'var(--brand-alt)',
-                color: 'var(--brand-ink)',
-                borderColor: 'var(--brand-border)',
-                '--tw-ring-color': 'var(--brand-primary)',
-              } as CSSProperties}
+              className="border border-[var(--brand-border)] rounded px-3 py-2 bg-[var(--brand-surface-contrast)] text-[var(--brand-body-primary)] focus:border-[var(--brand-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)]"
               placeholder="Contact Number"
               value={info.contact}
               onChange={(e) => setInfo({ ...info, contact: e.target.value })}
@@ -594,13 +585,7 @@ export default function Assistant() {
             />
             <input
               type="email"
-              className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
-              style={{
-                backgroundColor: 'var(--brand-alt)',
-                color: 'var(--brand-ink)',
-                borderColor: 'var(--brand-border)',
-                '--tw-ring-color': 'var(--brand-primary)',
-              } as CSSProperties}
+              className="border border-[var(--brand-border)] rounded px-3 py-2 bg-[var(--brand-surface-contrast)] text-[var(--brand-body-primary)] focus:border-[var(--brand-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)]"
               placeholder="Email"
               value={info.email}
               onChange={(e) => setInfo({ ...info, email: e.target.value })}
@@ -608,13 +593,7 @@ export default function Assistant() {
               required
             />
             <textarea
-              className="border rounded px-2 py-1 focus:outline-none focus:ring-2"
-              style={{
-                backgroundColor: 'var(--brand-alt)',
-                color: 'var(--brand-ink)',
-                borderColor: 'var(--brand-border)',
-                '--tw-ring-color': 'var(--brand-primary)',
-              } as CSSProperties}
+              className="border border-[var(--brand-border)] rounded px-3 py-2 bg-[var(--brand-surface-contrast)] text-[var(--brand-body-primary)] focus:border-[var(--brand-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)]"
               placeholder="Any extra details"
               value={info.details}
               onChange={(e) => setInfo({ ...info, details: e.target.value })}
@@ -622,12 +601,7 @@ export default function Assistant() {
             />
             <button
               type="submit"
-              className="rounded px-3 py-1 focus:outline-none focus:ring-2 cursor-pointer"
-              style={{
-                backgroundColor: 'var(--brand-primary)',
-                color: 'var(--brand-ink)',
-                '--tw-ring-color': 'var(--brand-primary)',
-              } as CSSProperties}
+              className="btn-primary px-4 py-2 text-sm"
             >
               Send
             </button>
@@ -640,25 +614,14 @@ export default function Assistant() {
           >
             <input
               type="text"
-              className="flex-1 min-w-0 border rounded px-2 py-1 focus:outline-none focus:ring-2"
-              style={{
-                backgroundColor: 'var(--brand-alt)',
-                color: 'var(--brand-ink)',
-                borderColor: 'var(--brand-border)',
-                '--tw-ring-color': 'var(--brand-primary)',
-              } as CSSProperties}
+              className="flex-1 min-w-0 rounded border border-[var(--brand-border)] bg-[var(--brand-surface-contrast)] px-3 py-2 text-[var(--brand-body-primary)] focus:border-[var(--brand-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-accent)]"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               aria-label="Message"
             />
             <button
               type="submit"
-              className="rounded px-3 py-1 focus:outline-none focus:ring-2 cursor-pointer"
-              style={{
-                backgroundColor: 'var(--brand-primary)',
-                color: 'var(--brand-ink)',
-                '--tw-ring-color': 'var(--brand-primary)',
-              } as CSSProperties}
+              className="btn-primary px-4 py-2 text-sm"
             >
               Send
             </button>

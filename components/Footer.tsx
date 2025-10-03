@@ -106,7 +106,7 @@ export default async function Footer() {
               <input
                 type="email"
                 placeholder="Email address"
-                className="flex-1 rounded border border-[var(--brand-border)] bg-[var(--brand-heading-secondary)] px-2 py-1 text-[var(--brand-body-primary)] placeholder-[var(--brand-muted)] focus:border-[var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary)]"
+                className="flex-1 rounded border border-[var(--brand-border)] bg-[var(--brand-surface-contrast)] px-3 py-2 font-sans text-sm text-[var(--brand-body-primary)] placeholder:text-[var(--brand-body-primary)] placeholder:opacity-70 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--brand-primary)]"
               />
               <button
                 type="submit"

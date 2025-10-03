@@ -26,6 +26,13 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
   const linkClasses = (active: boolean) =>
     `${active ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)]`;
 
+  const dropdownButtonClasses = (active: boolean) =>
+    `${
+      active
+        ? "text-[var(--brand-heading-secondary)]"
+        : "text-[var(--brand-body-secondary)]"
+    } inline-flex items-center gap-1 cursor-pointer focus:outline-none focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--brand-heading-secondary)] hover:text-[var(--brand-heading-secondary)] focus:text-[var(--brand-heading-secondary)]`;
+
   return (
     <header className="sticky top-0 z-50 border-b border-[var(--brand-border)] bg-[var(--brand-surface)]">
       <div className="max-w-site relative flex h-16 items-center px-4">
@@ -46,7 +53,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
 
           <div className="relative group">
             <button
-              className={`${pathname.startsWith("/about") ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)] inline-flex items-center gap-1 cursor-pointer focus:outline-none`}
+              className={dropdownButtonClasses(pathname.startsWith("/about"))}
               aria-haspopup="true"
             >
               <span>About</span>
@@ -101,7 +108,7 @@ export default function Header({ initialTitle }: { initialTitle?: string }) {
 
           <div className="relative group">
             <button
-              className={`${pathname.startsWith("/contact") ? "text-[var(--brand-alt)]" : "text-[var(--brand-accent)]"} hover:text-[var(--brand-alt)] focus:text-[var(--brand-alt)] inline-flex items-center gap-1 cursor-pointer focus:outline-none`}
+              className={dropdownButtonClasses(pathname.startsWith("/contact"))}
               aria-haspopup="true"
             >
               <span>Contact</span>

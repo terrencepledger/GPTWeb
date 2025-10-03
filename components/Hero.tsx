@@ -82,8 +82,8 @@ export default function Hero({ slides, intervalMs = 10000 }: HeroProps) {
             />
           )}
           <div className="relative z-20 flex h-full w-full flex-col items-center justify-center px-4 text-center">
-            <div className="max-w-3xl rounded-3xl border-2 border-[var(--brand-border-strong)] bg-[var(--brand-surface)] p-1 shadow-2xl">
-              <div className="rounded-2xl bg-[var(--brand-bg)] px-6 py-6 text-[var(--brand-body-primary)] md:px-10 md:py-8">
+            <div className="brand-surface max-w-3xl rounded-3xl border-2 border-[var(--brand-border-strong)] bg-[var(--brand-surface)] p-1 shadow-2xl">
+              <div className="rounded-2xl bg-[var(--brand-surface-contrast)] px-6 py-6 text-[var(--brand-body-primary)] md:px-10 md:py-8 [--surface-heading-color:var(--brand-heading-primary)] [--surface-body-color:var(--brand-body-primary)]">
                 <h1 className="text-3xl font-bold tracking-tight text-[var(--brand-heading-primary)] md:text-4xl">
                   {slide.headline}
                 </h1>

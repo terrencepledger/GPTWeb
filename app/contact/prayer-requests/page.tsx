@@ -16,7 +16,7 @@ export default async function Page() {
           Share your prayer needs and our team will partner with you in prayer.
         </p>
       </div>
-      <div className="mx-auto max-w-3xl rounded-3xl bg-[var(--brand-bg)] p-6 shadow-xl">
+      <div className="mx-auto max-w-3xl">
         <PrayerRequestForm
           pageId={formSettings?.pageId}
           formId={formSettings?.formId}

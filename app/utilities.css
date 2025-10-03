@@ -10,18 +10,19 @@
   .btn-primary {
     /* Use brand tokens */
     @apply btn-brand;
-    background-color: color-mix(in oklab, var(--brand-primary) 65%, white 35%);
+    background-color: var(--brand-primary-muted);
     color: var(--brand-primary-contrast);
     border: 2px solid var(--brand-border-strong);
     box-shadow:
       0 0 0 1px color-mix(in oklab, var(--brand-accent) 30%, transparent),
-      0 14px 22px -12px color-mix(in oklab, var(--brand-primary) 55%, transparent);
+      0 16px 30px -18px color-mix(in oklab, var(--brand-primary) 65%, transparent);
   }
   .btn-primary:hover {
-    background-color: color-mix(in oklab, var(--brand-primary) 55%, white 45%);
+    background-color: color-mix(in oklab, var(--brand-primary) 70%, var(--brand-primary-muted) 30%);
+    color: var(--brand-primary-contrast);
     box-shadow:
-      0 0 0 1px color-mix(in oklab, var(--brand-accent) 55%, transparent),
-      0 18px 28px -12px color-mix(in oklab, var(--brand-primary) 65%, transparent);
+      0 0 0 1px color-mix(in oklab, var(--brand-accent) 60%, transparent),
+      0 20px 36px -18px color-mix(in oklab, var(--brand-primary) 70%, transparent);
   }
   .btn-primary:active {
     transform: translateY(1px);
@@ -29,18 +30,18 @@
 
   /* Elevate button hover on secondary surfaces */
   [class*="brand-surface"] .btn-primary {
-    background-color: color-mix(in oklab, var(--brand-primary) 45%, white 55%);
-    color: var(--brand-primary-contrast);
-    border-color: color-mix(in oklab, var(--brand-accent) 70%, white 30%);
+    background-color: var(--brand-surface-contrast);
+    color: var(--brand-primary);
+    border-color: var(--brand-accent);
     box-shadow:
-      0 0 0 1px color-mix(in oklab, var(--brand-accent) 55%, transparent),
-      0 18px 32px -18px color-mix(in oklab, var(--brand-accent) 55%, transparent);
+      0 0 0 1px color-mix(in oklab, var(--brand-accent) 40%, transparent),
+      0 20px 36px -20px color-mix(in oklab, var(--brand-primary) 55%, transparent);
   }
 
   [class*="brand-surface"] .btn-primary:hover {
-    background-color: color-mix(in oklab, var(--brand-primary) 35%, white 65%);
+    background-color: var(--brand-primary-muted);
     color: var(--brand-primary-contrast);
-    border-color: var(--brand-accent);
+    border-color: var(--brand-border-strong);
   }
 
   .btn-ghost {
